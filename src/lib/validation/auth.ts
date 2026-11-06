@@ -44,3 +44,24 @@ export const resetPasswordSchema = z
   });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const verifyOtpSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address.'),
+  token: z
+    .string()
+    .trim()
+    .min(6, 'Verification code must be at least 6 characters.')
+    .max(10, 'Verification code is invalid.')
+    .regex(/^[0-9]+$/, 'Verification code must contain digits only.'),
+  type: z.enum(['signup', 'email', 'recovery', 'invite']).default('signup'),
+});
+
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
+
+export const resendOtpSchema = z.object({
+  email: z.string().trim().email('Please enter a valid email address.'),
+  type: z.enum(['signup', 'email_change']).default('signup'),
+});
+
+export type ResendOtpInput = z.infer<typeof resendOtpSchema>;
+

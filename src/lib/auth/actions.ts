@@ -7,16 +7,22 @@ import {
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyOtpSchema,
+  resendOtpSchema,
   type LoginInput,
   type RegisterInput,
   type ForgotPasswordInput,
   type ResetPasswordInput,
+  type VerifyOtpInput,
+  type ResendOtpInput,
 } from '@/lib/validation/auth';
 
 export type AuthActionResult = {
   success?: boolean;
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  requireOtp?: boolean;
+  email?: string;
 };
 
 export async function loginAction(
@@ -37,6 +43,13 @@ export async function loginAction(
   });
 
   if (error) {
+    if (error.message.toLowerCase().includes('email not confirmed')) {
+      return {
+        error: 'Your email is not verified yet. Please enter the verification code sent to your inbox.',
+        requireOtp: true,
+        email: parsed.data.email,
+      };
+    }
     return { error: error.message };
   }
 
@@ -76,7 +89,65 @@ export async function registerAction(
 
   return {
     success: true,
+    requireOtp: true,
+    email: parsed.data.email,
   };
+}
+
+export async function verifyOtpAction(
+  values: VerifyOtpInput
+): Promise<AuthActionResult> {
+  const parsed = verifyOtpSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      error: 'Please enter a valid 6-digit verification code.',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token: parsed.data.token,
+    type: parsed.data.type,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (data.session) {
+    redirect('/dashboard');
+  }
+
+  return {
+    success: true,
+    email: parsed.data.email,
+  };
+}
+
+export async function resendOtpAction(
+  values: ResendOtpInput
+): Promise<AuthActionResult> {
+  const parsed = resendOtpSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      error: 'Invalid email address.',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    email: parsed.data.email,
+    type: parsed.data.type,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
 }
 
 export async function forgotPasswordAction(

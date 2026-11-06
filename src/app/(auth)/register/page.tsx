@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterInput } from '@/lib/validation/auth';
 import { registerAction } from '@/lib/auth/actions';
+import { OtpVerificationCard } from '@/components/auth/otp-verification-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,16 +18,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [serverError, setServerError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [step, setStep] = useState<'form' | 'otp'>('form');
+  const [registeredEmail, setRegisteredEmail] = useState<string>('');
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -44,34 +47,27 @@ export default function RegisterPage() {
       const result = await registerAction(data);
       if (result?.error) {
         setServerError(result.error);
-      } else if (result?.success) {
-        setIsSuccess(true);
+      } else if (result?.requireOtp || result?.success) {
+        setRegisteredEmail(data.email);
+        setStep('otp');
       }
     } catch {
-      // In Next.js, redirect() throws an internal error for navigation
+      // In Next.js, redirect() throws an internal redirect error
     } finally {
       setIsPending(false);
     }
   };
 
-  if (isSuccess) {
+  if (step === 'otp') {
     return (
-      <Card className="border-neutral-200 shadow-sm dark:border-neutral-800">
-        <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-            <CheckCircle2 className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-xl">Check your inbox</CardTitle>
-          <CardDescription>
-            We have sent a confirmation link to your email address. Follow the instructions to activate your Personal OS account.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="flex justify-center">
-          <Link href="/login">
-            <Button variant="outline">Return to Sign In</Button>
-          </Link>
-        </CardFooter>
-      </Card>
+      <OtpVerificationCard
+        email={registeredEmail || getValues('email')}
+        type="signup"
+        onBack={() => {
+          setStep('form');
+          setServerError(null);
+        }}
+      />
     );
   }
 

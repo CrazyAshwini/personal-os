@@ -4,6 +4,8 @@ import {
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyOtpSchema,
+  resendOtpSchema,
 } from '@/lib/validation/auth';
 
 describe('Auth Validation Schemas', () => {
@@ -79,6 +81,63 @@ describe('Auth Validation Schemas', () => {
         fullName: 'A',
         email: 'alex@example.com',
         password: 'SecurePassword1',
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('verifyOtpSchema', () => {
+    it('passes with valid email and 6-digit numeric token', () => {
+      const result = verifyOtpSchema.safeParse({
+        email: 'alex@example.com',
+        token: '123456',
+        type: 'signup',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('fails if token is shorter than 6 digits', () => {
+      const result = verifyOtpSchema.safeParse({
+        email: 'alex@example.com',
+        token: '1234',
+        type: 'signup',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.flatten().fieldErrors.token).toContain(
+          'Verification code must be at least 6 characters.'
+        );
+      }
+    });
+
+    it('fails if token contains letters', () => {
+      const result = verifyOtpSchema.safeParse({
+        email: 'alex@example.com',
+        token: '1234AB',
+        type: 'signup',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.flatten().fieldErrors.token).toContain(
+          'Verification code must contain digits only.'
+        );
+      }
+    });
+  });
+
+  describe('resendOtpSchema', () => {
+    it('passes with valid email and signup type', () => {
+      const result = resendOtpSchema.safeParse({
+        email: 'alex@example.com',
+        type: 'signup',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('fails with invalid email', () => {
+      const result = resendOtpSchema.safeParse({
+        email: 'invalid-email',
+        type: 'signup',
       });
       expect(result.success).toBe(false);
     });

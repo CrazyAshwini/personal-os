@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginInput } from '@/lib/validation/auth';
 import { loginAction } from '@/lib/auth/actions';
+import { OtpVerificationCard } from '@/components/auth/otp-verification-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 export default function LoginPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -40,7 +42,9 @@ export default function LoginPage() {
     setIsPending(true);
     try {
       const result = await loginAction(data);
-      if (result?.error) {
+      if (result?.requireOtp && result?.email) {
+        setUnconfirmedEmail(result.email);
+      } else if (result?.error) {
         setServerError(result.error);
       }
     } catch {
@@ -49,6 +53,16 @@ export default function LoginPage() {
       setIsPending(false);
     }
   };
+
+  if (unconfirmedEmail) {
+    return (
+      <OtpVerificationCard
+        email={unconfirmedEmail}
+        type="signup"
+        onBack={() => setUnconfirmedEmail(null)}
+      />
+    );
+  }
 
   return (
     <Card className="border-neutral-200 shadow-sm dark:border-neutral-800">
