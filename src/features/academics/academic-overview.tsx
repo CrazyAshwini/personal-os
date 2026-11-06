@@ -12,7 +12,8 @@ import {
   Check,
   X,
   MinusCircle,
-  MapPin,
+  LayoutGrid,
+  Calendar,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,7 +61,6 @@ interface AcademicOverviewProps {
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DISPLAY_DAYS = [1, 2, 3, 4, 5, 6, 0]; // Mon through Sun
 
 const DAY_MOTTO: Record<number, string> = {
   1: 'New week, same goals',
@@ -81,69 +81,250 @@ function formatTimeSlot(timeStr: string) {
   return `${displayHours}:${minutes} ${ampm}`;
 }
 
-function TimetableSlotCard({
-  slot,
+function DayTimetableTable({
+  dayIdx,
+  dayName,
+  motto,
+  slots,
+  isToday,
   onDelete,
   disabled,
 }: {
-  slot: TimetableRow;
+  dayIdx: number;
+  dayName: string;
+  motto?: string;
+  slots: TimetableRow[];
+  isToday: boolean;
   onDelete: (id: string) => void;
   disabled?: boolean;
 }) {
-  const sub = slot.subject;
-  return (
-    <div className="p-3.5 rounded-xl border border-border bg-card shadow-xs hover:border-primary/40 transition-all flex items-start justify-between gap-3 group">
-      <div className="flex items-start gap-3 min-w-0">
-        <span
-          className="h-3.5 w-3.5 rounded-full mt-1 shrink-0 ring-2 ring-background"
-          style={{ backgroundColor: sub?.color || '#526653' }}
-        />
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-xs font-semibold text-foreground truncate">
+  const morningSlots = slots.filter((s) => s.start_time < '13:00:00');
+  const afternoonSlots = slots.filter((s) => s.start_time >= '13:00:00');
+
+  const THEME_STYLES: Record<
+    number,
+    { header: string; th: string; border: string; accentText: string }
+  > = {
+    1: {
+      // Monday (Rose)
+      header: 'bg-rose-50/80 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 border-rose-200 dark:border-rose-900/40',
+      th: 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-800/80 dark:text-rose-300/80',
+      border: 'border-rose-200/80 dark:border-rose-900/40',
+      accentText: 'text-rose-700 dark:text-rose-300',
+    },
+    2: {
+      // Tuesday (Amber)
+      header: 'bg-amber-50/80 dark:bg-amber-950/30 text-amber-950 dark:text-amber-100 border-amber-200 dark:border-amber-900/40',
+      th: 'bg-amber-50/50 dark:bg-amber-950/20 text-amber-800/80 dark:text-amber-300/80',
+      border: 'border-amber-200/80 dark:border-amber-900/40',
+      accentText: 'text-amber-700 dark:text-amber-300',
+    },
+    3: {
+      // Wednesday (Emerald)
+      header: 'bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 border-emerald-200 dark:border-emerald-900/40',
+      th: 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-800/80 dark:text-emerald-300/80',
+      border: 'border-emerald-200/80 dark:border-emerald-900/40',
+      accentText: 'text-emerald-700 dark:text-emerald-300',
+    },
+    4: {
+      // Thursday (Sky)
+      header: 'bg-sky-50/80 dark:bg-sky-950/30 text-sky-950 dark:text-sky-100 border-sky-200 dark:border-sky-900/40',
+      th: 'bg-sky-50/50 dark:bg-sky-950/20 text-sky-800/80 dark:text-sky-300/80',
+      border: 'border-sky-200/80 dark:border-sky-900/40',
+      accentText: 'text-sky-700 dark:text-sky-300',
+    },
+    5: {
+      // Friday (Purple)
+      header: 'bg-purple-50/80 dark:bg-purple-950/30 text-purple-950 dark:text-purple-100 border-purple-200 dark:border-purple-900/40',
+      th: 'bg-purple-50/50 dark:bg-purple-950/20 text-purple-800/80 dark:text-purple-300/80',
+      border: 'border-purple-200/80 dark:border-purple-900/40',
+      accentText: 'text-purple-700 dark:text-purple-300',
+    },
+  };
+
+  const theme = THEME_STYLES[dayIdx] || {
+    header: 'bg-muted/80 text-foreground border-border',
+    th: 'bg-muted/40 text-muted-foreground',
+    border: 'border-border',
+    accentText: 'text-primary',
+  };
+
+  const renderSlotRow = (slot: TimetableRow) => {
+    const sub = slot.subject;
+    return (
+      <tr
+        key={slot.id}
+        className="group hover:bg-muted/30 transition-colors border-b border-border/50 last:border-b-0"
+      >
+        {/* Time */}
+        <td className="py-2.5 px-3 font-mono text-[11px] font-semibold text-foreground whitespace-nowrap">
+          {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
+        </td>
+
+        {/* Subject */}
+        <td className="py-2.5 px-3 min-w-[140px]">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              className="h-2 w-2 rounded-full shrink-0"
+              style={{ backgroundColor: sub?.color || '#526653' }}
+            />
+            <span className="font-semibold text-xs text-foreground">
               {sub?.name || 'Class Session'}
-            </h3>
+            </span>
             {sub?.code && (
-              <Badge variant="outline" className="text-[10px] font-mono py-0 border-border bg-muted/30">
+              <span className="font-mono text-[9px] px-1 py-0.2 rounded border border-border bg-muted/40 text-muted-foreground shrink-0">
                 {sub.code}
-              </Badge>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-1.5">
-            <div className="flex items-center gap-1 font-mono text-foreground font-medium">
-              <Clock className="h-3 w-3 text-primary" />
-              <span>
-                {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
-              </span>
-            </div>
-
-            {slot.classroom && (
-              <div className="flex items-center gap-1 font-mono">
-                <MapPin className="h-3 w-3 text-primary" />
-                <span>Room {slot.classroom}</span>
-              </div>
-            )}
-
-            {sub?.instructor && (
-              <span className="text-[10px] text-muted-foreground italic truncate">
-                Prof. {sub.instructor}
               </span>
             )}
           </div>
+        </td>
+
+        {/* Room */}
+        <td className="py-2.5 px-2.5 text-center font-mono text-xs whitespace-nowrap">
+          {slot.classroom ? (
+            <span className="px-1.5 py-0.5 rounded bg-muted/60 font-semibold text-foreground text-[11px]">
+              {slot.classroom}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </td>
+
+        {/* Faculty */}
+        <td className="py-2.5 px-3 text-right font-medium text-xs text-muted-foreground whitespace-nowrap">
+          {sub?.instructor || '—'}
+        </td>
+
+        {/* Delete Action */}
+        <td className="py-2.5 pr-2.5 pl-1 text-center w-7">
+          <button
+            type="button"
+            onClick={() => onDelete(slot.id)}
+            disabled={disabled}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-rose-600 rounded cursor-pointer"
+            title="Delete class"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
+        </td>
+      </tr>
+    );
+  };
+
+  return (
+    <div
+      className={`rounded-2xl border ${theme.border} bg-card overflow-hidden shadow-xs transition-all ${
+        isToday ? 'ring-2 ring-primary/40 shadow-sm' : ''
+      }`}
+    >
+      {/* Table Day Header */}
+      <div className={`py-2.5 px-4 border-b ${theme.header} flex items-center justify-between`}>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-sm tracking-tight">{dayName}</h3>
+          {motto && (
+            <span className="text-xs opacity-75 italic hidden sm:inline">
+              • “{motto}”
+            </span>
+          )}
+          {isToday && (
+            <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.2 rounded-full shadow-xs">
+              Today
+            </Badge>
+          )}
         </div>
+        <span className="font-mono text-xs opacity-80">
+          {slots.length} {slots.length === 1 ? 'class' : 'classes'}
+        </span>
       </div>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onDelete(slot.id)}
-        disabled={disabled}
-        className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
-        aria-label="Delete timetable slot"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
+      {/* Responsive Table */}
+      <div className="overflow-x-auto scrollbar-none">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr className={`border-b ${theme.th} text-[10px] uppercase font-mono font-semibold tracking-wider`}>
+              <th className="py-2 px-3 w-[130px]">Time</th>
+              <th className="py-2 px-3">Subject</th>
+              <th className="py-2 px-2.5 text-center w-[80px]">Class No. (Room)</th>
+              <th className="py-2 px-3 text-right w-[90px]">Faculty</th>
+              <th className="w-7"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {morningSlots.map(renderSlotRow)}
+
+            {/* Lunch Break Row */}
+            <tr className="bg-muted/20 border-y border-dashed border-border/70 text-muted-foreground">
+              <td className="py-1.5 px-3 font-mono text-[10px] font-medium whitespace-nowrap text-muted-foreground/80">
+                1:00 – 2:30 PM
+              </td>
+              <td colSpan={4} className="py-1.5 px-3 text-center text-[10px] font-semibold tracking-wider uppercase opacity-75">
+                ☕ L U N C H &nbsp; B R E A K
+              </td>
+            </tr>
+
+            {afternoonSlots.map(renderSlotRow)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SubjectsAtAGlance({ subjects }: { subjects: SubjectRow[] }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs flex flex-col justify-between">
+      {/* Header */}
+      <div className="py-2.5 px-4 border-b border-border bg-muted/60 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-4 w-4 text-primary" />
+          <h3 className="font-bold text-sm text-foreground tracking-tight">
+            SUBJECTS AT A GLANCE
+          </h3>
+        </div>
+        <span className="font-mono text-xs text-muted-foreground">
+          {subjects.length} Courses
+        </span>
+      </div>
+
+      {/* Subject List Table */}
+      <div className="overflow-x-auto p-0">
+        <table className="w-full text-left text-xs">
+          <thead>
+            <tr className="border-b border-border bg-muted/30 text-[10px] uppercase font-mono font-semibold text-muted-foreground">
+              <th className="py-2 px-3 w-[85px]">Code</th>
+              <th className="py-2 px-3">Subject Name</th>
+              <th className="py-2 px-3 text-right w-[75px]">Faculty</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/50">
+            {subjects.map((sub) => (
+              <tr key={sub.id} className="hover:bg-muted/20 transition-colors">
+                <td className="py-2 px-3 font-mono text-[10px] font-semibold text-foreground whitespace-nowrap">
+                  {sub.code || '—'}
+                </td>
+                <td className="py-2 px-3">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: sub.color || '#526653' }}
+                    />
+                    <span className="font-medium text-xs text-foreground truncate">
+                      {sub.name}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-2 px-3 text-right text-xs text-muted-foreground font-mono whitespace-nowrap">
+                  {sub.instructor || '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-3 border-t border-border bg-muted/20 text-center text-[11px] text-muted-foreground italic">
+        “Small steps every day lead to big results.”
+      </div>
     </div>
   );
 }
@@ -154,7 +335,8 @@ export function AcademicOverview({
   sessions,
   syllabusTopics,
 }: AcademicOverviewProps) {
-  const [activeDay, setActiveDay] = useState<'all' | number>('all');
+  const [viewMode, setViewMode] = useState<'sheet' | 'day'>('sheet');
+  const [activeDay, setActiveDay] = useState<number>(() => new Date().getDay());
   const [isPending, startTransition] = useTransition();
 
   // 1. Calculate overall attendance
@@ -212,14 +394,7 @@ export function AcademicOverview({
   };
 
   const currentDayIndex = new Date().getDay();
-  const selectedDayClasses = typeof activeDay === 'number'
-    ? timetable.filter((t) => t.day_of_week === activeDay)
-    : [];
-
-  // Filter weekdays that have timetable slots or standard Mon-Fri
-  const activeWeekdays = DISPLAY_DAYS.filter(
-    (d) => (d >= 1 && d <= 5) || timetable.some((t) => t.day_of_week === d)
-  );
+  const selectedDayClasses = timetable.filter((t) => t.day_of_week === activeDay);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -266,71 +441,66 @@ export function AcademicOverview({
         {/* ======================================================== */}
         {/* PILLAR 1: CLASS SCHEDULE & TIMETABLE                     */}
         {/* ======================================================== */}
-        <TabsContent value="schedule" className="space-y-6">
-          {/* Day of Week Selector Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {/* All Week Pill */}
-            <button
-              type="button"
-              onClick={() => setActiveDay('all')}
-              className={`flex-1 sm:flex-initial min-w-[76px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
-                activeDay === 'all'
-                  ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                  : 'bg-card border-border text-foreground hover:bg-muted/50'
-              }`}
-            >
-              <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
-                ALL
-              </span>
-              <span className="text-xs font-bold block mt-1 leading-none">
-                Whole Week
-              </span>
-              <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-mono">
-                {timetable.length} classes
-              </span>
-            </button>
+        <TabsContent value="schedule" className="space-y-5">
+          {/* Header & View Mode Switcher */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card p-3 rounded-2xl border border-border shadow-xs">
+            <div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-bold text-foreground tracking-tight">
+                  {viewMode === 'sheet' ? 'M.Tech (SO) I Semester Time Table' : `${DAY_NAMES[activeDay]} Schedule`}
+                </h2>
+                {viewMode === 'sheet' && (
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/10">
+                    {timetable.length} Lectures
+                  </Badge>
+                )}
+                {viewMode === 'day' && activeDay === currentDayIndex && (
+                  <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary bg-primary/10">
+                    Today
+                  </Badge>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {viewMode === 'sheet'
+                  ? 'Weekly schedule tables with Time, Subject, Class No. (Room), and Faculty.'
+                  : `Showing ${selectedDayClasses.length} ${selectedDayClasses.length === 1 ? 'class' : 'classes'} scheduled for ${DAY_NAMES[activeDay]}.`}
+              </p>
+            </div>
 
-            {/* Individual Day Buttons: Mon -> Sun */}
-            {DISPLAY_DAYS.map((dayIdx) => {
-              const isToday = dayIdx === currentDayIndex;
-              const isSelected = activeDay === dayIdx;
-              const daySlotCount = timetable.filter((t) => t.day_of_week === dayIdx).length;
-
-              return (
-                <button
-                  key={dayIdx}
-                  type="button"
-                  onClick={() => setActiveDay(dayIdx)}
-                  className={`flex-1 sm:flex-initial min-w-[56px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                      : 'bg-card border-border text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
-                    {SHORT_DAYS[dayIdx]}
-                  </span>
-                  <span className="text-xs font-bold block mt-1 leading-none">
-                    {daySlotCount}
-                  </span>
-                  {isToday ? (
-                    <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-medium">
-                      Today
-                    </span>
-                  ) : (
-                    <span className="text-[9px] text-muted-foreground block mt-0.5 opacity-60">
-                      day
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+            {/* Toggle Switch between Weekly Sheet and Day View */}
+            <div className="inline-flex items-center p-1 rounded-xl bg-muted/60 border border-border/80 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setViewMode('sheet')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1.5 cursor-pointer ${
+                  viewMode === 'sheet'
+                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span>Weekly Sheet</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('day')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1.5 cursor-pointer ${
+                  viewMode === 'day'
+                    ? 'bg-background text-foreground shadow-xs font-semibold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                <span>Day View</span>
+              </button>
+            </div>
           </div>
 
           {/* ======================================================== */}
-          {/* VIEW A: WHOLE WEEK SCHEDULE (All Days)                    */}
+          {/* VIEW A: VISUAL WEEKLY TIMETABLE SHEET (Grid of Tables)   */}
           {/* ======================================================== */}
-          {activeDay === 'all' ? (
+          {viewMode === 'sheet' ? (
             timetable.length === 0 ? (
               <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
                 <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
@@ -345,119 +515,106 @@ export function AcademicOverview({
                 )}
               </Card>
             ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary" />
-                      Whole Week Schedule
-                    </h2>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Monday through Friday • {timetable.length} classes scheduled
-                    </p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* 1. MONDAY */}
+                <DayTimetableTable
+                  dayIdx={1}
+                  dayName="MONDAY"
+                  motto={DAY_MOTTO[1]}
+                  slots={timetable.filter((t) => t.day_of_week === 1)}
+                  isToday={currentDayIndex === 1}
+                  onDelete={handleDeleteTimetableEntry}
+                  disabled={isPending}
+                />
 
-                <div className="space-y-6">
-                  {activeWeekdays.map((dayIdx) => {
-                    const daySlots = timetable.filter((t) => t.day_of_week === dayIdx);
-                    if (daySlots.length === 0) return null;
-                    const isToday = dayIdx === currentDayIndex;
+                {/* 2. TUESDAY */}
+                <DayTimetableTable
+                  dayIdx={2}
+                  dayName="TUESDAY"
+                  motto={DAY_MOTTO[2]}
+                  slots={timetable.filter((t) => t.day_of_week === 2)}
+                  isToday={currentDayIndex === 2}
+                  onDelete={handleDeleteTimetableEntry}
+                  disabled={isPending}
+                />
 
-                    return (
-                      <div
-                        key={dayIdx}
-                        className={`p-4 sm:p-5 rounded-2xl border transition-all ${
-                          isToday
-                            ? 'border-primary/50 bg-primary/[0.03] shadow-xs'
-                            : 'border-border/80 bg-card/60'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-border/60">
-                          <div className="flex items-center gap-2.5">
-                            <h3 className="text-sm font-bold text-foreground">
-                              {DAY_NAMES[dayIdx]}
-                            </h3>
-                            {DAY_MOTTO[dayIdx] && (
-                              <span className="hidden sm:inline text-xs text-muted-foreground italic">
-                                • “{DAY_MOTTO[dayIdx]}”
-                              </span>
-                            )}
-                            {isToday && (
-                              <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
-                                Today
-                              </Badge>
-                            )}
-                          </div>
+                {/* 3. WEDNESDAY */}
+                <DayTimetableTable
+                  dayIdx={3}
+                  dayName="WEDNESDAY"
+                  motto={DAY_MOTTO[3]}
+                  slots={timetable.filter((t) => t.day_of_week === 3)}
+                  isToday={currentDayIndex === 3}
+                  onDelete={handleDeleteTimetableEntry}
+                  disabled={isPending}
+                />
 
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground font-mono">
-                              {daySlots.length} {daySlots.length === 1 ? 'class' : 'classes'}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setActiveDay(dayIdx)}
-                              className="text-[11px] text-primary hover:underline font-medium cursor-pointer"
-                            >
-                              Isolate
-                            </button>
-                          </div>
-                        </div>
+                {/* 4. THURSDAY */}
+                <DayTimetableTable
+                  dayIdx={4}
+                  dayName="THURSDAY"
+                  motto={DAY_MOTTO[4]}
+                  slots={timetable.filter((t) => t.day_of_week === 4)}
+                  isToday={currentDayIndex === 4}
+                  onDelete={handleDeleteTimetableEntry}
+                  disabled={isPending}
+                />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {daySlots.map((slot) => (
-                            <TimetableSlotCard
-                              key={slot.id}
-                              slot={slot}
-                              onDelete={handleDeleteTimetableEntry}
-                              disabled={isPending}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                {/* 5. FRIDAY */}
+                <DayTimetableTable
+                  dayIdx={5}
+                  dayName="FRIDAY"
+                  motto={DAY_MOTTO[5]}
+                  slots={timetable.filter((t) => t.day_of_week === 5)}
+                  isToday={currentDayIndex === 5}
+                  onDelete={handleDeleteTimetableEntry}
+                  disabled={isPending}
+                />
+
+                {/* 6. SUBJECTS AT A GLANCE */}
+                <SubjectsAtAGlance subjects={subjects} />
               </div>
             )
           ) : (
             /* ======================================================== */
-            /* VIEW B: SINGLE DAY SCHEDULE FOCUS                        */
+            /* VIEW B: DAY-BY-DAY SCHEDULE VIEW                         */
             /* ======================================================== */
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-primary" />
-                    {DAY_NAMES[activeDay]} Schedule
-                  </h2>
-                  {activeDay === currentDayIndex && (
-                    <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary bg-primary/10">
-                      Today
-                    </Badge>
-                  )}
-                  {DAY_MOTTO[activeDay] && (
-                    <span className="hidden sm:inline text-xs text-muted-foreground italic">
-                      • “{DAY_MOTTO[activeDay]}”
-                    </span>
-                  )}
-                </div>
+              {/* Day Pills Bar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {SHORT_DAYS.map((day, idx) => {
+                  const isToday = idx === currentDayIndex;
+                  const isSelected = idx === activeDay;
+                  const daySlotCount = timetable.filter((t) => t.day_of_week === idx).length;
 
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {selectedDayClasses.length} {selectedDayClasses.length === 1 ? 'class' : 'classes'}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    onClick={() => setActiveDay('all')}
-                    className="h-6 px-2 text-[11px] rounded-lg cursor-pointer"
-                  >
-                    View All Week
-                  </Button>
-                </div>
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setActiveDay(idx)}
+                      className={`flex-1 sm:flex-initial min-w-[56px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
+                          : 'bg-card border-border text-foreground hover:bg-muted/50'
+                      }`}
+                    >
+                      <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
+                        {day}
+                      </span>
+                      <span className="text-xs font-bold block mt-1 leading-none">
+                        {daySlotCount}
+                      </span>
+                      {isToday && (
+                        <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-medium">
+                          Today
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
+              {/* Day Table or Empty State */}
               {selectedDayClasses.length === 0 ? (
                 <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
                   <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
@@ -472,16 +629,15 @@ export function AcademicOverview({
                   )}
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {selectedDayClasses.map((slot) => (
-                    <TimetableSlotCard
-                      key={slot.id}
-                      slot={slot}
-                      onDelete={handleDeleteTimetableEntry}
-                      disabled={isPending}
-                    />
-                  ))}
-                </div>
+                <DayTimetableTable
+                  dayIdx={activeDay}
+                  dayName={DAY_NAMES[activeDay].toUpperCase()}
+                  motto={DAY_MOTTO[activeDay]}
+                  slots={selectedDayClasses}
+                  isToday={activeDay === currentDayIndex}
+                  onDelete={handleDeleteTimetableEntry}
+                  disabled={isPending}
+                />
               )}
             </div>
           )}
