@@ -152,7 +152,7 @@ export function AcademicOverview({
   return (
     <div className="space-y-6">
       {/* Action Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-primary" />
@@ -177,20 +177,20 @@ export function AcademicOverview({
 
       {/* Main Tabbed Interface */}
       <Tabs defaultValue="attendance" className="space-y-4">
-        <TabsList className="bg-muted/60 p-1">
-          <TabsTrigger value="attendance" className="text-xs gap-1.5">
+        <TabsList className="bg-muted p-1 rounded-lg border border-border">
+          <TabsTrigger value="attendance" className="text-xs gap-1.5 rounded-md font-medium">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Attendance ({overallStats.percentage}%)
           </TabsTrigger>
-          <TabsTrigger value="timetable" className="text-xs gap-1.5">
+          <TabsTrigger value="timetable" className="text-xs gap-1.5 rounded-md font-medium">
             <CalendarDays className="h-3.5 w-3.5" />
             Weekly Timetable ({timetable.length})
           </TabsTrigger>
-          <TabsTrigger value="coursework" className="text-xs gap-1.5">
+          <TabsTrigger value="coursework" className="text-xs gap-1.5 rounded-md font-medium">
             <FileCheck2 className="h-3.5 w-3.5" />
-            Assignments & Exams ({assignments.length + examinations.length})
+            Coursework & Exams ({assignments.length + examinations.length})
           </TabsTrigger>
-          <TabsTrigger value="syllabus" className="text-xs gap-1.5">
+          <TabsTrigger value="syllabus" className="text-xs gap-1.5 rounded-md font-medium">
             <BookOpen className="h-3.5 w-3.5" />
             Syllabus ({syllabusTopics.length})
           </TabsTrigger>
@@ -200,26 +200,26 @@ export function AcademicOverview({
         <TabsContent value="attendance" className="space-y-6">
           {/* Top Overall Stats Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card className="sm:col-span-1 border-primary/20 bg-primary/5">
+            <Card className="sm:col-span-1 border-border bg-card rounded-xl shadow-xs">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Cumulative Attendance
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
                   <span
-                    className={`text-3xl font-extrabold ${
+                    className={`text-3xl font-extrabold tracking-tight ${
                       overallStats.percentage >= 75
-                        ? 'text-emerald-600 dark:text-emerald-400'
+                        ? 'text-emerald-700 dark:text-emerald-400'
                         : overallStats.conductedSessions === 0
                         ? 'text-foreground'
-                        : 'text-rose-600 dark:text-rose-400'
+                        : 'text-rose-700 dark:text-rose-400'
                     }`}
                   >
                     {overallStats.percentage}%
                   </span>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground font-mono">
                     Target: 75%
                   </span>
                 </div>
@@ -229,36 +229,36 @@ export function AcademicOverview({
               </CardContent>
             </Card>
 
-            <Card className="sm:col-span-3">
+            <Card className="sm:col-span-3 border-border bg-card rounded-xl shadow-xs">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase">
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Session Breakdown
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 block">
+                <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+                  <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
                     {overallStats.presentSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Attended</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">Attended</span>
                 </div>
-                <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20">
-                  <span className="text-lg font-bold text-rose-600 dark:text-rose-400 block">
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                  <span className="text-lg font-bold text-rose-700 dark:text-rose-300 block font-mono">
                     {overallStats.absentSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Missed</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">Missed</span>
                 </div>
-                <div className="p-2 rounded-lg bg-neutral-500/10 border border-neutral-500/20">
-                  <span className="text-lg font-bold text-neutral-600 dark:text-neutral-400 block">
+                <div className="p-2.5 rounded-lg bg-muted/60 border border-border">
+                  <span className="text-lg font-bold text-foreground block font-mono">
                     {overallStats.cancelledSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Cancelled / No Class</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">Cancelled / No Class</span>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                  <span className="text-lg font-bold text-primary block">
+                <div className="p-2.5 rounded-lg bg-muted/80 border border-border">
+                  <span className="text-lg font-bold text-foreground block font-mono">
                     {overallStats.totalSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Total Logged</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">Total Logged</span>
                 </div>
               </CardContent>
             </Card>
@@ -266,9 +266,9 @@ export function AcademicOverview({
 
           {/* Subject Cards */}
           <div>
-            <h3 className="text-sm font-semibold mb-3">Course Attendance Cards</h3>
+            <h3 className="text-sm font-semibold mb-3 text-foreground">Course Attendance Cards</h3>
             {subjects.length === 0 ? (
-              <Card className="p-6 text-center text-xs text-muted-foreground">
+              <Card className="p-8 text-center text-xs text-muted-foreground border-dashed border-border rounded-xl">
                 <p>No subjects added yet. Click &ldquo;Add Subject&rdquo; above to begin.</p>
               </Card>
             ) : (
@@ -278,7 +278,7 @@ export function AcademicOverview({
                   return (
                     <Card
                       key={subject.id}
-                      className="hover:border-primary/40 transition-colors flex flex-col justify-between"
+                      className="border-border bg-card hover:border-primary/50 transition-colors flex flex-col justify-between rounded-xl shadow-xs"
                     >
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between gap-2">
@@ -286,9 +286,9 @@ export function AcademicOverview({
                             <div className="flex items-center gap-1.5">
                               <span
                                 className="h-2.5 w-2.5 rounded-full shrink-0"
-                                style={{ backgroundColor: subject.color || '#3b82f6' }}
+                                style={{ backgroundColor: subject.color || '#526653' }}
                               />
-                              <CardTitle className="text-sm font-semibold">
+                              <CardTitle className="text-sm font-semibold text-foreground">
                                 {subject.name}
                               </CardTitle>
                             </div>
@@ -299,8 +299,12 @@ export function AcademicOverview({
                             )}
                           </div>
                           <Badge
-                            variant={isSafe ? 'secondary' : 'destructive'}
-                            className="text-xs font-mono font-bold"
+                            variant="outline"
+                            className={`text-xs font-mono font-bold ${
+                              isSafe
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/40'
+                                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900/40'
+                            }`}
                           >
                             {stats.percentage}%
                           </Badge>
@@ -311,7 +315,7 @@ export function AcademicOverview({
                         <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                           <div
                             className={`h-full transition-all duration-300 ${
-                              isSafe ? 'bg-emerald-500' : 'bg-rose-500'
+                              isSafe ? 'bg-primary' : 'bg-rose-600 dark:bg-rose-500'
                             }`}
                             style={{ width: `${Math.min(100, stats.percentage)}%` }}
                           />
@@ -324,8 +328,8 @@ export function AcademicOverview({
                           <span
                             className={`font-medium ${
                               isSafe
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-rose-600 dark:text-rose-400'
+                                ? 'text-emerald-700 dark:text-emerald-400'
+                                : 'text-rose-700 dark:text-rose-400'
                             }`}
                           >
                             {marginText}
@@ -340,10 +344,10 @@ export function AcademicOverview({
           </div>
 
           {/* Session History Log Table */}
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-sm font-semibold">Class Session Ground Truth</CardTitle>
+                <CardTitle className="text-sm font-semibold text-foreground">Class Session Ground Truth</CardTitle>
                 <CardDescription className="text-xs">
                   Individual class sessions recorded as present, absent, cancelled, or no class.
                 </CardDescription>
@@ -354,7 +358,7 @@ export function AcademicOverview({
                   <select
                     value={selectedSubjectId}
                     onChange={(e) => setSelectedSubjectId(e.target.value)}
-                    className="h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                    className="h-8 px-2.5 rounded-lg border border-border bg-background text-xs outline-none cursor-pointer"
                   >
                     <option value="all">All Subjects</option>
                     {subjects.map((sub) => (
@@ -368,8 +372,8 @@ export function AcademicOverview({
             </CardHeader>
             <CardContent className="pt-0">
               {filteredSessions.length === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  <Calendar className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+                <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
+                  <Calendar className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
                   <p>No class sessions logged yet.</p>
                 </div>
               ) : (
@@ -377,20 +381,20 @@ export function AcademicOverview({
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-border text-left text-muted-foreground font-medium">
-                        <th className="pb-2 font-medium">Date</th>
-                        <th className="pb-2 font-medium">Subject</th>
-                        <th className="pb-2 font-medium">Topic / Notes</th>
-                        <th className="pb-2 font-medium">Status</th>
-                        <th className="pb-2 font-medium text-right">Actions</th>
+                        <th className="pb-2.5 font-medium">Date</th>
+                        <th className="pb-2.5 font-medium">Subject</th>
+                        <th className="pb-2.5 font-medium">Topic / Notes</th>
+                        <th className="pb-2.5 font-medium">Status</th>
+                        <th className="pb-2.5 font-medium text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border/50">
+                    <tbody className="divide-y divide-border">
                       {filteredSessions.map((session) => (
-                        <tr key={session.id} className="hover:bg-muted/20">
-                          <td className="py-2.5 font-medium">
+                        <tr key={session.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="py-2.5 font-medium text-foreground">
                             {format(new Date(session.session_date), 'MMM d, yyyy')}
                           </td>
-                          <td className="py-2.5 font-medium">
+                          <td className="py-2.5 font-medium text-foreground">
                             {session.subject?.name || 'General'}
                           </td>
                           <td className="py-2.5 text-muted-foreground max-w-xs truncate">
@@ -400,10 +404,10 @@ export function AcademicOverview({
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium uppercase font-mono ${
                                 session.status === 'present'
-                                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40'
                                   : session.status === 'absent'
-                                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                                  : 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-400'
+                                  ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40'
+                                  : 'bg-muted text-muted-foreground border border-border'
                               }`}
                             >
                               {session.status}
@@ -415,7 +419,8 @@ export function AcademicOverview({
                               onClick={() => handleStatusChange(session.id, 'present')}
                               title="Mark Present"
                               disabled={isPending}
-                              className="p-1 rounded hover:bg-emerald-500/10 text-emerald-600 cursor-pointer disabled:opacity-50"
+                              className="p-1 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 cursor-pointer disabled:opacity-50"
+                              aria-label="Mark Present"
                             >
                               <Check className="h-3.5 w-3.5" />
                             </button>
@@ -424,7 +429,8 @@ export function AcademicOverview({
                               onClick={() => handleStatusChange(session.id, 'absent')}
                               title="Mark Absent"
                               disabled={isPending}
-                              className="p-1 rounded hover:bg-rose-500/10 text-rose-600 cursor-pointer disabled:opacity-50"
+                              className="p-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 cursor-pointer disabled:opacity-50"
+                              aria-label="Mark Absent"
                             >
                               <X className="h-3.5 w-3.5" />
                             </button>
@@ -433,7 +439,8 @@ export function AcademicOverview({
                               onClick={() => handleStatusChange(session.id, 'cancelled')}
                               title="Mark Cancelled"
                               disabled={isPending}
-                              className="p-1 rounded hover:bg-neutral-500/10 text-neutral-600 cursor-pointer disabled:opacity-50"
+                              className="p-1 rounded-md hover:bg-muted text-muted-foreground cursor-pointer disabled:opacity-50"
+                              aria-label="Mark Cancelled"
                             >
                               <MinusCircle className="h-3.5 w-3.5" />
                             </button>
@@ -442,7 +449,8 @@ export function AcademicOverview({
                               onClick={() => handleDeleteSession(session.id)}
                               title="Delete record"
                               disabled={isPending}
-                              className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive cursor-pointer disabled:opacity-50"
+                              className="p-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 text-muted-foreground hover:text-rose-600 cursor-pointer disabled:opacity-50"
+                              aria-label="Delete record"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -467,17 +475,17 @@ export function AcademicOverview({
               return (
                 <Card
                   key={dayIdx}
-                  className={`flex flex-col min-h-64 ${
-                    isToday ? 'border-primary shadow-sm bg-primary/5' : 'bg-card'
+                  className={`flex flex-col min-h-64 rounded-xl shadow-xs transition-colors ${
+                    isToday ? 'border-primary shadow-xs bg-muted/30' : 'border-border bg-card'
                   }`}
                 >
-                  <CardHeader className="p-3 border-b border-border/50">
+                  <CardHeader className="p-3 border-b border-border">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-xs font-bold uppercase tracking-wider">
+                      <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
                         {DAY_NAMES[dayIdx]}
                       </CardTitle>
                       {isToday && (
-                        <Badge variant="default" className="text-[9px] px-1 py-0 h-4">
+                        <Badge variant="default" className="text-[9px] px-1.5 py-0 h-4 rounded-md">
                           Today
                         </Badge>
                       )}
@@ -485,17 +493,17 @@ export function AcademicOverview({
                   </CardHeader>
                   <CardContent className="p-2 space-y-2 flex-1">
                     {dayEntries.length === 0 ? (
-                      <p className="text-[10px] text-muted-foreground/60 text-center py-4">
+                      <p className="text-[10px] text-muted-foreground/60 text-center py-6">
                         No classes
                       </p>
                     ) : (
                       dayEntries.map((entry) => (
                         <div
                           key={entry.id}
-                          className="p-2 rounded-lg border border-border/60 bg-background text-xs space-y-1 relative group"
+                          className="p-2.5 rounded-lg border border-border bg-card text-xs space-y-1 relative group shadow-xs"
                         >
                           <div className="flex items-center justify-between gap-1">
-                            <span className="font-semibold text-[11px] truncate">
+                            <span className="font-semibold text-[11px] truncate text-foreground">
                               {entry.subject?.name}
                             </span>
                             <button
@@ -503,13 +511,14 @@ export function AcademicOverview({
                               onClick={() => handleDeleteTimetableEntry(entry.id)}
                               disabled={isPending}
                               title="Delete entry"
-                              className="text-muted-foreground/40 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              aria-label="Delete timetable slot"
+                              className="text-muted-foreground/40 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer p-0.5 rounded"
                             >
                               <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 font-mono">
+                            <Clock className="h-3 w-3 text-primary" />
                             <span>
                               {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
                             </span>
@@ -533,23 +542,23 @@ export function AcademicOverview({
         <TabsContent value="coursework" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Assignments Column */}
-            <Card>
+            <Card className="border-border bg-card rounded-xl shadow-xs">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
                   <FileCheck2 className="h-4 w-4 text-primary" />
                   Coursework & Assignments ({assignments.length})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5 pt-0">
                 {assignments.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-6">
+                  <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
                     No assignments recorded.
-                  </p>
+                  </div>
                 ) : (
                   assignments.map((asg) => (
                     <div
                       key={asg.id}
-                      className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/20 transition-colors text-xs flex items-center justify-between gap-3"
+                      className="p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors text-xs flex items-center justify-between gap-3 shadow-xs"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -557,7 +566,7 @@ export function AcademicOverview({
                             {asg.title}
                           </h4>
                           {asg.subject && (
-                            <Badge variant="outline" className="text-[10px] py-0">
+                            <Badge variant="outline" className="text-[10px] py-0 border-border">
                               {asg.subject.name}
                             </Badge>
                           )}
@@ -577,7 +586,7 @@ export function AcademicOverview({
                           )
                         }
                         disabled={isPending}
-                        className="h-7 px-2 text-[10px] font-medium rounded border border-border bg-background outline-none capitalize"
+                        className="h-7 px-2 text-[10px] font-medium rounded-lg border border-border bg-background outline-none capitalize cursor-pointer"
                       >
                         <option value="pending">Pending</option>
                         <option value="submitted">Submitted</option>
@@ -591,29 +600,29 @@ export function AcademicOverview({
             </Card>
 
             {/* Examinations Column */}
-            <Card>
+            <Card className="border-border bg-card rounded-xl shadow-xs">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   Examinations Schedule ({examinations.length})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5 pt-0">
                 {examinations.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-6">
+                  <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
                     No examinations scheduled.
-                  </p>
+                  </div>
                 ) : (
                   examinations.map((exam) => (
                     <div
                       key={exam.id}
-                      className="p-3 rounded-lg border border-border/60 bg-card text-xs flex items-center justify-between gap-3"
+                      className="p-3 rounded-lg border border-border bg-card text-xs flex items-center justify-between gap-3 shadow-xs"
                     >
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold text-foreground">{exam.title}</h4>
                           {exam.subject && (
-                            <Badge variant="outline" className="text-[10px] py-0">
+                            <Badge variant="outline" className="text-[10px] py-0 border-border">
                               {exam.subject.name}
                             </Badge>
                           )}
@@ -625,7 +634,7 @@ export function AcademicOverview({
                       </div>
 
                       {exam.weightage_percentage && (
-                        <Badge variant="secondary" className="text-[10px]">
+                        <Badge variant="secondary" className="text-[10px] font-mono">
                           {exam.weightage_percentage}% weight
                         </Badge>
                       )}
@@ -639,21 +648,21 @@ export function AcademicOverview({
 
         {/* TAB 4: SYLLABUS TOPICS */}
         <TabsContent value="syllabus" className="space-y-4">
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Course Syllabus & Topic Tracker</CardTitle>
+              <CardTitle className="text-sm font-semibold text-foreground">Course Syllabus & Topic Tracker</CardTitle>
               <CardDescription className="text-xs">
                 Check off syllabus concepts as your professor covers them in lectures.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
               {syllabusTopics.length === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+                <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
+                  <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
                   <p>No syllabus topics logged yet.</p>
                 </div>
               ) : (
-                <div className="divide-y divide-border/40">
+                <div className="divide-y divide-border">
                   {syllabusTopics.map((topic) => (
                     <div
                       key={topic.id}
@@ -665,7 +674,7 @@ export function AcademicOverview({
                           checked={topic.is_completed}
                           onChange={() => handleToggleTopic(topic.id, topic.is_completed)}
                           disabled={isPending}
-                          className="h-4 w-4 rounded border-border text-primary cursor-pointer"
+                          className="h-4 w-4 rounded border-border text-primary cursor-pointer accent-primary"
                         />
                         <span
                           className={`truncate ${
@@ -679,7 +688,7 @@ export function AcademicOverview({
                       </label>
 
                       {topic.subject && (
-                        <Badge variant="outline" className="text-[10px] shrink-0">
+                        <Badge variant="outline" className="text-[10px] shrink-0 border-border">
                           {topic.subject.name}
                         </Badge>
                       )}
