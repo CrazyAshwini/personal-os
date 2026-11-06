@@ -40,12 +40,12 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
   return (
     <>
       {/* Mobile Top Header */}
-      <header className="md:hidden sticky top-0 z-30 h-14 border-b border-border bg-card/80 backdrop-blur-sm px-4 flex items-center justify-between">
+      <header className="md:hidden sticky top-0 z-30 h-14 border-b border-border bg-sidebar/95 backdrop-blur-md px-4 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
             OS
           </span>
-          <span className="text-sm font-semibold tracking-tight">Personal OS</span>
+          <span className="text-sm font-semibold tracking-tight text-foreground">Personal OS</span>
         </Link>
 
         <div className="flex items-center gap-1.5">
@@ -54,29 +54,30 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
           <form action={signOutAction} className="inline-flex">
             <button
               type="submit"
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-red-600 hover:bg-muted transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-muted transition-colors cursor-pointer"
               title="Sign Out"
+              aria-label="Sign Out"
             >
               <LogOut className="h-4 w-4" />
             </button>
           </form>
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetTrigger className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors cursor-pointer outline-none">
-              <Avatar className="h-6 w-6 text-[10px]">
+            <SheetTrigger className="inline-flex items-center justify-center h-9 w-9 rounded-lg hover:bg-muted transition-colors cursor-pointer outline-none">
+              <Avatar className="h-6 w-6 text-[10px] border border-border">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt={userName || ''} />}
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 p-0 flex flex-col">
+            <SheetContent side="right" className="w-72 p-0 flex flex-col bg-card border-border">
               <SheetHeader className="p-4 border-b border-border text-left">
-                <SheetTitle className="text-sm font-semibold">Personal OS Menu</SheetTitle>
+                <SheetTitle className="text-sm font-semibold text-foreground">Personal OS Menu</SheetTitle>
                 <div className="flex items-center gap-2.5 pt-2">
-                  <Avatar className="h-8 w-8 text-xs">
+                  <Avatar className="h-8 w-8 text-xs border border-border">
                     {avatarUrl && <AvatarImage src={avatarUrl} alt={userName || ''} />}
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-medium truncate">{userName || 'Personal OS User'}</span>
+                    <span className="text-xs font-medium truncate text-foreground">{userName || 'Personal OS User'}</span>
                     <span className="text-[10px] text-muted-foreground truncate">{userEmail}</span>
                   </div>
                 </div>
@@ -99,9 +100,9 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
                             key={item.href}
                             href={item.href}
                             onClick={() => setSheetOpen(false)}
-                            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs font-medium ${
+                            className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
                               isActive
-                                ? 'bg-primary text-primary-foreground font-semibold'
+                                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                             }`}
                           >
@@ -121,7 +122,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
                     type="submit"
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
+                    className="w-full justify-start text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border-rose-200 dark:border-rose-900/40 rounded-lg"
                   >
                     <LogOut className="h-3.5 w-3.5 mr-2" />
                     Sign Out
@@ -134,7 +135,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-card/90 backdrop-blur-md px-2 flex items-center justify-around">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-sidebar/95 backdrop-blur-md px-2 flex items-center justify-around select-none">
         {mobilePrimaryNav.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -145,7 +146,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium transition-colors ${
+              className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors ${
                 isActive
                   ? 'text-primary font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -159,7 +160,8 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
 
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+          className="flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          aria-label="Open full menu"
         >
           <Menu className="h-5 w-5 mb-0.5 stroke-2" />
           <span>More</span>

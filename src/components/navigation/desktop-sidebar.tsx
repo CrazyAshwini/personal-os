@@ -34,15 +34,15 @@ export function DesktopSidebar({
     : userEmail?.slice(0, 2).toUpperCase() || 'OS';
 
   return (
-    <aside className="hidden md:flex flex-col w-64 border-r border-border bg-card/60 backdrop-blur-sm h-screen sticky top-0 shrink-0">
+    <aside className="hidden md:flex flex-col w-64 border-r border-sidebar-border bg-sidebar h-screen sticky top-0 shrink-0 select-none">
       {/* Brand Header */}
-      <div className="h-14 border-b border-border flex items-center justify-between px-4">
+      <div className="h-14 border-b border-sidebar-border flex items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2.5 font-semibold">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
             OS
           </span>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold tracking-tight leading-tight">
+            <span className="text-sm font-semibold tracking-tight leading-tight text-sidebar-foreground">
               Personal OS
             </span>
             <span className="text-[10px] text-muted-foreground font-normal">
@@ -60,7 +60,7 @@ export function DesktopSidebar({
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
         {navSections.map((section) => (
           <div key={section.title} className="space-y-1">
-            <h4 className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <h4 className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/75">
               {section.title}
             </h4>
             <div className="space-y-0.5">
@@ -73,10 +73,10 @@ export function DesktopSidebar({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       isActive
                         ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground'
                     }`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -90,18 +90,18 @@ export function DesktopSidebar({
       </div>
 
       {/* User Footer Profile & Sign Out */}
-      <div className="border-t border-border p-3 space-y-2">
+      <div className="border-t border-sidebar-border p-3 space-y-2">
         <Link
           href="/settings"
-          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted transition-colors cursor-pointer group"
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer group"
           title="Open Profile & Settings"
         >
-          <Avatar className="h-7 w-7 text-xs">
+          <Avatar className="h-7 w-7 text-xs border border-sidebar-border">
             {avatarUrl && <AvatarImage src={avatarUrl} alt={userName || ''} />}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-start text-left truncate flex-1 min-w-0">
-            <span className="text-xs font-medium truncate w-full text-foreground group-hover:text-primary transition-colors">
+            <span className="text-xs font-medium truncate w-full text-sidebar-foreground group-hover:text-primary transition-colors">
               {userName || userEmail?.split('@')[0]}
             </span>
             <span className="text-[10px] text-muted-foreground truncate w-full">
@@ -115,7 +115,7 @@ export function DesktopSidebar({
             type="submit"
             variant="outline"
             size="sm"
-            className="w-full justify-center text-xs h-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 border-red-200 dark:border-red-900/40 cursor-pointer gap-1.5 font-medium"
+            className="w-full justify-center text-xs h-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 border-rose-200 dark:border-rose-900/40 cursor-pointer gap-1.5 font-medium rounded-lg"
           >
             <LogOut className="h-3.5 w-3.5" />
             Sign Out

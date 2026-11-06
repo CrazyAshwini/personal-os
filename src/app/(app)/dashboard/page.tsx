@@ -9,6 +9,7 @@ import {
   calculateAttendance,
   type ClassSessionRecord,
 } from '@/features/attendance/attendance-calculator';
+import { formatINR } from '@/features/finance/finance-calculations';
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -22,7 +23,7 @@ import {
   Timer,
   ArrowRight,
   Activity,
-  CreditCard,
+  Wallet,
 } from 'lucide-react';
 
 export const instant = false;
@@ -128,7 +129,18 @@ export default async function DashboardPage() {
     .order('updated_at', { ascending: false })
     .limit(3);
 
-  // 9. Finance Integration Overview
+  // 9. Native Finance Overview (Accounts & Balances)
+  const { data: financeAccounts } = await supabase
+    .from('finance_accounts')
+    .select('id, name, kind, balance')
+    .eq('user_id', userId)
+    .eq('active', true);
+
+  const nativeAccountsCount = financeAccounts?.length || 0;
+  const liquidCash = (financeAccounts || [])
+    .filter((a) => a.kind === 'bank' || a.kind === 'wallet')
+    .reduce((sum, a) => sum + Number(a.balance), 0);
+
   const { data: financeConn } = await supabase
     .from('integration_connections')
     .select('cached_monthly_spend, cached_currency, status')
@@ -164,13 +176,13 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner & Quick Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Welcome back, {displayName}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {todayFormatted} • Personal OS Central Command
+            {todayFormatted} &bull; Personal OS Daily Command
           </p>
         </div>
 
@@ -180,7 +192,7 @@ export default async function DashboardPage() {
             className={buttonVariants({
               variant: 'outline',
               size: 'sm',
-              className: 'h-8 text-xs gap-1.5',
+              className: 'h-8 text-xs gap-1.5 rounded-lg border-border',
             })}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -192,7 +204,7 @@ export default async function DashboardPage() {
             className={buttonVariants({
               variant: 'outline',
               size: 'sm',
-              className: 'h-8 text-xs gap-1.5',
+              className: 'h-8 text-xs gap-1.5 rounded-lg border-border',
             })}
           >
             <CalendarIcon className="h-3.5 w-3.5" />
@@ -204,7 +216,7 @@ export default async function DashboardPage() {
             className={buttonVariants({
               variant: 'default',
               size: 'sm',
-              className: 'h-8 text-xs gap-1.5',
+              className: 'h-8 text-xs gap-1.5 rounded-lg font-medium shadow-xs',
             })}
           >
             <Play className="h-3.5 w-3.5 fill-current" />
@@ -216,26 +228,26 @@ export default async function DashboardPage() {
       {/* Overview Stat Cards Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Academic Attendance */}
-        <Card className="hover:border-primary/40 transition-colors">
+        <Card className="border-border bg-card hover:border-primary/50 transition-colors rounded-xl shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Academic Attendance
             </CardTitle>
-            <GraduationCap className="h-4 w-4 text-blue-500" />
+            <GraduationCap className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${
+              className={`text-2xl font-bold tracking-tight ${
                 attendanceStats.conductedSessions === 0
                   ? 'text-foreground'
                   : attendanceStats.percentage >= 75
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-rose-600 dark:text-rose-400'
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : 'text-rose-700 dark:text-rose-400'
               }`}
             >
               {attendanceStats.conductedSessions > 0
                 ? `${attendanceStats.percentage}%`
-                : '--%'}
+                : '—%'}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               {attendanceStats.conductedSessions > 0
@@ -246,31 +258,35 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Pending Tasks */}
-        <Card className="hover:border-primary/40 transition-colors">
+        <Card className="border-border bg-card hover:border-primary/50 transition-colors rounded-xl shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Pending Tasks
             </CardTitle>
-            <CheckSquare className="h-4 w-4 text-emerald-500" />
+            <CheckSquare className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingTasksCount ?? 0}</div>
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              {pendingTasksCount ?? 0}
+            </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               {completedTasksCount ?? 0} tasks completed to date
             </p>
           </CardContent>
         </Card>
 
-        {/* Today's Study Time */}
-        <Card className="hover:border-primary/40 transition-colors">
+        {/* Today's Focus Time */}
+        <Card className="border-border bg-card hover:border-primary/50 transition-colors rounded-xl shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Focus Time Today
             </CardTitle>
-            <Timer className="h-4 w-4 text-orange-500" />
+            <Timer className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{studyMinutesToday}m</div>
+            <div className="text-2xl font-bold tracking-tight text-foreground">
+              {studyMinutesToday}m
+            </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               {focusSessionsCount} completed pomodoro cycle{focusSessionsCount === 1 ? '' : 's'}
             </p>
@@ -278,15 +294,15 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Today's Agenda Items */}
-        <Card className="hover:border-primary/40 transition-colors">
+        <Card className="border-border bg-card hover:border-primary/50 transition-colors rounded-xl shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Schedule Today
             </CardTitle>
-            <CalendarIcon className="h-4 w-4 text-purple-500" />
+            <CalendarIcon className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold tracking-tight text-foreground">
               {(todayEvents?.length || 0) + (todayReminders?.length || 0)}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -301,10 +317,10 @@ export default async function DashboardPage() {
         {/* Left Column: Agenda & Tasks (2 cols on lg) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Today's Schedule & Agenda */}
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
                   <Clock className="h-4 w-4 text-primary" />
                   Today&apos;s Agenda & Events
                 </CardTitle>
@@ -317,7 +333,7 @@ export default async function DashboardPage() {
                 className={buttonVariants({
                   variant: 'ghost',
                   size: 'sm',
-                  className: 'h-7 text-xs inline-flex items-center gap-1',
+                  className: 'h-7 text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground',
                 })}
               >
                 View Calendar
@@ -326,8 +342,8 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0">
               {(todayEvents?.length || 0) === 0 && (todayReminders?.length || 0) === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  <CalendarIcon className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+                <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
+                  <CalendarIcon className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
                   <p>No events or reminders scheduled for today.</p>
                   <Link
                     href="/calendar"
@@ -341,12 +357,12 @@ export default async function DashboardPage() {
                   {todayEvents?.map((event) => (
                     <div
                       key={event.id}
-                      className="p-2.5 rounded-lg border border-border/60 bg-muted/20 flex items-center justify-between text-xs"
+                      className="p-2.5 rounded-lg border border-border bg-muted/40 flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span
                           className="h-2.5 w-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: event.color || '#3b82f6' }}
+                          style={{ backgroundColor: event.color || '#526653' }}
                         />
                         <div className="min-w-0">
                           <p className="font-medium text-foreground truncate">
@@ -360,7 +376,7 @@ export default async function DashboardPage() {
                           </span>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-[10px] shrink-0">
+                      <Badge variant="outline" className="text-[10px] shrink-0 border-border">
                         {event.event_type}
                       </Badge>
                     </div>
@@ -369,10 +385,10 @@ export default async function DashboardPage() {
                   {todayReminders?.map((reminder) => (
                     <div
                       key={reminder.id}
-                      className="p-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5 flex items-center justify-between text-xs"
+                      className="p-2.5 rounded-lg border border-border bg-muted/30 flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                        <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
                         <div className="min-w-0">
                           <p className="font-medium text-foreground truncate">
                             {reminder.title}
@@ -382,7 +398,7 @@ export default async function DashboardPage() {
                           </span>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
+                      <Badge variant="secondary" className="text-[10px]">
                         Reminder
                       </Badge>
                     </div>
@@ -393,11 +409,11 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Pending Tasks List */}
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4 text-emerald-500" />
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                  <CheckSquare className="h-4 w-4 text-primary" />
                   Priority Tasks
                 </CardTitle>
                 <CardDescription className="text-xs">
@@ -409,7 +425,7 @@ export default async function DashboardPage() {
                 className={buttonVariants({
                   variant: 'ghost',
                   size: 'sm',
-                  className: 'h-7 text-xs inline-flex items-center gap-1',
+                  className: 'h-7 text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground',
                 })}
               >
                 All Tasks ({pendingTasksCount ?? 0})
@@ -418,8 +434,8 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0">
               {(priorityTasks?.length || 0) === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-500/40 mb-2" />
+                <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
+                  <CheckCircle2 className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
                   <p>All tasks completed! You have no pending items.</p>
                   <Link
                     href="/productivity"
@@ -433,18 +449,18 @@ export default async function DashboardPage() {
                   {priorityTasks?.map((task) => (
                     <div
                       key={task.id}
-                      className="p-2.5 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between text-xs"
+                      className="p-2.5 rounded-lg border border-border bg-card hover:bg-muted/40 transition-colors flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span
                           className={`h-2 w-2 rounded-full shrink-0 ${
                             task.priority === 'urgent'
-                              ? 'bg-rose-500'
+                              ? 'bg-rose-600 dark:bg-rose-400'
                               : task.priority === 'high'
-                              ? 'bg-amber-500'
+                              ? 'bg-amber-600 dark:bg-amber-400'
                               : task.priority === 'medium'
-                              ? 'bg-blue-500'
-                              : 'bg-neutral-400'
+                              ? 'bg-primary'
+                              : 'bg-muted-foreground'
                           }`}
                         />
                         <div className="min-w-0">
@@ -460,11 +476,11 @@ export default async function DashboardPage() {
                       </div>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] uppercase font-mono capitalize ${
+                        className={`text-[10px] font-mono capitalize ${
                           task.priority === 'urgent'
-                            ? 'border-rose-500/40 text-rose-500'
+                            ? 'border-rose-300 dark:border-rose-900 text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40'
                             : task.priority === 'high'
-                            ? 'border-amber-500/40 text-amber-500'
+                            ? 'border-amber-300 dark:border-amber-900 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40'
                             : 'border-border text-muted-foreground'
                         }`}
                       >
@@ -478,18 +494,18 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        {/* Right Column: Pomodoro Launcher, Activity, System Card */}
+        {/* Right Column: Pomodoro Launcher, Activity, Habits, Finance */}
         <div className="space-y-6">
           {/* Quick Study / Pomodoro Widget */}
-          <Card className="bg-gradient-to-br from-card to-muted/20 border-border">
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-orange-500" />
-                  Study Focus Engine
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                  <Flame className="h-4 w-4 text-primary" />
+                  Focus Engine
                 </CardTitle>
                 <Badge variant="secondary" className="text-[10px]">
-                  {studyMinutesToday} mins today
+                  {studyMinutesToday}m today
                 </Badge>
               </div>
               <CardDescription className="text-xs">
@@ -497,7 +513,7 @@ export default async function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-0">
-              <div className="p-3 rounded-lg bg-background border border-border/60 text-center">
+              <div className="p-3.5 rounded-lg bg-muted/40 border border-border text-center">
                 <span className="text-2xl font-mono font-bold tracking-tight text-foreground">
                   25:00
                 </span>
@@ -511,7 +527,7 @@ export default async function DashboardPage() {
                 className={buttonVariants({
                   variant: 'default',
                   size: 'default',
-                  className: 'w-full h-8 text-xs gap-2',
+                  className: 'w-full h-8 text-xs gap-2 rounded-lg font-medium shadow-xs',
                 })}
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
@@ -521,18 +537,18 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Recent Activity Log */}
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Recent Activity</CardTitle>
+              <CardTitle className="text-sm font-semibold text-foreground">Recent Activity</CardTitle>
               <CardDescription className="text-xs">
                 Your latest actions across tasks and focus sessions.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2.5 pt-0">
               {(recentCompletedTasks?.length || 0) === 0 && (todaySessions?.length || 0) === 0 ? (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <div className="py-4 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
                   No recent activity logged yet.
-                </p>
+                </div>
               ) : (
                 <>
                   {recentCompletedTasks?.map((task) => (
@@ -540,7 +556,7 @@ export default async function DashboardPage() {
                       key={task.id}
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
                       <span className="truncate flex-1 text-foreground">
                         Completed &ldquo;{task.title}&rdquo;
                       </span>
@@ -552,7 +568,7 @@ export default async function DashboardPage() {
                       key={session.id}
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
-                      <Timer className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                      <Timer className="h-3.5 w-3.5 text-primary shrink-0" />
                       <span className="truncate flex-1 text-foreground">
                         Finished {session.duration_minutes}m focus session
                       </span>
@@ -564,24 +580,24 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Habits Snapshot Widget */}
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Activity className="h-4 w-4 text-emerald-500" />
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                <Activity className="h-4 w-4 text-primary" />
                 Habits Today
               </CardTitle>
-              <Badge variant="outline" className="text-[10px] font-mono">
+              <Badge variant="outline" className="text-[10px] font-mono border-border">
                 {completedHabitsToday}/{totalHabits} Done
               </Badge>
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
               {totalHabits === 0 ? (
-                <p className="text-xs text-muted-foreground py-1 text-center">
+                <div className="py-3 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
                   No habits set yet.{' '}
-                  <Link href="/habits" className="text-primary hover:underline">
+                  <Link href="/habits" className="text-primary hover:underline font-medium">
                     Add habit
                   </Link>
-                </p>
+                </div>
               ) : (
                 <div className="space-y-1.5">
                   {userHabits?.map((h) => {
@@ -596,12 +612,12 @@ export default async function DashboardPage() {
                         <div className="flex items-center gap-2">
                           <span
                             className="h-2 w-2 rounded-full"
-                            style={{ backgroundColor: h.color || '#10b981' }}
+                            style={{ backgroundColor: h.color || '#526653' }}
                           />
                           <span className="text-foreground">{h.name}</span>
                         </div>
                         {isDone ? (
-                          <Badge variant="secondary" className="text-[9px] text-emerald-600 bg-emerald-500/10">
+                          <Badge variant="secondary" className="text-[9px]">
                             Completed
                           </Badge>
                         ) : (
@@ -615,53 +631,67 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Finance Overview Widget */}
-          <Card>
+          {/* Finance Overview Widget (Native Money Nest / Integration) */}
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-purple-500" />
-                Expense Manager
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                <Wallet className="h-4 w-4 text-primary" />
+                Finance Overview
               </CardTitle>
               <Badge
-                variant={financeConn?.status === 'connected' ? 'secondary' : 'outline'}
-                className="text-[10px] capitalize font-mono"
+                variant="outline"
+                className="text-[10px] capitalize font-mono border-border"
               >
-                {financeConn?.status || 'Disconnected'}
+                {nativeAccountsCount > 0
+                  ? `${nativeAccountsCount} Acc${nativeAccountsCount === 1 ? '' : 's'}`
+                  : financeConn?.status || 'Active'}
               </Badge>
             </CardHeader>
             <CardContent className="pt-0 space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs text-muted-foreground">Monthly Spend:</span>
-                <span className="text-lg font-bold font-mono text-foreground">
-                  {financeConn?.cached_currency === 'INR' ? '₹' : '$'}
-                  {Number(financeConn?.cached_monthly_spend || 0).toLocaleString()}
-                </span>
-              </div>
+              {nativeAccountsCount > 0 ? (
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-muted-foreground">Liquid Balances:</span>
+                  <span className="text-lg font-bold font-mono text-foreground">
+                    {formatINR(liquidCash)}
+                  </span>
+                </div>
+              ) : financeConn?.cached_monthly_spend ? (
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-muted-foreground">Monthly Spend:</span>
+                  <span className="text-lg font-bold font-mono text-foreground">
+                    {financeConn.cached_currency === 'INR' ? '₹' : '$'}
+                    {Number(financeConn.cached_monthly_spend).toLocaleString()}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Track bank accounts, credit cards, bills, and investments in ₹ INR.
+                </p>
+              )}
               <Link
                 href="/finance"
-                className="text-[11px] text-primary hover:underline font-medium inline-block"
+                className="text-[11px] text-primary hover:underline font-medium inline-flex items-center gap-1"
               >
-                View finance details &rarr;
+                Open finance workspace &rarr;
               </Link>
             </CardContent>
           </Card>
 
           {/* Security & System Status */}
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                <CardTitle className="text-xs font-semibold">Security & Sync</CardTitle>
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <CardTitle className="text-xs font-semibold text-foreground">Security & Tenancy</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-2 pt-0 text-[11px] text-muted-foreground">
               <p>
-                RLS isolation verified on 100% of user tables. Your records are strictly
-                encrypted and inaccessible to other users.
+                Multi-tenant RLS isolation active on all personal records. Private and encrypted.
               </p>
-              <div className="pt-2 border-t border-border/50 flex items-center justify-between text-[10px]">
+              <div className="pt-2 border-t border-border flex items-center justify-between text-[10px]">
                 <span>Cloud Sync: Active</span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                <span className="font-mono text-emerald-700 dark:text-emerald-400">
                   Healthy
                 </span>
               </div>
