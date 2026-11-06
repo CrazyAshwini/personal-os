@@ -60,6 +60,15 @@ interface AcademicOverviewProps {
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DISPLAY_DAYS = [1, 2, 3, 4, 5, 6, 0]; // Mon through Sun
+
+const DAY_MOTTO: Record<number, string> = {
+  1: 'New week, same goals',
+  2: 'Keep going',
+  3: 'Halfway there',
+  4: 'Consistent today, successful tomorrow',
+  5: 'Finish strong',
+};
 
 function formatTimeSlot(timeStr: string) {
   if (!timeStr) return '';
@@ -72,13 +81,80 @@ function formatTimeSlot(timeStr: string) {
   return `${displayHours}:${minutes} ${ampm}`;
 }
 
+function TimetableSlotCard({
+  slot,
+  onDelete,
+  disabled,
+}: {
+  slot: TimetableRow;
+  onDelete: (id: string) => void;
+  disabled?: boolean;
+}) {
+  const sub = slot.subject;
+  return (
+    <div className="p-3.5 rounded-xl border border-border bg-card shadow-xs hover:border-primary/40 transition-all flex items-start justify-between gap-3 group">
+      <div className="flex items-start gap-3 min-w-0">
+        <span
+          className="h-3.5 w-3.5 rounded-full mt-1 shrink-0 ring-2 ring-background"
+          style={{ backgroundColor: sub?.color || '#526653' }}
+        />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-xs font-semibold text-foreground truncate">
+              {sub?.name || 'Class Session'}
+            </h3>
+            {sub?.code && (
+              <Badge variant="outline" className="text-[10px] font-mono py-0 border-border bg-muted/30">
+                {sub.code}
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-1.5">
+            <div className="flex items-center gap-1 font-mono text-foreground font-medium">
+              <Clock className="h-3 w-3 text-primary" />
+              <span>
+                {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
+              </span>
+            </div>
+
+            {slot.classroom && (
+              <div className="flex items-center gap-1 font-mono">
+                <MapPin className="h-3 w-3 text-primary" />
+                <span>Room {slot.classroom}</span>
+              </div>
+            )}
+
+            {sub?.instructor && (
+              <span className="text-[10px] text-muted-foreground italic truncate">
+                Prof. {sub.instructor}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onDelete(slot.id)}
+        disabled={disabled}
+        className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
+        aria-label="Delete timetable slot"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+}
+
 export function AcademicOverview({
   subjects,
   timetable,
   sessions,
   syllabusTopics,
 }: AcademicOverviewProps) {
-  const [activeDay, setActiveDay] = useState<number>(() => new Date().getDay());
+  const [activeDay, setActiveDay] = useState<'all' | number>('all');
   const [isPending, startTransition] = useTransition();
 
   // 1. Calculate overall attendance
@@ -136,7 +212,14 @@ export function AcademicOverview({
   };
 
   const currentDayIndex = new Date().getDay();
-  const selectedDayClasses = timetable.filter((t) => t.day_of_week === activeDay);
+  const selectedDayClasses = typeof activeDay === 'number'
+    ? timetable.filter((t) => t.day_of_week === activeDay)
+    : [];
+
+  // Filter weekdays that have timetable slots or standard Mon-Fri
+  const activeWeekdays = DISPLAY_DAYS.filter(
+    (d) => (d >= 1 && d <= 5) || timetable.some((t) => t.day_of_week === d)
+  );
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -186,16 +269,38 @@ export function AcademicOverview({
         <TabsContent value="schedule" className="space-y-6">
           {/* Day of Week Selector Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {SHORT_DAYS.map((day, idx) => {
-              const isToday = idx === currentDayIndex;
-              const isSelected = idx === activeDay;
-              const daySlotCount = timetable.filter((t) => t.day_of_week === idx).length;
+            {/* All Week Pill */}
+            <button
+              type="button"
+              onClick={() => setActiveDay('all')}
+              className={`flex-1 sm:flex-initial min-w-[76px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
+                activeDay === 'all'
+                  ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
+                  : 'bg-card border-border text-foreground hover:bg-muted/50'
+              }`}
+            >
+              <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
+                ALL
+              </span>
+              <span className="text-xs font-bold block mt-1 leading-none">
+                Whole Week
+              </span>
+              <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-mono">
+                {timetable.length} classes
+              </span>
+            </button>
+
+            {/* Individual Day Buttons: Mon -> Sun */}
+            {DISPLAY_DAYS.map((dayIdx) => {
+              const isToday = dayIdx === currentDayIndex;
+              const isSelected = activeDay === dayIdx;
+              const daySlotCount = timetable.filter((t) => t.day_of_week === dayIdx).length;
 
               return (
                 <button
-                  key={day}
+                  key={dayIdx}
                   type="button"
-                  onClick={() => setActiveDay(idx)}
+                  onClick={() => setActiveDay(dayIdx)}
                   className={`flex-1 sm:flex-initial min-w-[56px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
@@ -203,14 +308,18 @@ export function AcademicOverview({
                   }`}
                 >
                   <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
-                    {day}
+                    {SHORT_DAYS[dayIdx]}
                   </span>
                   <span className="text-xs font-bold block mt-1 leading-none">
                     {daySlotCount}
                   </span>
-                  {isToday && (
+                  {isToday ? (
                     <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-medium">
                       Today
+                    </span>
+                  ) : (
+                    <span className="text-[9px] text-muted-foreground block mt-0.5 opacity-60">
+                      day
                     </span>
                   )}
                 </button>
@@ -218,99 +327,162 @@ export function AcademicOverview({
             })}
           </div>
 
-          {/* Active Day Header */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              {DAY_NAMES[activeDay]} Schedule
-              {activeDay === currentDayIndex && (
-                <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary bg-primary/10">
-                  Today
-                </Badge>
-              )}
-            </h2>
-            <span className="text-xs text-muted-foreground font-mono">
-              {selectedDayClasses.length} {selectedDayClasses.length === 1 ? 'class' : 'classes'}
-            </span>
-          </div>
-
-          {/* Timetable List for Selected Day */}
-          {selectedDayClasses.length === 0 ? (
-            <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
-              <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
-              <p className="font-medium text-foreground">No classes scheduled for {DAY_NAMES[activeDay]}.</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Add lecture timeslots to track your weekly routine seamlessly.
-              </p>
-              {subjects.length > 0 && (
-                <div className="mt-4">
-                  <CreateTimetableEntryDialog subjects={subjects} />
+          {/* ======================================================== */}
+          {/* VIEW A: WHOLE WEEK SCHEDULE (All Days)                    */}
+          {/* ======================================================== */}
+          {activeDay === 'all' ? (
+            timetable.length === 0 ? (
+              <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
+                <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
+                <p className="font-medium text-foreground">No classes scheduled in your timetable.</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Add lecture timeslots to populate your weekly academic routine.
+                </p>
+                {subjects.length > 0 && (
+                  <div className="mt-4">
+                    <CreateTimetableEntryDialog subjects={subjects} />
+                  </div>
+                )}
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" />
+                      Whole Week Schedule
+                    </h2>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Monday through Friday • {timetable.length} classes scheduled
+                    </p>
+                  </div>
                 </div>
-              )}
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {selectedDayClasses.map((slot) => {
-                const sub = slot.subject;
-                return (
-                  <div
-                    key={slot.id}
-                    className="p-3.5 rounded-xl border border-border bg-card shadow-xs hover:border-primary/40 transition-colors flex items-start justify-between gap-3"
-                  >
-                    <div className="flex items-start gap-3 min-w-0">
-                      <span
-                        className="h-3.5 w-3.5 rounded-full mt-1 shrink-0"
-                        style={{ backgroundColor: sub?.color || '#526653' }}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-xs font-semibold text-foreground truncate">
-                            {sub?.name || 'Class Session'}
-                          </h3>
-                          {sub?.code && (
-                            <Badge variant="outline" className="text-[10px] font-mono py-0 border-border">
-                              {sub.code}
-                            </Badge>
-                          )}
-                        </div>
 
-                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-1.5">
-                          <div className="flex items-center gap-1 font-mono text-foreground font-medium">
-                            <Clock className="h-3 w-3 text-primary" />
-                            <span>
-                              {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
-                            </span>
+                <div className="space-y-6">
+                  {activeWeekdays.map((dayIdx) => {
+                    const daySlots = timetable.filter((t) => t.day_of_week === dayIdx);
+                    if (daySlots.length === 0) return null;
+                    const isToday = dayIdx === currentDayIndex;
+
+                    return (
+                      <div
+                        key={dayIdx}
+                        className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                          isToday
+                            ? 'border-primary/50 bg-primary/[0.03] shadow-xs'
+                            : 'border-border/80 bg-card/60'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-border/60">
+                          <div className="flex items-center gap-2.5">
+                            <h3 className="text-sm font-bold text-foreground">
+                              {DAY_NAMES[dayIdx]}
+                            </h3>
+                            {DAY_MOTTO[dayIdx] && (
+                              <span className="hidden sm:inline text-xs text-muted-foreground italic">
+                                • “{DAY_MOTTO[dayIdx]}”
+                              </span>
+                            )}
+                            {isToday && (
+                              <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                                Today
+                              </Badge>
+                            )}
                           </div>
 
-                          {slot.classroom && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3 text-primary" />
-                              <span>{slot.classroom}</span>
-                            </div>
-                          )}
-
-                          {sub?.instructor && (
-                            <span className="text-[10px] text-muted-foreground italic truncate">
-                              Prof. {sub.instructor}
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {daySlots.length} {daySlots.length === 1 ? 'class' : 'classes'}
                             </span>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => setActiveDay(dayIdx)}
+                              className="text-[11px] text-primary hover:underline font-medium cursor-pointer"
+                            >
+                              Isolate
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {daySlots.map((slot) => (
+                            <TimetableSlotCard
+                              key={slot.id}
+                              slot={slot}
+                              onDelete={handleDeleteTimetableEntry}
+                              disabled={isPending}
+                            />
+                          ))}
                         </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )
+          ) : (
+            /* ======================================================== */
+            /* VIEW B: SINGLE DAY SCHEDULE FOCUS                        */
+            /* ======================================================== */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    {DAY_NAMES[activeDay]} Schedule
+                  </h2>
+                  {activeDay === currentDayIndex && (
+                    <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary bg-primary/10">
+                      Today
+                    </Badge>
+                  )}
+                  {DAY_MOTTO[activeDay] && (
+                    <span className="hidden sm:inline text-xs text-muted-foreground italic">
+                      • “{DAY_MOTTO[activeDay]}”
+                    </span>
+                  )}
+                </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteTimetableEntry(slot.id)}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {selectedDayClasses.length} {selectedDayClasses.length === 1 ? 'class' : 'classes'}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => setActiveDay('all')}
+                    className="h-6 px-2 text-[11px] rounded-lg cursor-pointer"
+                  >
+                    View All Week
+                  </Button>
+                </div>
+              </div>
+
+              {selectedDayClasses.length === 0 ? (
+                <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
+                  <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
+                  <p className="font-medium text-foreground">No classes scheduled for {DAY_NAMES[activeDay]}.</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Add lecture timeslots to track your weekly routine seamlessly.
+                  </p>
+                  {subjects.length > 0 && (
+                    <div className="mt-4">
+                      <CreateTimetableEntryDialog subjects={subjects} />
+                    </div>
+                  )}
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {selectedDayClasses.map((slot) => (
+                    <TimetableSlotCard
+                      key={slot.id}
+                      slot={slot}
+                      onDelete={handleDeleteTimetableEntry}
                       disabled={isPending}
-                      className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer shrink-0"
-                      aria-label="Delete timetable slot"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                );
-              })}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </TabsContent>
