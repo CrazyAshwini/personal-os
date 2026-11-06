@@ -1,5 +1,7 @@
 'use client';
 
+import { signOutAction } from '@/lib/auth/actions';
+
 import React, { useState, useTransition } from 'react';
 import {
   Bell,
@@ -10,6 +12,7 @@ import {
   Volume2,
   CheckCircle2,
   AlertCircle,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -323,6 +326,40 @@ export function SettingsView({
                 </Button>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account & Session */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            Account & Session
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Manage your session and access to Personal OS
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 rounded-lg border border-border bg-muted/30">
+            <div className="space-y-0.5">
+              <p className="text-xs font-medium text-foreground">{userEmail}</p>
+              <p className="text-[11px] text-muted-foreground">
+                Signed in securely with Supabase Auth
+              </p>
+            </div>
+            <form action={signOutAction}>
+              <Button
+                type="submit"
+                variant="destructive"
+                size="sm"
+                className="text-xs h-8 gap-1.5 cursor-pointer"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Sign Out
+              </Button>
+            </form>
           </div>
         </CardContent>
       </Card>

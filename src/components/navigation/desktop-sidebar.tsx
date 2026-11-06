@@ -2,21 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { navSections } from '@/components/navigation/nav-items';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { NotificationCenter } from '@/features/notifications/notification-center';
 import { signOutAction } from '@/lib/auth/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { LogOut, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 interface DesktopSidebarProps {
   userEmail?: string | null;
@@ -30,7 +23,6 @@ export function DesktopSidebar({
   avatarUrl,
 }: DesktopSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
 
   const initials = userName
     ? userName
@@ -97,45 +89,38 @@ export function DesktopSidebar({
         ))}
       </div>
 
-      {/* User Footer Profile */}
-      <div className="border-t border-border p-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center justify-start gap-2.5 px-2 h-11 rounded-md hover:bg-muted transition-colors cursor-pointer outline-none">
-            <Avatar className="h-7 w-7 text-xs">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt={userName || ''} />}
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col items-start text-left truncate flex-1 min-w-0">
-              <span className="text-xs font-medium truncate w-full text-foreground">
-                {userName || userEmail?.split('@')[0]}
-              </span>
-              <span className="text-[10px] text-muted-foreground truncate w-full">
-                {userEmail}
-              </span>
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-xs font-medium leading-none">{userName || 'Personal OS User'}</p>
-                <p className="text-[11px] leading-none text-muted-foreground">{userEmail}</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              Profile & Settings
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => signOutAction()}
-              className="text-red-600 dark:text-red-400 cursor-pointer"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {/* User Footer Profile & Sign Out */}
+      <div className="border-t border-border p-3 space-y-2">
+        <Link
+          href="/settings"
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted transition-colors cursor-pointer group"
+          title="Open Profile & Settings"
+        >
+          <Avatar className="h-7 w-7 text-xs">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={userName || ''} />}
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col items-start text-left truncate flex-1 min-w-0">
+            <span className="text-xs font-medium truncate w-full text-foreground group-hover:text-primary transition-colors">
+              {userName || userEmail?.split('@')[0]}
+            </span>
+            <span className="text-[10px] text-muted-foreground truncate w-full">
+              {userEmail}
+            </span>
+          </div>
+        </Link>
+
+        <form action={signOutAction} className="w-full">
+          <Button
+            type="submit"
+            variant="outline"
+            size="sm"
+            className="w-full justify-center text-xs h-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 border-red-200 dark:border-red-900/40 cursor-pointer gap-1.5 font-medium"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Sign Out
+          </Button>
+        </form>
       </div>
     </aside>
   );

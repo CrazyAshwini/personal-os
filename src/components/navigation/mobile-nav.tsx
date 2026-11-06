@@ -51,6 +51,15 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
         <div className="flex items-center gap-1.5">
           <NotificationCenter />
           <ThemeToggle />
+          <form action={signOutAction} className="inline-flex">
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-red-600 hover:bg-muted transition-colors cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger className="inline-flex items-center justify-center h-8 w-8 rounded-md hover:bg-muted transition-colors cursor-pointer outline-none">
               <Avatar className="h-6 w-6 text-[10px]">
@@ -112,7 +121,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
                     type="submit"
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start text-xs text-red-600 dark:text-red-400"
+                    className="w-full justify-start text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                   >
                     <LogOut className="h-3.5 w-3.5 mr-2" />
                     Sign Out
