@@ -4,36 +4,32 @@ import React, { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import {
   GraduationCap,
-  Calendar,
   Clock,
   CheckCircle2,
-  AlertTriangle,
   BookOpen,
   CalendarDays,
-  FileCheck2,
   Trash2,
   Check,
   X,
   MinusCircle,
+  MapPin,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import {
   calculateAttendance,
   type ClassSessionRecord,
 } from '@/features/attendance/attendance-calculator';
 import {
-  updateClassSessionStatusAction,
-  deleteClassSessionAction,
-  updateAssignmentStatusAction,
   deleteTimetableEntryAction,
   toggleSyllabusTopicAction,
+  logClassSessionAction,
 } from '@/features/academics/actions';
 import { CreateSubjectDialog } from '@/features/academics/create-subject-dialog';
 import { LogSessionDialog } from '@/features/academics/log-session-dialog';
 import { CreateTimetableEntryDialog } from '@/features/academics/create-timetable-entry-dialog';
-import { CreateAssignmentDialog } from '@/features/academics/create-assignment-dialog';
 import type { Database } from '@/types/database';
 
 type SubjectRow = Database['public']['Tables']['subjects']['Row'];
@@ -63,29 +59,34 @@ interface AcademicOverviewProps {
 }
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function formatTimeSlot(timeStr: string) {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  const hours = parseInt(parts[0], 10);
+  const minutes = parts[1];
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${minutes} ${ampm}`;
+}
 
 export function AcademicOverview({
   subjects,
   timetable,
   sessions,
-  assignments,
-  examinations,
   syllabusTopics,
 }: AcademicOverviewProps) {
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('all');
+  const [activeDay, setActiveDay] = useState<number>(() => new Date().getDay());
   const [isPending, startTransition] = useTransition();
 
-  // 1. Calculate overall and subject-wise attendance using derived formula
-  const filteredSessions =
-    selectedSubjectId === 'all'
-      ? sessions
-      : sessions.filter((s) => s.subject_id === selectedSubjectId);
-
+  // 1. Calculate overall attendance
   const overallStats = calculateAttendance(
-    filteredSessions.map((s) => ({ id: s.id, status: s.status as ClassSessionRecord['status'] }))
+    sessions.map((s) => ({ id: s.id, status: s.status as ClassSessionRecord['status'] }))
   );
 
-  // Subject-wise attendance calculation map
+  // 2. Subject-wise attendance calculation map
   const subjectStats = subjects.map((sub) => {
     const subSessions = sessions.filter((s) => s.subject_id === sub.id);
     const stats = calculateAttendance(
@@ -96,13 +97,11 @@ export function AcademicOverview({
     let marginText = 'No conducted classes';
     if (stats.conductedSessions > 0) {
       if (stats.percentage >= 75) {
-        // Can miss X classes: floor((P - 0.75 * C) / 0.75)
         const canMiss = Math.floor((stats.presentSessions - 0.75 * stats.conductedSessions) / 0.75);
-        marginText = canMiss > 0 ? `Can miss ${canMiss} class${canMiss === 1 ? '' : 'es'}` : 'On the threshold';
+        marginText = canMiss > 0 ? `Can miss ${canMiss} class${canMiss === 1 ? '' : 'es'}` : 'On threshold';
       } else {
-        // Need to attend X classes: ceil((0.75 * C - P) / 0.25)
         const needToAttend = Math.ceil((0.75 * stats.conductedSessions - stats.presentSessions) / 0.25);
-        marginText = `Need ${needToAttend} class${needToAttend === 1 ? '' : 'es'} to reach 75%`;
+        marginText = `Need ${needToAttend} class${needToAttend === 1 ? '' : 'es'} for 75%`;
       }
     }
 
@@ -113,27 +112,14 @@ export function AcademicOverview({
     };
   });
 
-  const handleStatusChange = (
-    sessionId: string,
-    newStatus: 'present' | 'absent' | 'cancelled' | 'no_class'
-  ) => {
+  const handleQuickLog = (subjectId: string, status: 'present' | 'absent' | 'cancelled') => {
+    const today = format(new Date(), 'yyyy-MM-dd');
     startTransition(async () => {
-      await updateClassSessionStatusAction(sessionId, newStatus);
-    });
-  };
-
-  const handleDeleteSession = (sessionId: string) => {
-    startTransition(async () => {
-      await deleteClassSessionAction(sessionId);
-    });
-  };
-
-  const handleAssignmentStatusChange = (
-    assignmentId: string,
-    newStatus: 'pending' | 'submitted' | 'graded' | 'late'
-  ) => {
-    startTransition(async () => {
-      await updateAssignmentStatusAction(assignmentId, newStatus);
+      await logClassSessionAction({
+        subjectId,
+        sessionDate: today,
+        status,
+      });
     });
   };
 
@@ -149,17 +135,20 @@ export function AcademicOverview({
     });
   };
 
+  const currentDayIndex = new Date().getDay();
+  const selectedDayClasses = timetable.filter((t) => t.day_of_week === activeDay);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       {/* Action Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-primary" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <GraduationCap className="h-6 w-6 text-primary" />
             Academic Hub
-          </h2>
+          </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Class attendance records, weekly schedule, coursework, and syllabus completion.
+            Your daily class timetable, 75% attendance engine, and curriculum syllabus.
           </p>
         </div>
 
@@ -168,48 +157,180 @@ export function AcademicOverview({
           {subjects.length > 0 && (
             <>
               <CreateTimetableEntryDialog subjects={subjects} />
-              <CreateAssignmentDialog subjects={subjects} />
               <LogSessionDialog subjects={subjects} />
             </>
           )}
         </div>
       </div>
 
-      {/* Main Tabbed Interface */}
-      <Tabs defaultValue="attendance" className="space-y-4">
-        <TabsList className="bg-muted p-1 rounded-lg border border-border">
-          <TabsTrigger value="attendance" className="text-xs gap-1.5 rounded-md font-medium">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Attendance ({overallStats.percentage}%)
-          </TabsTrigger>
-          <TabsTrigger value="timetable" className="text-xs gap-1.5 rounded-md font-medium">
+      {/* 3-Pillar Tabbed Interface */}
+      <Tabs defaultValue="schedule" className="space-y-5">
+        <TabsList className="bg-card border border-border p-1 rounded-xl shadow-xs w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
+          <TabsTrigger value="schedule" className="text-xs gap-1.5 rounded-lg font-medium cursor-pointer">
             <CalendarDays className="h-3.5 w-3.5" />
-            Weekly Timetable ({timetable.length})
+            <span>Class Schedule</span>
           </TabsTrigger>
-          <TabsTrigger value="coursework" className="text-xs gap-1.5 rounded-md font-medium">
-            <FileCheck2 className="h-3.5 w-3.5" />
-            Coursework & Exams ({assignments.length + examinations.length})
+          <TabsTrigger value="attendance" className="text-xs gap-1.5 rounded-lg font-medium cursor-pointer">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>Attendance ({overallStats.percentage}%)</span>
           </TabsTrigger>
-          <TabsTrigger value="syllabus" className="text-xs gap-1.5 rounded-md font-medium">
+          <TabsTrigger value="syllabus" className="text-xs gap-1.5 rounded-lg font-medium cursor-pointer">
             <BookOpen className="h-3.5 w-3.5" />
-            Syllabus ({syllabusTopics.length})
+            <span>Syllabus ({syllabusTopics.length})</span>
           </TabsTrigger>
         </TabsList>
 
-        {/* TAB 1: ATTENDANCE */}
+        {/* ======================================================== */}
+        {/* PILLAR 1: CLASS SCHEDULE & TIMETABLE                     */}
+        {/* ======================================================== */}
+        <TabsContent value="schedule" className="space-y-6">
+          {/* Day of Week Selector Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {SHORT_DAYS.map((day, idx) => {
+              const isToday = idx === currentDayIndex;
+              const isSelected = idx === activeDay;
+              const daySlotCount = timetable.filter((t) => t.day_of_week === idx).length;
+
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setActiveDay(idx)}
+                  className={`flex-1 sm:flex-initial min-w-[56px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
+                      : 'bg-card border-border text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
+                    {day}
+                  </span>
+                  <span className="text-xs font-bold block mt-1 leading-none">
+                    {daySlotCount}
+                  </span>
+                  {isToday && (
+                    <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-medium">
+                      Today
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Day Header */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              {DAY_NAMES[activeDay]} Schedule
+              {activeDay === currentDayIndex && (
+                <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary bg-primary/10">
+                  Today
+                </Badge>
+              )}
+            </h2>
+            <span className="text-xs text-muted-foreground font-mono">
+              {selectedDayClasses.length} {selectedDayClasses.length === 1 ? 'class' : 'classes'}
+            </span>
+          </div>
+
+          {/* Timetable List for Selected Day */}
+          {selectedDayClasses.length === 0 ? (
+            <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
+              <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
+              <p className="font-medium text-foreground">No classes scheduled for {DAY_NAMES[activeDay]}.</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Add lecture timeslots to track your weekly routine seamlessly.
+              </p>
+              {subjects.length > 0 && (
+                <div className="mt-4">
+                  <CreateTimetableEntryDialog subjects={subjects} />
+                </div>
+              )}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {selectedDayClasses.map((slot) => {
+                const sub = slot.subject;
+                return (
+                  <div
+                    key={slot.id}
+                    className="p-3.5 rounded-xl border border-border bg-card shadow-xs hover:border-primary/40 transition-colors flex items-start justify-between gap-3"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span
+                        className="h-3.5 w-3.5 rounded-full mt-1 shrink-0"
+                        style={{ backgroundColor: sub?.color || '#526653' }}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-xs font-semibold text-foreground truncate">
+                            {sub?.name || 'Class Session'}
+                          </h3>
+                          {sub?.code && (
+                            <Badge variant="outline" className="text-[10px] font-mono py-0 border-border">
+                              {sub.code}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground mt-1.5">
+                          <div className="flex items-center gap-1 font-mono text-foreground font-medium">
+                            <Clock className="h-3 w-3 text-primary" />
+                            <span>
+                              {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
+                            </span>
+                          </div>
+
+                          {slot.classroom && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-primary" />
+                              <span>{slot.classroom}</span>
+                            </div>
+                          )}
+
+                          {sub?.instructor && (
+                            <span className="text-[10px] text-muted-foreground italic truncate">
+                              Prof. {sub.instructor}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteTimetableEntry(slot.id)}
+                      disabled={isPending}
+                      className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer shrink-0"
+                      aria-label="Delete timetable slot"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* ======================================================== */}
+        {/* PILLAR 2: ATTENDANCE TRACKER (75% ENGINE & QUICK LOGS)   */}
+        {/* ======================================================== */}
         <TabsContent value="attendance" className="space-y-6">
-          {/* Top Overall Stats Banner */}
+          {/* Cumulative Attendance Hero Card */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <Card className="sm:col-span-1 border-border bg-card rounded-xl shadow-xs">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Cumulative Attendance
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
+                  Total Attendance
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
                   <span
-                    className={`text-3xl font-extrabold tracking-tight ${
+                    className={`text-3xl font-extrabold tracking-tight font-mono ${
                       overallStats.percentage >= 75
                         ? 'text-emerald-700 dark:text-emerald-400'
                         : overallStats.conductedSessions === 0
@@ -224,15 +345,15 @@ export function AcademicOverview({
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Derived from {overallStats.conductedSessions} conducted sessions
+                  Derived from {overallStats.conductedSessions} conducted lectures
                 </p>
               </CardContent>
             </Card>
 
             <Card className="sm:col-span-3 border-border bg-card rounded-xl shadow-xs">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Session Breakdown
+                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
+                  Attendance Breakdown
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
@@ -248,13 +369,13 @@ export function AcademicOverview({
                   </span>
                   <span className="text-[10px] text-muted-foreground font-medium">Missed</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-muted/60 border border-border">
-                  <span className="text-lg font-bold text-foreground block font-mono">
+                <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+                  <span className="text-lg font-bold text-amber-700 dark:text-amber-300 block font-mono">
                     {overallStats.cancelledSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Cancelled / No Class</span>
+                  <span className="text-[10px] text-muted-foreground font-medium">Cancelled</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-muted/80 border border-border">
+                <div className="p-2.5 rounded-lg bg-muted border border-border">
                   <span className="text-lg font-bold text-foreground block font-mono">
                     {overallStats.totalSessions}
                   </span>
@@ -264,76 +385,120 @@ export function AcademicOverview({
             </Card>
           </div>
 
-          {/* Subject Cards */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3 text-foreground">Course Attendance Cards</h3>
-            {subjects.length === 0 ? (
-              <Card className="p-8 text-center text-xs text-muted-foreground border-dashed border-border rounded-xl">
-                <p>No subjects added yet. Click &ldquo;Add Subject&rdquo; above to begin.</p>
+          {/* Subject Attendance Breakdown Cards */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-foreground tracking-tight">Course Attendance & Quick Log</h2>
+
+            {subjectStats.length === 0 ? (
+              <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
+                <GraduationCap className="h-8 w-8 mx-auto text-primary/40 mb-2" />
+                <p className="font-medium text-foreground">No academic courses enrolled.</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Add your semester courses to start tracking attendance and 75% thresholds.
+                </p>
+                <div className="mt-4">
+                  <CreateSubjectDialog />
+                </div>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {subjectStats.map(({ subject, stats, marginText }) => {
-                  const isSafe = stats.percentage >= 75;
+                  const isSafe = stats.conductedSessions === 0 || stats.percentage >= 75;
+
                   return (
                     <Card
                       key={subject.id}
-                      className="border-border bg-card hover:border-primary/50 transition-colors flex flex-col justify-between rounded-xl shadow-xs"
+                      className="border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between"
                     >
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span
-                                className="h-2.5 w-2.5 rounded-full shrink-0"
-                                style={{ backgroundColor: subject.color || '#526653' }}
-                              />
-                              <CardTitle className="text-sm font-semibold text-foreground">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="h-3 w-3 rounded-full shrink-0"
+                              style={{ backgroundColor: subject.color || '#526653' }}
+                            />
+                            <div>
+                              <CardTitle className="text-sm font-semibold text-foreground truncate">
                                 {subject.name}
                               </CardTitle>
+                              {subject.code && (
+                                <CardDescription className="text-[10px] font-mono text-muted-foreground">
+                                  {subject.code}
+                                </CardDescription>
+                              )}
                             </div>
-                            {subject.code && (
-                              <CardDescription className="text-[11px] mt-0.5">
-                                {subject.code} &bull; {subject.credits} Credits
-                              </CardDescription>
-                            )}
                           </div>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs font-mono font-bold ${
-                              isSafe
-                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/40'
-                                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900/40'
-                            }`}
-                          >
-                            {stats.percentage}%
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0 space-y-3">
-                        {/* Progress Bar */}
-                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-300 ${
-                              isSafe ? 'bg-primary' : 'bg-rose-600 dark:bg-rose-500'
-                            }`}
-                            style={{ width: `${Math.min(100, stats.percentage)}%` }}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                          <span>
-                            {stats.presentSessions}/{stats.conductedSessions} classes
-                          </span>
                           <span
-                            className={`font-medium ${
+                            className={`text-base font-bold font-mono ${
                               isSafe
                                 ? 'text-emerald-700 dark:text-emerald-400'
                                 : 'text-rose-700 dark:text-rose-400'
                             }`}
                           >
-                            {marginText}
+                            {stats.conductedSessions > 0 ? `${stats.percentage}%` : '—'}
                           </span>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="pt-0 space-y-3">
+                        {/* Attendance Progress Bar */}
+                        <div className="space-y-1">
+                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 rounded-full ${
+                                isSafe ? 'bg-primary' : 'bg-rose-500'
+                              }`}
+                              style={{ width: `${Math.min(100, stats.percentage)}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                            <span>
+                              {stats.presentSessions}/{stats.conductedSessions} attended
+                            </span>
+                            <span className={isSafe ? 'text-primary font-medium' : 'text-rose-600 font-medium'}>
+                              {marginText}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Quick Log Action Buttons */}
+                        <div className="pt-2 border-t border-border flex items-center justify-between gap-1.5">
+                          <span className="text-[10px] text-muted-foreground font-medium">Quick Log:</span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="outline"
+                              onClick={() => handleQuickLog(subject.id, 'present')}
+                              disabled={isPending}
+                              className="h-6 px-2 text-[10px] rounded-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              Present
+                            </Button>
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="outline"
+                              onClick={() => handleQuickLog(subject.id, 'absent')}
+                              disabled={isPending}
+                              className="h-6 px-2 text-[10px] rounded-lg border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Absent
+                            </Button>
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="ghost"
+                              onClick={() => handleQuickLog(subject.id, 'cancelled')}
+                              disabled={isPending}
+                              className="h-6 px-1.5 text-[10px] rounded-lg text-muted-foreground"
+                              title="Class Cancelled"
+                            >
+                              <MinusCircle className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -342,362 +507,113 @@ export function AcademicOverview({
               </div>
             )}
           </div>
-
-          {/* Session History Log Table */}
-          <Card className="border-border bg-card rounded-xl shadow-xs">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div>
-                <CardTitle className="text-sm font-semibold text-foreground">Class Session Ground Truth</CardTitle>
-                <CardDescription className="text-xs">
-                  Individual class sessions recorded as present, absent, cancelled, or no class.
-                </CardDescription>
-              </div>
-
-              {subjects.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedSubjectId}
-                    onChange={(e) => setSelectedSubjectId(e.target.value)}
-                    className="h-8 px-2.5 rounded-lg border border-border bg-background text-xs outline-none cursor-pointer"
-                  >
-                    <option value="all">All Subjects</option>
-                    {subjects.map((sub) => (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="pt-0">
-              {filteredSessions.length === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
-                  <Calendar className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-                  <p>No class sessions logged yet.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b border-border text-left text-muted-foreground font-medium">
-                        <th className="pb-2.5 font-medium">Date</th>
-                        <th className="pb-2.5 font-medium">Subject</th>
-                        <th className="pb-2.5 font-medium">Topic / Notes</th>
-                        <th className="pb-2.5 font-medium">Status</th>
-                        <th className="pb-2.5 font-medium text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {filteredSessions.map((session) => (
-                        <tr key={session.id} className="hover:bg-muted/30 transition-colors">
-                          <td className="py-2.5 font-medium text-foreground">
-                            {format(new Date(session.session_date), 'MMM d, yyyy')}
-                          </td>
-                          <td className="py-2.5 font-medium text-foreground">
-                            {session.subject?.name || 'General'}
-                          </td>
-                          <td className="py-2.5 text-muted-foreground max-w-xs truncate">
-                            {session.topic_covered || session.notes || '—'}
-                          </td>
-                          <td className="py-2.5">
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium uppercase font-mono ${
-                                session.status === 'present'
-                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40'
-                                  : session.status === 'absent'
-                                  ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40'
-                                  : 'bg-muted text-muted-foreground border border-border'
-                              }`}
-                            >
-                              {session.status}
-                            </span>
-                          </td>
-                          <td className="py-2.5 text-right space-x-1">
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(session.id, 'present')}
-                              title="Mark Present"
-                              disabled={isPending}
-                              className="p-1 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 cursor-pointer disabled:opacity-50"
-                              aria-label="Mark Present"
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(session.id, 'absent')}
-                              title="Mark Absent"
-                              disabled={isPending}
-                              className="p-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 cursor-pointer disabled:opacity-50"
-                              aria-label="Mark Absent"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleStatusChange(session.id, 'cancelled')}
-                              title="Mark Cancelled"
-                              disabled={isPending}
-                              className="p-1 rounded-md hover:bg-muted text-muted-foreground cursor-pointer disabled:opacity-50"
-                              aria-label="Mark Cancelled"
-                            >
-                              <MinusCircle className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteSession(session.id)}
-                              title="Delete record"
-                              disabled={isPending}
-                              className="p-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 text-muted-foreground hover:text-rose-600 cursor-pointer disabled:opacity-50"
-                              aria-label="Delete record"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
 
-        {/* TAB 2: WEEKLY TIMETABLE */}
-        <TabsContent value="timetable" className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
-            {[1, 2, 3, 4, 5, 6, 0].map((dayIdx) => {
-              const dayEntries = timetable.filter((t) => t.day_of_week === dayIdx);
-              const isToday = new Date().getDay() === dayIdx;
-
-              return (
-                <Card
-                  key={dayIdx}
-                  className={`flex flex-col min-h-64 rounded-xl shadow-xs transition-colors ${
-                    isToday ? 'border-primary shadow-xs bg-muted/30' : 'border-border bg-card'
-                  }`}
-                >
-                  <CardHeader className="p-3 border-b border-border">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        {DAY_NAMES[dayIdx]}
-                      </CardTitle>
-                      {isToday && (
-                        <Badge variant="default" className="text-[9px] px-1.5 py-0 h-4 rounded-md">
-                          Today
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-2 space-y-2 flex-1">
-                    {dayEntries.length === 0 ? (
-                      <p className="text-[10px] text-muted-foreground/60 text-center py-6">
-                        No classes
-                      </p>
-                    ) : (
-                      dayEntries.map((entry) => (
-                        <div
-                          key={entry.id}
-                          className="p-2.5 rounded-lg border border-border bg-card text-xs space-y-1 relative group shadow-xs"
-                        >
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="font-semibold text-[11px] truncate text-foreground">
-                              {entry.subject?.name}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteTimetableEntry(entry.id)}
-                              disabled={isPending}
-                              title="Delete entry"
-                              aria-label="Delete timetable slot"
-                              className="text-muted-foreground/40 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer p-0.5 rounded"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 font-mono">
-                            <Clock className="h-3 w-3 text-primary" />
-                            <span>
-                              {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
-                            </span>
-                          </div>
-                          {entry.classroom && (
-                            <div className="text-[10px] text-muted-foreground">
-                              📍 {entry.classroom}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </TabsContent>
-
-        {/* TAB 3: COURSEWORK (ASSIGNMENTS & EXAMS) */}
-        <TabsContent value="coursework" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Assignments Column */}
-            <Card className="border-border bg-card rounded-xl shadow-xs">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
-                  <FileCheck2 className="h-4 w-4 text-primary" />
-                  Coursework & Assignments ({assignments.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2.5 pt-0">
-                {assignments.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
-                    No assignments recorded.
-                  </div>
-                ) : (
-                  assignments.map((asg) => (
-                    <div
-                      key={asg.id}
-                      className="p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors text-xs flex items-center justify-between gap-3 shadow-xs"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-foreground truncate">
-                            {asg.title}
-                          </h4>
-                          {asg.subject && (
-                            <Badge variant="outline" className="text-[10px] py-0 border-border">
-                              {asg.subject.name}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          Due {format(new Date(asg.due_date), 'MMM d, yyyy @ hh:mm a')}
-                          {asg.max_marks && ` • ${asg.max_marks} marks`}
-                        </p>
-                      </div>
-
-                      <select
-                        value={asg.status}
-                        onChange={(e) =>
-                          handleAssignmentStatusChange(
-                            asg.id,
-                            e.target.value as 'pending' | 'submitted' | 'graded' | 'late'
-                          )
-                        }
-                        disabled={isPending}
-                        className="h-7 px-2 text-[10px] font-medium rounded-lg border border-border bg-background outline-none capitalize cursor-pointer"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="submitted">Submitted</option>
-                        <option value="graded">Graded</option>
-                        <option value="late">Late</option>
-                      </select>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Examinations Column */}
-            <Card className="border-border bg-card rounded-xl shadow-xs">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  Examinations Schedule ({examinations.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2.5 pt-0">
-                {examinations.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
-                    No examinations scheduled.
-                  </div>
-                ) : (
-                  examinations.map((exam) => (
-                    <div
-                      key={exam.id}
-                      className="p-3 rounded-lg border border-border bg-card text-xs flex items-center justify-between gap-3 shadow-xs"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-foreground">{exam.title}</h4>
-                          {exam.subject && (
-                            <Badge variant="outline" className="text-[10px] py-0 border-border">
-                              {exam.subject.name}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          📅 {format(new Date(exam.exam_date), 'EEEE, MMM d, yyyy @ hh:mm a')}
-                          {exam.classroom && ` • Room: ${exam.classroom}`}
-                        </p>
-                      </div>
-
-                      {exam.weightage_percentage && (
-                        <Badge variant="secondary" className="text-[10px] font-mono">
-                          {exam.weightage_percentage}% weight
-                        </Badge>
-                      )}
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* TAB 4: SYLLABUS TOPICS */}
+        {/* ======================================================== */}
+        {/* PILLAR 3: COURSE SYLLABUS & TOPIC COVERAGE               */}
+        {/* ======================================================== */}
         <TabsContent value="syllabus" className="space-y-4">
-          <Card className="border-border bg-card rounded-xl shadow-xs">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-foreground">Course Syllabus & Topic Tracker</CardTitle>
-              <CardDescription className="text-xs">
-                Check off syllabus concepts as your professor covers them in lectures.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {syllabusTopics.length === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
-                  <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-                  <p>No syllabus topics logged yet.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-border">
-                  {syllabusTopics.map((topic) => (
-                    <div
-                      key={topic.id}
-                      className="py-2.5 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <label className="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0">
-                        <input
-                          type="checkbox"
-                          checked={topic.is_completed}
-                          onChange={() => handleToggleTopic(topic.id, topic.is_completed)}
-                          disabled={isPending}
-                          className="h-4 w-4 rounded border-border text-primary cursor-pointer accent-primary"
-                        />
-                        <span
-                          className={`truncate ${
-                            topic.is_completed
-                              ? 'line-through text-muted-foreground'
-                              : 'font-medium text-foreground'
-                          }`}
-                        >
-                          Unit {topic.unit_number}: {topic.title}
-                        </span>
-                      </label>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground tracking-tight">Curriculum Syllabus & Modules</h2>
+            <span className="text-xs text-muted-foreground font-mono">
+              {syllabusTopics.filter((t) => t.is_completed).length}/{syllabusTopics.length} completed
+            </span>
+          </div>
 
-                      {topic.subject && (
-                        <Badge variant="outline" className="text-[10px] shrink-0 border-border">
-                          {topic.subject.name}
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {syllabusTopics.length === 0 ? (
+            <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
+              <BookOpen className="h-8 w-8 mx-auto text-primary/40 mb-2" />
+              <p className="font-medium text-foreground">No syllabus topics entered yet.</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Organize your course modules, lecture notes, and exam topics step-by-step.
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {subjects.map((sub) => {
+                const subTopics = syllabusTopics.filter((t) => t.subject_id === sub.id);
+                if (subTopics.length === 0) return null;
+
+                const completedCount = subTopics.filter((t) => t.is_completed).length;
+                const pct = Math.round((completedCount / subTopics.length) * 100);
+
+                return (
+                  <Card key={sub.id} className="border-border bg-card rounded-xl shadow-xs overflow-hidden">
+                    <CardHeader className="pb-3 border-b border-border bg-muted/20">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-3 w-3 rounded-full shrink-0"
+                            style={{ backgroundColor: sub.color || '#526653' }}
+                          />
+                          <div>
+                            <CardTitle className="text-xs sm:text-sm font-semibold text-foreground">
+                              {sub.name}
+                            </CardTitle>
+                            {sub.code && (
+                              <CardDescription className="text-[10px] font-mono text-muted-foreground">
+                                {sub.code}
+                              </CardDescription>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-xs font-bold font-mono text-foreground">
+                            {completedCount}/{subTopics.length} ({pct}%)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Subject syllabus progress bar */}
+                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden mt-2">
+                        <div
+                          className="h-full bg-primary transition-all duration-300 rounded-full"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-border">
+                        {subTopics.map((topic) => (
+                          <div
+                            key={topic.id}
+                            className="p-3 flex items-center justify-between gap-3 text-xs hover:bg-muted/20 transition-colors"
+                          >
+                            <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={topic.is_completed}
+                                onChange={() => handleToggleTopic(topic.id, topic.is_completed)}
+                                disabled={isPending}
+                                className="h-4 w-4 rounded border-border text-primary cursor-pointer accent-primary shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <span
+                                  className={`block truncate ${
+                                    topic.is_completed
+                                      ? 'line-through text-muted-foreground'
+                                      : 'font-medium text-foreground'
+                                  }`}
+                                >
+                                  {topic.title}
+                                </span>
+                              </div>
+                            </label>
+
+                            <Badge variant="outline" className="text-[10px] font-mono shrink-0 border-border">
+                              Unit {topic.unit_number}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

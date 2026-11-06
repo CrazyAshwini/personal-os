@@ -135,7 +135,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-sidebar/95 backdrop-blur-md px-2 flex items-center justify-around select-none">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-card/95 dark:bg-[#171A18]/95 backdrop-blur-xl px-2 flex items-center justify-around select-none shadow-[0_-4px_16px_rgba(0,0,0,0.03)] pb-[env(safe-area-inset-bottom)]">
         {mobilePrimaryNav.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -146,25 +146,25 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors ${
+              className={`flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-[10px] font-medium ${
                 isActive
-                  ? 'text-primary font-semibold'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-primary font-semibold bg-primary/10 dark:bg-primary/15'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
               }`}
             >
-              <Icon className={`h-5 w-5 mb-0.5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
-              <span>{item.title}</span>
+              <Icon className={`h-5 w-5 mb-0.5 ${isActive ? 'stroke-[2.25px]' : 'stroke-[1.75px]'}`} />
+              <span className="leading-none">{item.title}</span>
             </Link>
           );
         })}
 
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer"
           aria-label="Open full menu"
         >
-          <Menu className="h-5 w-5 mb-0.5 stroke-2" />
-          <span>More</span>
+          <Menu className="h-5 w-5 mb-0.5 stroke-[1.75px]" />
+          <span className="leading-none">More</span>
         </button>
       </nav>
     </>
