@@ -310,6 +310,75 @@ export async function deleteClassSessionAction(
   return { success: true };
 }
 
+export async function toggleSlotAttendanceAction(params: {
+  timetableEntryId: string;
+  subjectId: string;
+  sessionDate: string;
+  status: 'present' | 'absent' | 'cancelled';
+}): Promise<AcademicActionResult<{ sessionId?: string; status: 'present' | 'absent' | 'cancelled' | null }>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Authentication required.' };
+
+  const { data: existing } = await supabase
+    .from('class_sessions')
+    .select('id, status')
+    .eq('user_id', user.id)
+    .eq('timetable_entry_id', params.timetableEntryId)
+    .eq('session_date', params.sessionDate)
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.status === params.status) {
+      await supabase
+        .from('class_sessions')
+        .delete()
+        .eq('id', existing.id)
+        .eq('user_id', user.id);
+
+      revalidatePath('/dashboard');
+      revalidatePath('/academics');
+      return { success: true, data: { status: null } };
+    } else {
+      await supabase
+        .from('class_sessions')
+        .update({
+          status: params.status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .eq('user_id', user.id);
+
+      revalidatePath('/dashboard');
+      revalidatePath('/academics');
+      return { success: true, data: { sessionId: existing.id, status: params.status } };
+    }
+  } else {
+    const { data: inserted, error } = await supabase
+      .from('class_sessions')
+      .insert({
+        user_id: user.id,
+        subject_id: params.subjectId,
+        timetable_entry_id: params.timetableEntryId,
+        session_date: params.sessionDate,
+        status: params.status,
+      })
+      .select('id')
+      .single();
+
+    if (error || !inserted) {
+      return { error: error?.message || 'Failed to record attendance.' };
+    }
+
+    revalidatePath('/dashboard');
+    revalidatePath('/academics');
+    return { success: true, data: { sessionId: inserted.id, status: params.status } };
+  }
+}
+
 // 6. Assignment Actions
 export async function createAssignmentAction(
   values: CreateAssignmentInput
