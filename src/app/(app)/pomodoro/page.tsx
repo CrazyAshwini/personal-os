@@ -2,6 +2,7 @@ import React from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { PomodoroTimer } from '@/features/pomodoro/pomodoro-timer';
 import { PomodoroAnalytics, type PomodoroSessionRecord } from '@/features/pomodoro/pomodoro-analytics';
+import { Timer } from 'lucide-react';
 
 export const instant = false;
 
@@ -53,11 +54,12 @@ export default async function PomodoroPage() {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Study Sessions & Pomodoro
+      <div className="border-b border-border pb-4">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Timer className="h-6 w-6 text-primary" />
+          Study Sessions & Focus Timer
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground mt-0.5">
           Timestamp-derived focus timer with background drift resistance
         </p>
       </div>
