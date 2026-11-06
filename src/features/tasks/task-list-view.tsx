@@ -52,13 +52,14 @@ export function TaskListView({ initialTasks, categories }: TaskListViewProps) {
   return (
     <div className="space-y-6">
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <CheckSquare className="h-6 w-6 text-primary" />
             Tasks & Productivity
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Organize tasks, subtasks, priorities, and deadlines
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Organize tasks, checklist subtasks, priorities, and deadlines
           </p>
         </div>
 
@@ -73,7 +74,7 @@ export function TaskListView({ initialTasks, categories }: TaskListViewProps) {
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-xs"
+            className="pl-9 h-9 text-xs rounded-lg border-border bg-card"
           />
         </div>
 
@@ -82,7 +83,7 @@ export function TaskListView({ initialTasks, categories }: TaskListViewProps) {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="flex h-9 rounded-md border border-input bg-card px-2.5 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex h-9 rounded-lg border border-border bg-card px-2.5 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
           >
             <option value="all">All Priorities</option>
             <option value="urgent">Urgent</option>
@@ -99,17 +100,17 @@ export function TaskListView({ initialTasks, categories }: TaskListViewProps) {
         onValueChange={(v) => setActiveTab(v as typeof activeTab)}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-4 w-full sm:w-auto">
-          <TabsTrigger value="all" className="text-xs">
+        <TabsList className="bg-muted p-1 rounded-lg border border-border grid grid-cols-4 w-full sm:w-auto">
+          <TabsTrigger value="all" className="text-xs rounded-md font-medium">
             All ({counts.all})
           </TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs">
+          <TabsTrigger value="pending" className="text-xs rounded-md font-medium">
             Pending ({counts.pending})
           </TabsTrigger>
-          <TabsTrigger value="in_progress" className="text-xs">
+          <TabsTrigger value="in_progress" className="text-xs rounded-md font-medium">
             In Progress ({counts.in_progress})
           </TabsTrigger>
-          <TabsTrigger value="completed" className="text-xs">
+          <TabsTrigger value="completed" className="text-xs rounded-md font-medium">
             Completed ({counts.completed})
           </TabsTrigger>
         </TabsList>

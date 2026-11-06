@@ -53,11 +53,11 @@ export function TaskItem({ task }: { task: TaskItemData }) {
     });
   };
 
-  const priorityColors: Record<string, string> = {
-    low: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
-    medium: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-    high: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
-    urgent: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
+  const priorityStyles: Record<string, string> = {
+    low: 'bg-muted/50 text-muted-foreground border-border',
+    medium: 'bg-muted text-foreground border-border',
+    high: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-900/40',
+    urgent: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-900/40',
   };
 
   const completedSubtasks = task.subtasks?.filter((s) => s.is_completed).length || 0;
@@ -65,8 +65,8 @@ export function TaskItem({ task }: { task: TaskItemData }) {
 
   return (
     <div
-      className={`group rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 hover:shadow-xs ${
-        isCompleted ? 'opacity-65' : ''
+      className={`group rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-xs ${
+        isCompleted ? 'opacity-60' : ''
       }`}
     >
       <div className="flex items-start gap-3">
@@ -75,6 +75,7 @@ export function TaskItem({ task }: { task: TaskItemData }) {
             checked={isCompleted}
             onCheckedChange={handleToggleCompleted}
             disabled={isPending}
+            aria-label={`Mark task ${task.title} as ${isCompleted ? 'incomplete' : 'completed'}`}
           />
         </div>
 
@@ -88,21 +89,23 @@ export function TaskItem({ task }: { task: TaskItemData }) {
               {task.title}
             </h3>
 
-            <Badge variant="outline" className={`text-[10px] uppercase font-bold px-1.5 py-0 ${priorityColors[task.priority]}`}>
+            <Badge
+              variant="outline"
+              className={`text-[10px] uppercase font-mono font-bold px-1.5 py-0 ${priorityStyles[task.priority]}`}
+            >
               {task.priority}
             </Badge>
 
             {task.category && (
               <span
-                className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full"
+                className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border border-border bg-muted/30"
                 style={{
-                  backgroundColor: `${task.category.color}15`,
-                  color: task.category.color || '#3b82f6',
+                  color: task.category.color || 'var(--primary)',
                 }}
               >
                 <span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: task.category.color || '#3b82f6' }}
+                  style={{ backgroundColor: task.category.color || 'var(--primary)' }}
                 />
                 {task.category.name}
               </span>
@@ -117,8 +120,8 @@ export function TaskItem({ task }: { task: TaskItemData }) {
 
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
             {task.due_date && (
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
                 <span>Due {format(new Date(task.due_date), 'MMM d, yyyy')}</span>
               </div>
             )}
@@ -127,7 +130,7 @@ export function TaskItem({ task }: { task: TaskItemData }) {
               <button
                 type="button"
                 onClick={() => setSubtasksExpanded(!subtasksExpanded)}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
                 {subtasksExpanded ? (
                   <ChevronDown className="h-3.5 w-3.5" />
@@ -147,7 +150,7 @@ export function TaskItem({ task }: { task: TaskItemData }) {
           size="icon"
           onClick={handleDelete}
           disabled={isPending}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive h-8 w-8"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 h-8 w-8 cursor-pointer rounded-lg"
         >
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Delete</span>
@@ -156,7 +159,7 @@ export function TaskItem({ task }: { task: TaskItemData }) {
 
       {/* Subtasks Accordion */}
       {subtasksExpanded && totalSubtasks > 0 && (
-        <div className="mt-3 pl-7 pt-2 border-t border-border/50 space-y-2">
+        <div className="mt-3 pl-7 pt-2 border-t border-border space-y-2">
           {task.subtasks?.map((subtask) => (
             <div key={subtask.id} className="flex items-center gap-2">
               <Checkbox
@@ -164,6 +167,7 @@ export function TaskItem({ task }: { task: TaskItemData }) {
                 onCheckedChange={() => handleToggleSubtask(subtask.id, subtask.is_completed)}
                 disabled={isPending}
                 className="size-3.5"
+                aria-label={`Mark subtask ${subtask.title} as ${subtask.is_completed ? 'incomplete' : 'completed'}`}
               />
               <span
                 className={`text-xs ${
