@@ -99,10 +99,10 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Film className="h-5 w-5 text-purple-500" />
+            <Film className="h-5 w-5 text-primary" />
             Movies & Series Tracker
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -111,7 +111,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-purple-600 text-white hover:bg-purple-700 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs">
+          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
             <Plus className="h-3.5 w-3.5" />
             Add Media
           </DialogTrigger>
@@ -125,7 +125,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
 
             <form onSubmit={handleCreateMedia} className="space-y-4 pt-2">
               {error && (
-                <div className="p-2.5 rounded bg-destructive/10 text-destructive text-xs">
+                <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive text-xs">
                   {error}
                 </div>
               )}
@@ -138,7 +138,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                   placeholder="e.g. Severance, Oppenheimer, Attack on Titan"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -153,7 +153,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                         e.target.value as 'movie' | 'series' | 'anime' | 'documentary'
                       )
                     }
-                    className="w-full h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                    className="w-full h-8 px-2 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                   >
                     <option value="series">TV / Web Series</option>
                     <option value="movie">Movie</option>
@@ -175,7 +175,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                           | 'dropped'
                       )
                     }
-                    className="w-full h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                    className="w-full h-8 px-2 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                   >
                     <option value="watching">Currently Watching</option>
                     <option value="plan_to_watch">Plan to Watch</option>
@@ -194,7 +194,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                     min={1}
                     value={totalEpisodes}
                     onChange={(e) => setTotalEpisodes(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -205,7 +205,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                     min={0}
                     value={watchedEpisodes}
                     onChange={(e) => setWatchedEpisodes(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -217,7 +217,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                     max={10}
                     value={rating}
                     onChange={(e) => setRating(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -229,7 +229,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                     max={2100}
                     value={releaseYear}
                     onChange={(e) => setReleaseYear(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -240,7 +240,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpen(false)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg border-border"
                 >
                   Cancel
                 </Button>
@@ -248,7 +248,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                   type="submit"
                   size="sm"
                   disabled={isPending || !title.trim()}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg shadow-xs"
                 >
                   {isPending ? 'Saving...' : 'Add to Watchlist'}
                 </Button>
@@ -259,13 +259,15 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 text-xs">
+      <div className="flex flex-wrap gap-2 text-xs">
         {(['all', 'series', 'movie', 'anime'] as const).map((tab) => (
           <Button
             key={tab}
             variant={filterType === tab ? 'default' : 'outline'}
             size="sm"
-            className="h-7 text-xs capitalize"
+            className={`h-8 text-xs rounded-lg capitalize border-border cursor-pointer ${
+              filterType === tab ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
             onClick={() => setFilterType(tab)}
           >
             {tab === 'all' ? 'All Media' : tab} (
@@ -279,9 +281,18 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
 
       {/* Media Grid */}
       {filteredItems.length === 0 ? (
-        <Card className="p-8 text-center text-xs text-muted-foreground">
+        <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
           <Film className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
           <p>No media logged in this category yet.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen(true)}
+            className="mt-4 text-xs h-8 rounded-lg border-border"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add First Show
+          </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -295,21 +306,22 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
             return (
               <Card
                 key={item.id}
-                className={`hover:border-primary/40 transition-colors flex flex-col justify-between ${
-                  isCompleted ? 'bg-purple-500/5 border-purple-500/20' : ''
-                }`}
+                className="border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between"
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <CardTitle className="text-sm font-semibold line-clamp-1">
+                      <CardTitle className="text-sm font-semibold line-clamp-1 text-foreground">
                         {item.title}
                       </CardTitle>
                       <CardDescription className="text-xs text-muted-foreground mt-0.5 capitalize">
                         {item.type} {item.release_year ? `• ${item.release_year}` : ''}
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className="text-[10px] capitalize font-mono shrink-0">
+                    <Badge
+                      variant={isCompleted ? 'secondary' : 'outline'}
+                      className="text-[10px] capitalize font-mono shrink-0 border-border"
+                    >
                       {item.status.replace(/_/g, ' ')}
                     </Badge>
                   </div>
@@ -317,7 +329,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
 
                 <CardContent className="pt-0 space-y-3">
                   {/* Episode Progress */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex justify-between text-[11px] text-muted-foreground">
                       <span>
                         Episode {item.watched_episodes} of {item.total_episodes}
@@ -328,7 +340,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                     </div>
                     <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-full bg-purple-500 transition-all duration-300"
+                        className="h-full bg-primary transition-all duration-300 rounded-full"
                         style={{ width: `${Math.min(100, pct)}%` }}
                       />
                     </div>
@@ -343,12 +355,12 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-between pt-2 border-t border-border text-xs">
+                    <div className="flex items-center gap-1.5">
                       <Button
                         variant="outline"
                         size="xs"
-                        className="h-6 px-2 text-[10px]"
+                        className="h-7 px-2 text-[11px] rounded-lg border-border"
                         disabled={isPending || item.watched_episodes <= 0}
                         onClick={() => handleIncrementEpisode(item, -1)}
                       >
@@ -357,7 +369,7 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                       <Button
                         variant="outline"
                         size="xs"
-                        className="h-6 px-2 text-[10px]"
+                        className="h-7 px-2 text-[11px] rounded-lg border-border"
                         disabled={isPending || item.watched_episodes >= item.total_episodes}
                         onClick={() => handleIncrementEpisode(item, 1)}
                       >
@@ -365,15 +377,16 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
                       </Button>
                     </div>
 
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleDelete(item.id)}
                       disabled={isPending}
-                      className="text-muted-foreground hover:text-destructive p-1 rounded cursor-pointer"
-                      title="Delete show"
+                      className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                      aria-label="Delete media item"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

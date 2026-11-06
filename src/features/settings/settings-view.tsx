@@ -107,38 +107,38 @@ export function SettingsView({
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
       {feedback && (
         <div
-          className={`p-3.5 rounded-lg flex items-center gap-2.5 text-xs font-medium ${
+          className={`p-3.5 rounded-xl flex items-center gap-2.5 text-xs font-medium shadow-xs ${
             feedback.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+              ? 'bg-primary/10 text-primary border border-primary/20'
               : 'bg-destructive/10 text-destructive border border-destructive/20'
           }`}
         >
           {feedback.type === 'success' ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
           ) : (
-            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
           )}
           <span>{feedback.message}</span>
         </div>
       )}
 
       {/* Account Info Card */}
-      <Card>
+      <Card className="border-border bg-card rounded-xl shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold">Account & Privacy</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Account & Privacy</CardTitle>
           </div>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-muted-foreground">
             Personal OS is your isolated private vault. Row Level Security enforces
-            strict ownership.
+            strict data ownership.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
               <span className="text-muted-foreground block text-[11px]">Primary Email</span>
-              <span className="font-medium text-foreground">{userEmail}</span>
+              <span className="font-medium text-foreground font-mono">{userEmail}</span>
             </div>
             <div>
               <span className="text-muted-foreground block text-[11px]">Profile Name</span>
@@ -149,18 +149,18 @@ export function SettingsView({
       </Card>
 
       {/* Notification Preferences Card */}
-      <Card>
+      <Card className="border-border bg-card rounded-xl shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold">Notification Preferences</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Notification Preferences</CardTitle>
           </div>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-muted-foreground">
             Configure alert rules for tasks, study timers, and upcoming schedules.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             <label className="flex items-center gap-2.5 cursor-pointer">
               <Checkbox
                 checked={notifyTaskDeadlines}
@@ -168,7 +168,7 @@ export function SettingsView({
                   setNotifyTaskDeadlines(checked === true)
                 }
               />
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-foreground">
                 Task deadlines and due date notifications
               </span>
             </label>
@@ -180,7 +180,7 @@ export function SettingsView({
                   setNotifyCalendarReminders(checked === true)
                 }
               />
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-foreground">
                 Calendar events and custom reminders
               </span>
             </label>
@@ -192,12 +192,12 @@ export function SettingsView({
                   setNotifyAcademicClasses(checked === true)
                 }
               />
-              <span className="text-xs font-medium">
+              <span className="text-xs font-medium text-foreground">
                 Academic class timetable and session alerts
               </span>
             </label>
 
-            <div className="pt-2 border-t border-border/50">
+            <div className="pt-2 border-t border-border">
               <label className="flex items-center gap-2.5 cursor-pointer">
                 <Checkbox
                   checked={soundEnabled}
@@ -205,8 +205,8 @@ export function SettingsView({
                     setSoundEnabled(checked === true)
                   }
                 />
-                <span className="text-xs font-medium flex items-center gap-1.5">
-                  <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium flex items-center gap-1.5 text-foreground">
+                  <Volume2 className="h-3.5 w-3.5 text-primary" />
                   Enable timer chimes and reminder sound alerts
                 </span>
               </label>
@@ -216,13 +216,13 @@ export function SettingsView({
       </Card>
 
       {/* Pomodoro Timer Configuration Card */}
-      <Card>
+      <Card className="border-border bg-card rounded-xl shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold">Study & Pomodoro Durations</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Study & Pomodoro Durations</CardTitle>
           </div>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-muted-foreground">
             Set default minutes for focus intervals and break periods.
           </CardDescription>
         </CardHeader>
@@ -237,7 +237,7 @@ export function SettingsView({
                 max={180}
                 value={pomodoroWork}
                 onChange={(e) => setPomodoroWork(Number(e.target.value))}
-                className="h-8 text-xs"
+                className="h-8 text-xs rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -249,7 +249,7 @@ export function SettingsView({
                 max={60}
                 value={pomodoroShortBreak}
                 onChange={(e) => setPomodoroShortBreak(Number(e.target.value))}
-                className="h-8 text-xs"
+                className="h-8 text-xs rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -261,7 +261,7 @@ export function SettingsView({
                 max={120}
                 value={pomodoroLongBreak}
                 onChange={(e) => setPomodoroLongBreak(Number(e.target.value))}
-                className="h-8 text-xs"
+                className="h-8 text-xs rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -273,7 +273,7 @@ export function SettingsView({
                 max={20}
                 value={pomodoroInterval}
                 onChange={(e) => setPomodoroInterval(Number(e.target.value))}
-                className="h-8 text-xs"
+                className="h-8 text-xs rounded-lg"
               />
             </div>
           </div>
@@ -281,13 +281,13 @@ export function SettingsView({
       </Card>
 
       {/* Regional & Timezone Card */}
-      <Card>
+      <Card className="border-border bg-card rounded-xl shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold">Timezone & Regional Formats</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Timezone & Regional Formats</CardTitle>
           </div>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-muted-foreground">
             Manage your local display preferences for calendar and timetable times.
           </CardDescription>
         </CardHeader>
@@ -300,7 +300,7 @@ export function SettingsView({
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
                 placeholder="e.g. UTC, Asia/Kolkata, America/New_York"
-                className="h-8 text-xs"
+                className="h-8 text-xs rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -310,7 +310,9 @@ export function SettingsView({
                   type="button"
                   variant={timeFormat === '24h' ? 'default' : 'outline'}
                   size="sm"
-                  className="h-8 text-xs flex-1"
+                  className={`h-8 text-xs flex-1 rounded-lg border-border cursor-pointer ${
+                    timeFormat === '24h' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+                  }`}
                   onClick={() => setTimeFormat('24h')}
                 >
                   24-hour (14:30)
@@ -319,7 +321,9 @@ export function SettingsView({
                   type="button"
                   variant={timeFormat === '12h' ? 'default' : 'outline'}
                   size="sm"
-                  className="h-8 text-xs flex-1"
+                  className={`h-8 text-xs flex-1 rounded-lg border-border cursor-pointer ${
+                    timeFormat === '12h' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+                  }`}
                   onClick={() => setTimeFormat('12h')}
                 >
                   12-hour (2:30 PM)
@@ -331,20 +335,20 @@ export function SettingsView({
       </Card>
 
       {/* Account & Session */}
-      <Card className="border-neutral-200 dark:border-neutral-800">
+      <Card className="border-border bg-card rounded-xl shadow-xs">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
             <Shield className="h-4 w-4 text-primary" />
             Account & Session
           </CardTitle>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-muted-foreground">
             Manage your session and access to Personal OS
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 rounded-lg border border-border bg-muted/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 rounded-xl border border-border bg-muted/40">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-foreground">{userEmail}</p>
+              <p className="text-xs font-medium text-foreground font-mono">{userEmail}</p>
               <p className="text-[11px] text-muted-foreground">
                 Signed in securely with Supabase Auth
               </p>
@@ -354,7 +358,7 @@ export function SettingsView({
                 type="submit"
                 variant="destructive"
                 size="sm"
-                className="text-xs h-8 gap-1.5 cursor-pointer"
+                className="text-xs h-8 gap-1.5 cursor-pointer rounded-lg shadow-xs"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 Sign Out
@@ -366,7 +370,7 @@ export function SettingsView({
 
       {/* Save Button */}
       <div className="flex justify-end pt-2">
-        <Button type="submit" disabled={isPending} className="text-xs h-9 gap-2">
+        <Button type="submit" disabled={isPending} className="text-xs h-9 gap-2 rounded-lg shadow-xs cursor-pointer">
           <Save className="h-4 w-4" />
           {isPending ? 'Saving preferences...' : 'Save all preferences'}
         </Button>

@@ -48,10 +48,10 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <FolderArchive className="h-5 w-5 text-emerald-500" />
+            <FolderArchive className="h-5 w-5 text-primary" />
             Document Storage Vault
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -60,7 +60,7 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs">
+          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
             <Plus className="h-3.5 w-3.5" />
             Upload Document
           </DialogTrigger>
@@ -87,7 +87,7 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
                   placeholder="e.g. Semester 4 Marksheet.pdf"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -107,7 +107,7 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
                         | 'general'
                     )
                   }
-                  className="w-full h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                  className="w-full h-8 px-2 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                 >
                   <option value="academic">Academic Certificates & Transcripts</option>
                   <option value="identity">Identity & Official Passports</option>
@@ -120,7 +120,7 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
 
               <div className="space-y-1.5">
                 <Label htmlFor="doc-file" className="text-xs">Choose File</Label>
-                <Input id="doc-file" type="file" className="text-xs h-9 cursor-pointer" />
+                <Input id="doc-file" type="file" className="text-xs h-9 cursor-pointer rounded-lg border-border" />
               </div>
 
               <div className="space-y-1.5">
@@ -130,7 +130,7 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
                   placeholder="Optional reference notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -140,14 +140,14 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpen(false)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg border-border"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   size="sm"
-                  className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="h-8 text-xs rounded-lg shadow-xs"
                 >
                   Upload File
                 </Button>
@@ -158,12 +158,12 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
       </div>
 
       {/* Security Banner */}
-      <div className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-          <Lock className="h-4 w-4 shrink-0" />
+      <div className="p-3 rounded-xl border border-border bg-card shadow-xs flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-foreground">
+          <Lock className="h-4 w-4 shrink-0 text-primary" />
           <span>Storage Isolation Active: Access restricted to authenticated user token.</span>
         </div>
-        <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/30">
+        <Badge variant="outline" className="text-[10px] font-mono border-border">
           AES-256 Cloud Encrypted
         </Badge>
       </div>
@@ -175,7 +175,9 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
             key={tab}
             variant={filter === tab ? 'default' : 'outline'}
             size="sm"
-            className="h-7 text-xs capitalize"
+            className={`h-8 text-xs rounded-lg capitalize border-border cursor-pointer ${
+              filter === tab ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
             onClick={() => setFilter(tab)}
           >
             {tab}
@@ -185,41 +187,50 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
 
       {/* Documents List */}
       {filteredDocs.length === 0 ? (
-        <Card className="p-8 text-center text-xs text-muted-foreground">
+        <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
           <FolderArchive className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
           <p>No documents found in this vault category.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen(true)}
+            className="mt-4 text-xs h-8 rounded-lg border-border"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Upload First Document
+          </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDocs.map((doc) => (
             <Card
               key={doc.id}
-              className="hover:border-primary/40 transition-colors flex flex-col justify-between"
+              className="border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <FileCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <FileCheck className="h-4 w-4 text-primary shrink-0" />
                     <div>
-                      <CardTitle className="text-sm font-semibold truncate">
+                      <CardTitle className="text-sm font-semibold truncate text-foreground">
                         {doc.name}
                       </CardTitle>
-                      <CardDescription className="text-[10px] mt-0.5">
+                      <CardDescription className="text-[10px] mt-0.5 text-muted-foreground">
                         {format(new Date(doc.created_at), 'MMM d, yyyy')} &bull;{' '}
                         {Math.round(doc.file_size_bytes / 1024)} KB
                       </CardDescription>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-[10px] capitalize">
+                  <Badge variant="outline" className="text-[10px] capitalize font-mono border-border">
                     {doc.category}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 flex items-center justify-between text-xs border-t border-border/40 mt-3">
+              <CardContent className="pt-0 flex items-center justify-between text-xs border-t border-border mt-3">
                 <span className="text-[10px] text-muted-foreground font-mono">
                   {doc.mime_type}
                 </span>
-                <Button variant="ghost" size="xs" className="h-6 text-[10px] gap-1">
+                <Button variant="ghost" size="xs" className="h-7 text-[11px] gap-1 rounded-lg">
                   <Download className="h-3 w-3" />
                   Download
                 </Button>

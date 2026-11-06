@@ -102,10 +102,10 @@ export function BooksView({ books }: BooksViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-emerald-500" />
+            <BookOpen className="h-5 w-5 text-primary" />
             Book Library & Reading Vault
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -114,7 +114,7 @@ export function BooksView({ books }: BooksViewProps) {
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs">
+          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
             <Plus className="h-3.5 w-3.5" />
             Add Book
           </DialogTrigger>
@@ -128,7 +128,7 @@ export function BooksView({ books }: BooksViewProps) {
 
             <form onSubmit={handleCreateBook} className="space-y-4 pt-2">
               {error && (
-                <div className="p-2.5 rounded bg-destructive/10 text-destructive text-xs">
+                <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive text-xs">
                   {error}
                 </div>
               )}
@@ -141,7 +141,7 @@ export function BooksView({ books }: BooksViewProps) {
                   placeholder="e.g. Designing Data-Intensive Applications"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -154,7 +154,7 @@ export function BooksView({ books }: BooksViewProps) {
                     placeholder="e.g. Martin Kleppmann"
                     value={author}
                     onChange={(e) => setAuthor(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -164,7 +164,7 @@ export function BooksView({ books }: BooksViewProps) {
                     placeholder="e.g. 9781449373320"
                     value={isbn}
                     onChange={(e) => setIsbn(e.target.value)}
-                    className="h-8 text-xs font-mono"
+                    className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
               </div>
@@ -184,7 +184,7 @@ export function BooksView({ books }: BooksViewProps) {
                           | 'abandoned'
                       )
                     }
-                    className="w-full h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                    className="w-full h-8 px-2 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                   >
                     <option value="reading">Currently Reading</option>
                     <option value="want_to_read">Want to Read</option>
@@ -200,7 +200,7 @@ export function BooksView({ books }: BooksViewProps) {
                     min={0}
                     value={totalPages}
                     onChange={(e) => setTotalPages(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -211,7 +211,7 @@ export function BooksView({ books }: BooksViewProps) {
                     min={0}
                     value={currentPage}
                     onChange={(e) => setCurrentPage(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -222,7 +222,7 @@ export function BooksView({ books }: BooksViewProps) {
                   id="b-rating"
                   value={rating}
                   onChange={(e) => setRating(e.target.value)}
-                  className="w-full h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                  className="w-full h-8 px-2 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                 >
                   <option value="5">★★★★★ (5 - Masterpiece)</option>
                   <option value="4">★★★★☆ (4 - Great)</option>
@@ -238,7 +238,7 @@ export function BooksView({ books }: BooksViewProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpen(false)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg border-border"
                 >
                   Cancel
                 </Button>
@@ -246,7 +246,7 @@ export function BooksView({ books }: BooksViewProps) {
                   type="submit"
                   size="sm"
                   disabled={isPending || !title.trim()}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg shadow-xs"
                 >
                   {isPending ? 'Saving...' : 'Add to Shelf'}
                 </Button>
@@ -257,13 +257,15 @@ export function BooksView({ books }: BooksViewProps) {
       </div>
 
       {/* Shelf Filter Buttons */}
-      <div className="flex gap-2 text-xs">
+      <div className="flex flex-wrap gap-2 text-xs">
         {(['all', 'reading', 'want_to_read', 'completed'] as const).map((tab) => (
           <Button
             key={tab}
             variant={filter === tab ? 'default' : 'outline'}
             size="sm"
-            className="h-7 text-xs capitalize"
+            className={`h-8 text-xs rounded-lg capitalize border-border cursor-pointer ${
+              filter === tab ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
             onClick={() => setFilter(tab)}
           >
             {tab.replace(/_/g, ' ')} (
@@ -277,9 +279,18 @@ export function BooksView({ books }: BooksViewProps) {
 
       {/* Books Grid */}
       {filteredBooks.length === 0 ? (
-        <Card className="p-8 text-center text-xs text-muted-foreground">
+        <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
           <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
           <p>No books on this shelf yet.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen(true)}
+            className="mt-4 text-xs h-8 rounded-lg border-border"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add First Book
+          </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -292,19 +303,19 @@ export function BooksView({ books }: BooksViewProps) {
             return (
               <Card
                 key={book.id}
-                className="hover:border-primary/40 transition-colors flex flex-col justify-between"
+                className="border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between"
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <CardTitle className="text-sm font-semibold line-clamp-1">
+                      <CardTitle className="text-sm font-semibold line-clamp-1 text-foreground">
                         {book.title}
                       </CardTitle>
                       <CardDescription className="text-xs text-muted-foreground mt-0.5">
                         by {book.author}
                       </CardDescription>
                     </div>
-                    <Badge variant="outline" className="text-[10px] capitalize font-mono shrink-0">
+                    <Badge variant="outline" className="text-[10px] capitalize font-mono shrink-0 border-border">
                       {book.status.replace(/_/g, ' ')}
                     </Badge>
                   </div>
@@ -312,7 +323,7 @@ export function BooksView({ books }: BooksViewProps) {
 
                 <CardContent className="pt-0 space-y-3">
                   {/* Progress */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex justify-between text-[11px] text-muted-foreground">
                       <span>
                         Page {book.current_page} of {book.total_pages}
@@ -323,7 +334,7 @@ export function BooksView({ books }: BooksViewProps) {
                     </div>
                     <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 transition-all duration-300"
+                        className="h-full bg-primary transition-all duration-300 rounded-full"
                         style={{ width: `${Math.min(100, pct)}%` }}
                       />
                     </div>
@@ -332,17 +343,17 @@ export function BooksView({ books }: BooksViewProps) {
                   {book.rating && (
                     <div className="flex items-center gap-1 text-amber-500 text-xs">
                       {Array.from({ length: book.rating }).map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-amber-500" />
+                        <Star key={i} className="h-3 w-3 fill-amber-500 text-amber-500" />
                       ))}
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-between pt-2 border-t border-border text-xs">
+                    <div className="flex items-center gap-1.5">
                       <Button
                         variant="outline"
                         size="xs"
-                        className="h-6 px-1.5 text-[10px]"
+                        className="h-7 px-2 text-[11px] rounded-lg border-border"
                         disabled={isPending || book.current_page <= 0}
                         onClick={() => handleUpdatePage(book, -10)}
                       >
@@ -351,7 +362,7 @@ export function BooksView({ books }: BooksViewProps) {
                       <Button
                         variant="outline"
                         size="xs"
-                        className="h-6 px-1.5 text-[10px]"
+                        className="h-7 px-2 text-[11px] rounded-lg border-border"
                         disabled={isPending || book.current_page >= book.total_pages}
                         onClick={() => handleUpdatePage(book, 10)}
                       >
@@ -360,7 +371,7 @@ export function BooksView({ books }: BooksViewProps) {
                       <Button
                         variant="outline"
                         size="xs"
-                        className="h-6 px-1.5 text-[10px]"
+                        className="h-7 px-2 text-[11px] rounded-lg border-border"
                         disabled={isPending || book.current_page >= book.total_pages}
                         onClick={() => handleUpdatePage(book, 50)}
                       >
@@ -368,15 +379,16 @@ export function BooksView({ books }: BooksViewProps) {
                       </Button>
                     </div>
 
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleDelete(book.id)}
                       disabled={isPending}
-                      className="text-muted-foreground hover:text-destructive p-1 rounded cursor-pointer"
-                      title="Delete book"
+                      className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                      aria-label="Delete book"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

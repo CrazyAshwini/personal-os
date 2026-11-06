@@ -52,7 +52,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
   const [habitName, setHabitName] = useState('');
   const [habitDesc, setHabitDesc] = useState('');
   const [targetDays, setTargetDays] = useState(7);
-  const [habitColor, setHabitColor] = useState('#10b981');
+  const [habitColor, setHabitColor] = useState('#526653');
 
   // Goal Dialog State
   const [goalOpen, setGoalOpen] = useState(false);
@@ -64,7 +64,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
   const [goalTargetDate, setGoalTargetDate] = useState('');
 
   // Last 7 days for the weekly tracker
-  const today = new Date();
+  const [today] = useState(() => new Date());
   const pastDays = Array.from({ length: 7 }, (_, i) => {
     const d = subDays(today, 6 - i);
     return {
@@ -144,10 +144,10 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
     <div className="space-y-8">
       {/* 1. HABITS SECTION */}
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Activity className="h-5 w-5 text-emerald-500" />
+              <Activity className="h-5 w-5 text-primary" />
               Daily Habit Tracker
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -156,7 +156,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
           </div>
 
           <Dialog open={habitOpen} onOpenChange={setHabitOpen}>
-            <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs">
+            <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
               <Plus className="h-3.5 w-3.5" />
               Add Habit
             </DialogTrigger>
@@ -176,7 +176,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     placeholder="e.g. Read 20 pages, Gym workout, Drink 3L water"
                     value={habitName}
                     onChange={(e) => setHabitName(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
 
@@ -187,7 +187,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     placeholder="e.g. Morning 7:00 AM before classes"
                     value={habitDesc}
                     onChange={(e) => setHabitDesc(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
 
@@ -198,7 +198,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                       id="h-target"
                       value={targetDays}
                       onChange={(e) => setTargetDays(Number(e.target.value))}
-                      className="w-full h-8 px-2.5 rounded-lg border border-border bg-background text-xs outline-none"
+                      className="w-full h-8 px-2.5 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                     >
                       {[7, 6, 5, 4, 3, 2, 1].map((n) => (
                         <option key={n} value={n}>
@@ -215,7 +215,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                         type="color"
                         value={habitColor}
                         onChange={(e) => setHabitColor(e.target.value)}
-                        className="h-8 w-12 rounded border border-border cursor-pointer p-0.5 bg-background"
+                        className="h-8 w-12 rounded-lg border border-border cursor-pointer p-0.5 bg-card"
                       />
                       <span className="text-xs font-mono text-muted-foreground">{habitColor}</span>
                     </div>
@@ -228,7 +228,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => setHabitOpen(false)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg border-border"
                   >
                     Cancel
                   </Button>
@@ -236,7 +236,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     type="submit"
                     size="sm"
                     disabled={isPending || !habitName.trim()}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg shadow-xs"
                   >
                     {isPending ? 'Saving...' : 'Save Habit'}
                   </Button>
@@ -247,26 +247,35 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
         </div>
 
         {habits.length === 0 ? (
-          <Card className="p-8 text-center text-xs text-muted-foreground">
+          <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
             <Activity className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
             <p>No habits tracked yet. Click &ldquo;Add Habit&rdquo; to build daily routines.</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setHabitOpen(true)}
+              className="mt-4 text-xs h-8 rounded-lg border-border"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Add First Habit
+            </Button>
           </Card>
         ) : (
-          <Card>
+          <Card className="border-border bg-card rounded-xl shadow-xs overflow-hidden">
             <CardContent className="p-0 overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border text-muted-foreground">
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground">
                     <th className="py-3 px-4 text-left font-semibold">Habit</th>
                     {pastDays.map((d, i) => (
                       <th key={d.dateStr} className="py-3 px-2 text-center font-medium w-12">
-                        <span className="block text-[10px] text-muted-foreground uppercase">
+                        <span className="block text-[10px] text-muted-foreground uppercase font-mono">
                           {d.dayName}
                         </span>
                         <span
-                          className={`inline-block text-[11px] font-bold rounded-full h-5 w-5 leading-5 mt-0.5 ${
+                          className={`inline-block text-[11px] font-bold rounded-md h-5 w-5 leading-5 mt-0.5 font-mono ${
                             i === 6
-                              ? 'bg-primary text-primary-foreground'
+                              ? 'bg-primary text-primary-foreground shadow-xs'
                               : 'text-foreground'
                           }`}
                         >
@@ -278,7 +287,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     <th className="py-3 px-3 text-right font-semibold w-12"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/40">
+                <tbody className="divide-y divide-border">
                   {habits.map((habit) => {
                     const habitCompletions = pastDays.filter((d) =>
                       habitLogs.some(
@@ -287,12 +296,12 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     ).length;
 
                     return (
-                      <tr key={habit.id} className="hover:bg-muted/20">
+                      <tr key={habit.id} className="hover:bg-muted/20 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
                             <span
                               className="h-2.5 w-2.5 rounded-full shrink-0"
-                              style={{ backgroundColor: habit.color || '#10b981' }}
+                              style={{ backgroundColor: habit.color || '#526653' }}
                             />
                             <div>
                               <p className="font-semibold text-foreground">{habit.name}</p>
@@ -318,10 +327,10 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                                 disabled={isPending}
                                 className={`h-7 w-7 rounded-lg border transition-all inline-flex items-center justify-center cursor-pointer ${
                                   isDone
-                                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
-                                    : 'border-border/80 hover:border-emerald-500/50 bg-background'
+                                    ? 'bg-primary border-primary text-primary-foreground shadow-xs'
+                                    : 'border-border hover:border-primary/50 bg-card'
                                 }`}
-                                title={`${habit.name} on ${d.dateStr}`}
+                                aria-label={`Toggle ${habit.name} on ${d.dateStr}`}
                               >
                                 {isDone && <Check className="h-4 w-4" />}
                               </button>
@@ -336,15 +345,16 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                         </td>
 
                         <td className="py-3 px-3 text-right">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleDeleteHabit(habit.id)}
                             disabled={isPending}
-                            title="Delete habit"
-                            className="text-muted-foreground hover:text-destructive p-1 rounded cursor-pointer"
+                            className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                            aria-label="Delete habit"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -357,11 +367,11 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
       </div>
 
       {/* 2. GOALS SECTION */}
-      <div className="space-y-4 pt-4 border-t border-border/60">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="space-y-4 pt-4 border-t border-border">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Target className="h-5 w-5 text-indigo-500" />
+              <Target className="h-5 w-5 text-primary" />
               Strategic Goals & Milestones
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -370,7 +380,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
           </div>
 
           <Dialog open={goalOpen} onOpenChange={setGoalOpen}>
-            <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs">
+            <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
               <Plus className="h-3.5 w-3.5" />
               Add Goal
             </DialogTrigger>
@@ -390,7 +400,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     placeholder="e.g. Master Rust, Score 9.0 GPA, Run 10km Marathon"
                     value={goalTitle}
                     onChange={(e) => setGoalTitle(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
 
@@ -410,7 +420,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                             | 'personal'
                         )
                       }
-                      className="w-full h-8 px-2.5 rounded-lg border border-border bg-background text-xs outline-none"
+                      className="w-full h-8 px-2.5 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                     >
                       <option value="academic">Academic</option>
                       <option value="career">Career / Technical</option>
@@ -426,7 +436,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                       type="date"
                       value={goalTargetDate}
                       onChange={(e) => setGoalTargetDate(e.target.value)}
-                      className="h-8 text-xs"
+                      className="h-8 text-xs rounded-lg"
                     />
                   </div>
                 </div>
@@ -438,7 +448,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     placeholder="Optional notes or sub-milestones"
                     value={goalDesc}
                     onChange={(e) => setGoalDesc(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
 
@@ -448,7 +458,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => setGoalOpen(false)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg border-border"
                   >
                     Cancel
                   </Button>
@@ -456,7 +466,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                     type="submit"
                     size="sm"
                     disabled={isPending || !goalTitle.trim()}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg shadow-xs"
                   >
                     {isPending ? 'Saving...' : 'Save Goal'}
                   </Button>
@@ -467,9 +477,18 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
         </div>
 
         {goals.length === 0 ? (
-          <Card className="p-8 text-center text-xs text-muted-foreground">
+          <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
             <Target className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
             <p>No goals set yet. Click &ldquo;Add Goal&rdquo; to track long-term milestones.</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setGoalOpen(true)}
+              className="mt-4 text-xs h-8 rounded-lg border-border"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Add First Goal
+            </Button>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -478,34 +497,32 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
               return (
                 <Card
                   key={goal.id}
-                  className={`hover:border-primary/40 transition-colors flex flex-col justify-between ${
-                    isCompleted ? 'bg-emerald-500/5 border-emerald-500/20' : ''
-                  }`}
+                  className="border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between"
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <CardTitle className="text-sm font-semibold">
+                          <CardTitle className="text-sm font-semibold text-foreground">
                             {goal.title}
                           </CardTitle>
                           {isCompleted && (
-                            <Award className="h-4 w-4 text-emerald-500 shrink-0" />
+                            <Award className="h-4 w-4 text-primary shrink-0" />
                           )}
                         </div>
                         {goal.description && (
-                          <CardDescription className="text-[11px] mt-0.5 line-clamp-2">
+                          <CardDescription className="text-[11px] mt-0.5 line-clamp-2 text-muted-foreground">
                             {goal.description}
                           </CardDescription>
                         )}
                       </div>
-                      <Badge variant="outline" className="text-[10px] capitalize">
+                      <Badge variant="outline" className="text-[10px] capitalize font-mono border-border">
                         {goal.category}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <div className="flex justify-between text-[11px]">
                         <span className="text-muted-foreground">Progress</span>
                         <span className="font-bold text-foreground font-mono">
@@ -514,20 +531,18 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                       </div>
                       <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${
-                            isCompleted ? 'bg-emerald-500' : 'bg-indigo-500'
-                          }`}
+                          className="h-full bg-primary transition-all duration-300 rounded-full"
                           style={{ width: `${goal.progress_percentage}%` }}
                         />
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs pt-1">
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+                      <div className="flex items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="xs"
-                          className="h-6 px-1.5 text-[10px]"
+                          className="h-7 px-2 text-[11px] rounded-lg border-border"
                           disabled={isPending || goal.progress_percentage <= 0}
                           onClick={() =>
                             handleUpdateGoalProgress(goal.id, goal.progress_percentage, -10)
@@ -538,7 +553,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                         <Button
                           variant="outline"
                           size="xs"
-                          className="h-6 px-1.5 text-[10px]"
+                          className="h-7 px-2 text-[11px] rounded-lg border-border"
                           disabled={isPending || goal.progress_percentage >= 100}
                           onClick={() =>
                             handleUpdateGoalProgress(goal.id, goal.progress_percentage, 10)
@@ -548,15 +563,16 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
                         </Button>
                       </div>
 
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleDeleteGoal(goal.id)}
                         disabled={isPending}
-                        title="Delete goal"
-                        className="text-muted-foreground hover:text-destructive p-1 rounded cursor-pointer"
+                        className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                        aria-label="Delete goal"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

@@ -100,10 +100,10 @@ export function NotesView({ notes }: NotesViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <FileText className="h-5 w-5 text-amber-500" />
+            <FileText className="h-5 w-5 text-primary" />
             Notes & Knowledge Vault
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -114,7 +114,7 @@ export function NotesView({ notes }: NotesViewProps) {
         <Button
           onClick={handleOpenCreate}
           size="sm"
-          className="h-8 text-xs gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+          className="h-8 text-xs gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-xs cursor-pointer transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           New Note
@@ -133,7 +133,7 @@ export function NotesView({ notes }: NotesViewProps) {
 
             <form onSubmit={handleSaveNote} className="space-y-4 pt-2">
               {error && (
-                <div className="p-2.5 rounded bg-destructive/10 text-destructive text-xs">
+                <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive text-xs">
                   {error}
                 </div>
               )}
@@ -146,7 +146,7 @@ export function NotesView({ notes }: NotesViewProps) {
                   placeholder="e.g. Distributed Consensus Notes"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg"
                 />
               </div>
 
@@ -158,7 +158,7 @@ export function NotesView({ notes }: NotesViewProps) {
                     placeholder="e.g. academic, personal, ideas"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 {!editNote && (
@@ -184,7 +184,7 @@ export function NotesView({ notes }: NotesViewProps) {
                   placeholder="Write your note markdown here..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-border bg-background text-xs font-mono outline-none resize-y"
+                  className="w-full p-2.5 rounded-lg border border-border bg-card text-xs font-mono outline-none resize-y"
                 />
               </div>
 
@@ -194,7 +194,7 @@ export function NotesView({ notes }: NotesViewProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpen(false)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg border-border"
                 >
                   Cancel
                 </Button>
@@ -202,7 +202,7 @@ export function NotesView({ notes }: NotesViewProps) {
                   type="submit"
                   size="sm"
                   disabled={isPending || !title.trim()}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg shadow-xs"
                 >
                   {isPending ? 'Saving...' : 'Save Note'}
                 </Button>
@@ -214,30 +214,39 @@ export function NotesView({ notes }: NotesViewProps) {
 
       {/* Notes Grid */}
       {notes.length === 0 ? (
-        <Card className="p-8 text-center text-xs text-muted-foreground">
+        <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
           <FileText className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
           <p>No notes written yet. Click &ldquo;New Note&rdquo; to capture thoughts.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleOpenCreate}
+            className="mt-4 text-xs h-8 rounded-lg border-border"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Create First Note
+          </Button>
         </Card>
       ) : (
         <div className="space-y-6">
           {pinnedNotes.length > 0 && (
             <div className="space-y-3">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Pin className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <Pin className="h-3.5 w-3.5 text-primary fill-primary" />
                 Pinned Notes
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pinnedNotes.map((n) => (
                   <Card
                     key={n.id}
-                    className="border-amber-500/30 bg-amber-500/5 hover:border-amber-500/60 transition-colors flex flex-col justify-between"
+                    className="border-primary/30 bg-primary/5 hover:border-primary/60 transition-colors flex flex-col justify-between rounded-xl shadow-xs"
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-sm font-semibold truncate">
+                        <CardTitle className="text-sm font-semibold truncate text-foreground">
                           {n.title}
                         </CardTitle>
-                        <Badge variant="outline" className="text-[10px] capitalize">
+                        <Badge variant="outline" className="text-[10px] capitalize font-mono border-primary/30 text-primary">
                           {n.category}
                         </Badge>
                       </div>
@@ -247,25 +256,27 @@ export function NotesView({ notes }: NotesViewProps) {
                         {n.content || '(Empty note)'}
                       </p>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
-                        <span>{format(new Date(n.created_at), 'MMM d, yyyy')}</span>
+                      <div className="flex items-center justify-between pt-2 border-t border-border/60 text-[10px] text-muted-foreground">
+                        <span className="font-mono">{format(new Date(n.created_at), 'MMM d, yyyy')}</span>
                         <div className="flex items-center gap-1">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleOpenEdit(n)}
-                            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                            title="Edit note"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                            aria-label="Edit note"
                           >
-                            <Edit3 className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleDelete(n.id)}
-                            className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive cursor-pointer"
-                            title="Delete note"
+                            className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                            aria-label="Delete note"
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -278,7 +289,7 @@ export function NotesView({ notes }: NotesViewProps) {
           {unpinnedNotes.length > 0 && (
             <div className="space-y-3">
               {pinnedNotes.length > 0 && (
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
                   All Notes
                 </h3>
               )}
@@ -286,14 +297,14 @@ export function NotesView({ notes }: NotesViewProps) {
                 {unpinnedNotes.map((n) => (
                   <Card
                     key={n.id}
-                    className="hover:border-primary/40 transition-colors flex flex-col justify-between"
+                    className="border-border bg-card hover:border-primary/40 transition-colors flex flex-col justify-between rounded-xl shadow-xs"
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-sm font-semibold truncate">
+                        <CardTitle className="text-sm font-semibold truncate text-foreground">
                           {n.title}
                         </CardTitle>
-                        <Badge variant="outline" className="text-[10px] capitalize">
+                        <Badge variant="outline" className="text-[10px] capitalize font-mono border-border">
                           {n.category}
                         </Badge>
                       </div>
@@ -303,25 +314,27 @@ export function NotesView({ notes }: NotesViewProps) {
                         {n.content || '(Empty note)'}
                       </p>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
-                        <span>{format(new Date(n.created_at), 'MMM d, yyyy')}</span>
+                      <div className="flex items-center justify-between pt-2 border-t border-border text-[10px] text-muted-foreground">
+                        <span className="font-mono">{format(new Date(n.created_at), 'MMM d, yyyy')}</span>
                         <div className="flex items-center gap-1">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleOpenEdit(n)}
-                            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                            title="Edit note"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                            aria-label="Edit note"
                           >
-                            <Edit3 className="h-3 w-3" />
-                          </button>
-                          <button
-                            type="button"
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleDelete(n.id)}
-                            className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive cursor-pointer"
-                            title="Delete note"
+                            className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                            aria-label="Delete note"
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>

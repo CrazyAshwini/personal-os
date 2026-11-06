@@ -12,6 +12,7 @@ import {
   Trash2,
   Calendar,
   Ticket,
+  Clock,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -109,23 +110,23 @@ export function TravelView({ journeys }: TravelViewProps) {
   const getTransportIcon = (type: string) => {
     switch (type) {
       case 'flight':
-        return <Plane className="h-4 w-4 text-sky-500" />;
+        return <Plane className="h-4 w-4 text-primary" />;
       case 'train':
-        return <Train className="h-4 w-4 text-emerald-500" />;
+        return <Train className="h-4 w-4 text-primary" />;
       case 'bus':
-        return <Bus className="h-4 w-4 text-amber-500" />;
+        return <Bus className="h-4 w-4 text-primary" />;
       default:
-        return <Car className="h-4 w-4 text-purple-500" />;
+        return <Car className="h-4 w-4 text-primary" />;
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Compass className="h-5 w-5 text-sky-500" />
+            <Compass className="h-5 w-5 text-primary" />
             Travel Manager & Tickets
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -134,7 +135,7 @@ export function TravelView({ journeys }: TravelViewProps) {
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-sky-600 text-white hover:bg-sky-700 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs">
+          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
             <Plus className="h-3.5 w-3.5" />
             Add Journey
           </DialogTrigger>
@@ -148,7 +149,7 @@ export function TravelView({ journeys }: TravelViewProps) {
 
             <form onSubmit={handleCreateJourney} className="space-y-4 pt-2">
               {error && (
-                <div className="p-2.5 rounded bg-destructive/10 text-destructive text-xs">
+                <div className="p-2.5 rounded-lg bg-destructive/10 text-destructive text-xs">
                   {error}
                 </div>
               )}
@@ -162,7 +163,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     placeholder="e.g. Semester Break Trip Home"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -175,7 +176,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                         e.target.value as 'train' | 'flight' | 'bus' | 'car' | 'other'
                       )
                     }
-                    className="w-full h-8 px-2 rounded-lg border border-border bg-background text-xs outline-none"
+                    className="w-full h-8 px-2 rounded-lg border border-border bg-card text-xs outline-none cursor-pointer"
                   >
                     <option value="train">Train</option>
                     <option value="flight">Flight</option>
@@ -195,7 +196,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     placeholder="e.g. New Delhi (NDLS)"
                     value={origin}
                     onChange={(e) => setOrigin(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -206,7 +207,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     placeholder="e.g. Mumbai Central (MMCT)"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -220,7 +221,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     required
                     value={departureTime}
                     onChange={(e) => setDepartureTime(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -230,7 +231,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     type="datetime-local"
                     value={arrivalTime}
                     onChange={(e) => setArrivalTime(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
               </div>
@@ -243,7 +244,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     placeholder="e.g. 245-8941235"
                     value={bookingRef}
                     onChange={(e) => setBookingRef(e.target.value)}
-                    className="h-8 text-xs font-mono"
+                    className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -253,7 +254,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                     placeholder="e.g. Rajdhani Express"
                     value={carrierName}
                     onChange={(e) => setCarrierName(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-lg"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -263,9 +264,20 @@ export function TravelView({ journeys }: TravelViewProps) {
                     placeholder="e.g. B4 - 32"
                     value={seatNumber}
                     onChange={(e) => setSeatNumber(e.target.value)}
-                    className="h-8 text-xs font-mono"
+                    className="h-8 text-xs font-mono rounded-lg"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="j-notes" className="text-xs">Notes / Packing Items</Label>
+                <Input
+                  id="j-notes"
+                  placeholder="Optional packing memo or hotel details"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="h-8 text-xs rounded-lg"
+                />
               </div>
 
               <DialogFooter className="pt-2">
@@ -274,7 +286,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setOpen(false)}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg border-border"
                 >
                   Cancel
                 </Button>
@@ -282,7 +294,7 @@ export function TravelView({ journeys }: TravelViewProps) {
                   type="submit"
                   size="sm"
                   disabled={isPending || !title.trim()}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs rounded-lg shadow-xs"
                 >
                   {isPending ? 'Saving...' : 'Save Journey'}
                 </Button>
@@ -294,9 +306,18 @@ export function TravelView({ journeys }: TravelViewProps) {
 
       {/* Journeys List */}
       {journeys.length === 0 ? (
-        <Card className="p-8 text-center text-xs text-muted-foreground">
+        <Card className="p-8 text-center text-xs text-muted-foreground border-border bg-card rounded-xl shadow-xs">
           <Compass className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
           <p>No travel itineraries added yet. Click &ldquo;Add Journey&rdquo; to log your trips.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOpen(true)}
+            className="mt-4 text-xs h-8 rounded-lg border-border"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add First Journey
+          </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -307,76 +328,91 @@ export function TravelView({ journeys }: TravelViewProps) {
             return (
               <Card
                 key={trip.id}
-                className={`hover:border-primary/40 transition-colors flex flex-col justify-between ${
-                  isPast ? 'opacity-70 bg-muted/10' : ''
+                className={`border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between ${
+                  isPast ? 'opacity-70 bg-muted/20' : ''
                 }`}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-background border border-border">
+                      <div className="p-2 rounded-lg bg-muted border border-border">
                         {getTransportIcon(trip.transport_type)}
                       </div>
                       <div>
-                        <CardTitle className="text-sm font-semibold truncate">
+                        <CardTitle className="text-sm font-semibold truncate text-foreground">
                           {trip.title}
                         </CardTitle>
                         {trip.carrier_name && (
-                          <CardDescription className="text-[11px]">
+                          <CardDescription className="text-[11px] text-muted-foreground">
                             {trip.carrier_name}
                           </CardDescription>
                         )}
                       </div>
                     </div>
-                    <Badge
-                      variant={isPast ? 'secondary' : 'default'}
-                      className="text-[10px] capitalize font-mono"
-                    >
-                      {trip.status}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant={isPast ? 'secondary' : 'outline'}
+                        className="text-[10px] capitalize font-mono border-border"
+                      >
+                        {trip.status}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(trip.id)}
+                        disabled={isPending}
+                        className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                        aria-label="Delete journey"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-3">
-                  <div className="p-2.5 rounded-lg bg-muted/30 border border-border/50 text-xs flex items-center justify-between">
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border text-xs flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-muted-foreground block">From</span>
-                      <span className="font-semibold">{trip.origin}</span>
+                      <span className="font-semibold text-foreground">{trip.origin}</span>
                     </div>
                     <span className="text-muted-foreground">→</span>
                     <div className="text-right">
                       <span className="text-[10px] text-muted-foreground block">To</span>
-                      <span className="font-semibold">{trip.destination}</span>
+                      <span className="font-semibold text-foreground">{trip.destination}</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span>{format(depDate, 'MMM d, yyyy @ hh:mm a')}</span>
+                      <Calendar className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-mono">{format(depDate, 'MMM d, yyyy')}</span>
                     </div>
-                    {trip.seat_number && (
-                      <div className="flex items-center gap-1.5 justify-end">
-                        <Ticket className="h-3.5 w-3.5" />
-                        <span className="font-mono font-medium text-foreground">
-                          Seat: {trip.seat_number}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <Clock className="h-3.5 w-3.5 text-primary" />
+                      <span className="font-mono">{format(depDate, 'hh:mm a')}</span>
+                    </div>
                   </div>
 
-                  {trip.booking_reference && (
-                    <div className="text-[10px] font-mono text-muted-foreground border-t border-border/40 pt-2 flex items-center justify-between">
-                      <span>PNR/Ref: {trip.booking_reference}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(trip.id)}
-                        disabled={isPending}
-                        className="text-muted-foreground hover:text-destructive p-1 rounded cursor-pointer"
-                        title="Delete trip"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                  {(trip.seat_number || trip.booking_reference) && (
+                    <div className="text-[11px] font-mono text-muted-foreground border-t border-border pt-2 flex items-center justify-between">
+                      {trip.booking_reference ? (
+                        <span>Ref: {trip.booking_reference}</span>
+                      ) : (
+                        <span />
+                      )}
+                      {trip.seat_number && (
+                        <div className="flex items-center gap-1 font-semibold text-foreground">
+                          <Ticket className="h-3.5 w-3.5 text-primary" />
+                          <span>Seat: {trip.seat_number}</span>
+                        </div>
+                      )}
                     </div>
+                  )}
+
+                  {trip.notes && (
+                    <p className="text-[11px] text-muted-foreground italic border-t border-border/50 pt-1.5 line-clamp-1">
+                      {trip.notes}
+                    </p>
                   )}
                 </CardContent>
               </Card>
