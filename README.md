@@ -459,11 +459,11 @@ overcrowded mobile screens.
 
 #### Sprint 0.2: Supabase foundation
 
--   [ ] Create a separate Personal OS Supabase project.
+-   [x] Create a separate Personal OS Supabase project.
 -   [x] Configure Supabase CLI and local configuration.
 -   [x] Create browser and server clients.
 -   [x] Add initial migrations.
--   [ ] Verify database connectivity.
+-   [x] Verify database connectivity.
 
 #### Sprint 0.3: Authentication and security
 
