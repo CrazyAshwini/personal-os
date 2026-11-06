@@ -9,8 +9,8 @@
 **Platform:** Web application + installable Android PWA\
 **Architecture:** Modular monolith\
 **Backend:** Supabase\
-**Hosting:** Vercel\
-**Source control:** Private GitHub repository
+**Hosting:** Vercel (https://personal-os-three-green.vercel.app)\
+**Source control:** Private GitHub repository (https://github.com/CrazyAshwini/personal-os)
 
 ------------------------------------------------------------------------
 
@@ -486,9 +486,9 @@ overcrowded mobile screens.
 
 -   [x] Manifest and application icons.
 -   [x] Service worker and offline fallback.
--   [ ] Verify Android installation.
--   [ ] Connect Vercel project.
--   [ ] Configure production environment variables.
+-   [x] Verify Android installation.
+-   [x] Connect Vercel project.
+-   [x] Configure production environment variables.
 -   [x] Deploy and verify production build.
 -   [x] Test desktop and Android layouts.
 
@@ -498,7 +498,7 @@ overcrowded mobile screens.
 -   [x] Complete security review.
 -   [x] Run checks and tests.
 -   [x] Fix critical issues.
--   [ ] Verify production deployment.
+-   [x] Verify production deployment.
 -   [x] Create Phase 0 release tag.
 -   [x] Prepare Phase 1 plan.
 
