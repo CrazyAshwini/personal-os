@@ -57,7 +57,7 @@ export async function connectFinanceAction(
   if (!user) return { error: 'Authentication required.' };
 
   // Perform initial sync verification
-  const syncResult = await syncExpenseManagerData(parsed.data.apiEndpoint);
+  const syncResult = await syncExpenseManagerData(parsed.data.apiEndpoint, parsed.data.apiKey);
 
   const { error } = await supabase.from('integration_connections').upsert(
     {
