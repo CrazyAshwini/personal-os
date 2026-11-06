@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       'A private, cloud-synced personal management platform for academics, productivity, finance overview, travel, reading, and everyday life.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#09090b',
-    theme_color: '#09090b',
+    background_color: '#171A18',
+    theme_color: '#171A18',
     orientation: 'portrait-primary',
     icons: [
       {

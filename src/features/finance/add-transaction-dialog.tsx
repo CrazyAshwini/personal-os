@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   createFinanceTransactionSchema,
@@ -57,8 +57,8 @@ export function AddTransactionDialog({
 
   const {
     register,
+    control,
     handleSubmit,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateFinanceTransactionInput>({
@@ -75,7 +75,7 @@ export function AddTransactionDialog({
     },
   });
 
-  const selectedKind = watch('kind');
+  const selectedKind = useWatch({ control, name: 'kind', defaultValue: 'expense' });
 
   const onSubmit = async (values: CreateFinanceTransactionInput) => {
     setServerError(null);
