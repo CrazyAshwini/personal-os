@@ -27,6 +27,7 @@ import {
   Trash2,
   CalendarDays,
   CheckSquare,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 
 export interface CalendarEventItem {
@@ -110,12 +111,13 @@ export function CalendarView({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <CalendarIcon className="h-6 w-6 text-primary" />
             Calendar & Schedule
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Track classes, exams, assignment deadlines, and personal milestones
           </p>
         </div>
@@ -126,7 +128,7 @@ export function CalendarView({
       </div>
 
       {/* Calendar Controls & Month Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card shadow-xs">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-semibold text-foreground min-w-[140px]">
             {format(currentMonth, 'MMMM yyyy')}
@@ -135,7 +137,8 @@ export function CalendarView({
             variant="ghost"
             size="icon"
             onClick={prevMonth}
-            className="h-8 w-8"
+            className="h-8 w-8 rounded-lg cursor-pointer"
+            aria-label="Previous Month"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -143,7 +146,8 @@ export function CalendarView({
             variant="ghost"
             size="icon"
             onClick={nextMonth}
-            className="h-8 w-8"
+            className="h-8 w-8 rounded-lg cursor-pointer"
+            aria-label="Next Month"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -151,7 +155,7 @@ export function CalendarView({
             variant="outline"
             size="sm"
             onClick={goToToday}
-            className="text-xs h-8"
+            className="text-xs h-8 rounded-lg border-border cursor-pointer"
           >
             Today
           </Button>
@@ -162,7 +166,7 @@ export function CalendarView({
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="flex h-8 rounded-md border border-input bg-card px-2.5 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="flex h-8 rounded-lg border border-border bg-card px-2.5 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
           >
             <option value="all">All Events</option>
             <option value="academic">Academic Classes</option>
@@ -175,10 +179,10 @@ export function CalendarView({
       </div>
 
       {/* Month Calendar Grid */}
-      <Card className="border-border overflow-hidden">
+      <Card className="border-border bg-card rounded-xl shadow-xs overflow-hidden">
         <CardContent className="p-0">
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 border-b border-border bg-muted/40 text-center">
+          <div className="grid grid-cols-7 border-b border-border bg-muted text-center">
             {weekDayNames.map((d) => (
               <div key={d} className="py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 {d}
@@ -187,7 +191,7 @@ export function CalendarView({
           </div>
 
           {/* Days Grid */}
-          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-border/60">
+          <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-border">
             {days.map((day) => {
               const dayEvents = filteredEvents.filter((e) =>
                 isSameDay(new Date(e.start_time), day)
@@ -206,7 +210,7 @@ export function CalendarView({
                   onClick={() => setSelectedDate(day)}
                   className={`min-h-[75px] sm:min-h-[95px] p-1.5 transition-colors cursor-pointer flex flex-col justify-between ${
                     !isCurrentMonth ? 'opacity-35 bg-muted/20' : 'bg-card'
-                  } ${isSelected ? 'ring-2 ring-primary ring-inset' : 'hover:bg-muted/40'}`}
+                  } ${isSelected ? 'ring-2 ring-primary ring-inset' : 'hover:bg-muted/30'}`}
                 >
                   <div className="flex items-center justify-between">
                     <span
@@ -231,8 +235,8 @@ export function CalendarView({
                     {dayEvents.slice(0, 2).map((e) => (
                       <div
                         key={e.id}
-                        className="truncate rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight text-white"
-                        style={{ backgroundColor: e.color || '#3b82f6' }}
+                        className="truncate rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight text-white shadow-xs"
+                        style={{ backgroundColor: e.color || '#526653' }}
                       >
                         {e.title}
                       </div>
@@ -240,7 +244,7 @@ export function CalendarView({
                     {dayTasks.slice(0, 1).map((t) => (
                       <div
                         key={t.id}
-                        className="truncate rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                        className="truncate rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40"
                       >
                         Due: {t.title}
                       </div>
@@ -259,40 +263,40 @@ export function CalendarView({
       </Card>
 
       {/* Selected Day Agenda Detail */}
-      <Card className="border-border">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+      <Card className="border-border bg-card rounded-xl shadow-xs">
+        <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-primary" />
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="text-sm font-semibold text-foreground">
               Agenda for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
             </CardTitle>
           </div>
           <CreateEventDialog defaultDate={format(selectedDate, 'yyyy-MM-dd')} />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {selectedDayEvents.length === 0 && selectedDayTasks.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-8">
+            <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg">
               No events or deadlines scheduled for this day.
-            </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {/* Events */}
               {selectedDayEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start justify-between p-3 rounded-lg border border-border bg-card/60 hover:bg-card transition-colors"
+                  className="flex items-start justify-between p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors shadow-xs"
                 >
                   <div className="flex items-start gap-3">
                     <span
                       className="h-3 w-3 rounded-full mt-1 shrink-0"
-                      style={{ backgroundColor: event.color || '#3b82f6' }}
+                      style={{ backgroundColor: event.color || '#526653' }}
                     />
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="text-xs font-semibold text-foreground">
                           {event.title}
                         </h4>
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                        <Badge variant="outline" className="text-[10px] uppercase font-mono border-border">
                           {event.event_type}
                         </Badge>
                       </div>
@@ -304,8 +308,8 @@ export function CalendarView({
                       )}
 
                       <div className="flex items-center gap-4 text-[11px] text-muted-foreground mt-2">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
+                        <div className="flex items-center gap-1 font-mono">
+                          <Clock className="h-3 w-3 text-primary" />
                           <span>
                             {event.is_all_day
                               ? 'All Day'
@@ -318,7 +322,7 @@ export function CalendarView({
 
                         {event.location && (
                           <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
+                            <MapPin className="h-3 w-3 text-primary" />
                             <span>{event.location}</span>
                           </div>
                         )}
@@ -331,9 +335,11 @@ export function CalendarView({
                     size="icon"
                     onClick={() => handleDeleteEvent(event.id)}
                     disabled={isPending}
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    className="h-8 w-8 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer"
+                    aria-label="Delete Event"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
+                    <span className="sr-only">Delete</span>
                   </Button>
                 </div>
               ))}
@@ -342,7 +348,7 @@ export function CalendarView({
               {selectedDayTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-amber-500/30 bg-amber-50/30 dark:bg-amber-950/20"
+                  className="flex items-center justify-between p-3 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 shadow-xs"
                 >
                   <div className="flex items-center gap-2.5">
                     <CheckSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -350,7 +356,7 @@ export function CalendarView({
                       <span className="text-xs font-medium text-foreground">
                         Assignment Deadline: {task.title}
                       </span>
-                      <Badge variant="outline" className="ml-2 text-[10px] uppercase font-bold text-amber-700 dark:text-amber-300">
+                      <Badge variant="outline" className="ml-2 text-[10px] uppercase font-mono border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-300">
                         {task.priority} Priority
                       </Badge>
                     </div>
