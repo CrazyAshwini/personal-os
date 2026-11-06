@@ -23,8 +23,7 @@ ON CONFLICT (id) DO UPDATE SET
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
--- 2. Enable RLS on storage.objects (if not already enabled)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Storage policies (storage.objects has RLS enabled by default in Supabase)
 
 -- 3. Storage Policies for user_documents
 -- Folder convention: user_documents/{user_id}/{filename}
