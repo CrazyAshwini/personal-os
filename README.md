@@ -499,7 +499,7 @@ overcrowded mobile screens.
 -   [x] Run checks and tests.
 -   [x] Fix critical issues.
 -   [ ] Verify production deployment.
--   [ ] Create Phase 0 release tag.
+-   [x] Create Phase 0 release tag.
 -   [x] Prepare Phase 1 plan.
 
 ### Phase 1 --- Core productivity
