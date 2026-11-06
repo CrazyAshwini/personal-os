@@ -150,7 +150,7 @@ const SUBJECTS: SubjectDef[] = [
   {
     code: 'PYSQ1107',
     name: 'Minor Project-I (Self Learning)',
-    instructor: 'SD (G3)',
+    instructor: 'MMM (G4)',
     credits: 2,
     color: '#14B8A6',
     syllabusUnits: [
