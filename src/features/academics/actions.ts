@@ -379,6 +379,68 @@ export async function toggleSlotAttendanceAction(params: {
   }
 }
 
+export async function logHolidayAction(params: {
+  date: string;
+  title?: string;
+  subjectId?: string;
+}): Promise<AcademicActionResult<void>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Authentication required.' };
+
+  let subjectIds: string[] = [];
+  if (params.subjectId && params.subjectId !== 'all') {
+    subjectIds = [params.subjectId];
+  } else {
+    const { data: userSubjects } = await supabase
+      .from('subjects')
+      .select('id')
+      .eq('user_id', user.id);
+    subjectIds = (userSubjects || []).map((s) => s.id);
+  }
+
+  if (subjectIds.length === 0) {
+    return { error: 'No subjects found to log holiday.' };
+  }
+
+  for (const subId of subjectIds) {
+    const { data: existing } = await supabase
+      .from('class_sessions')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('subject_id', subId)
+      .eq('session_date', params.date)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from('class_sessions')
+        .update({
+          status: 'no_class',
+          notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .eq('user_id', user.id);
+    } else {
+      await supabase.from('class_sessions').insert({
+        user_id: user.id,
+        subject_id: subId,
+        session_date: params.date,
+        status: 'no_class',
+        notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
+      });
+    }
+  }
+
+  revalidatePath('/dashboard');
+  revalidatePath('/academics');
+  return { success: true };
+}
+
 // 6. Assignment Actions
 export async function createAssignmentAction(
   values: CreateAssignmentInput

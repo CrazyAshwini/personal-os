@@ -14,6 +14,7 @@ import {
   MinusCircle,
   LayoutGrid,
   Calendar,
+  Sun,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,8 @@ import {
 import { CreateSubjectDialog } from '@/features/academics/create-subject-dialog';
 import { LogSessionDialog } from '@/features/academics/log-session-dialog';
 import { CreateTimetableEntryDialog } from '@/features/academics/create-timetable-entry-dialog';
+import { SubjectAttendanceDialog } from '@/features/academics/subject-attendance-dialog';
+import { LogHolidayDialog } from '@/features/academics/log-holiday-dialog';
 import type { Database } from '@/types/database';
 
 type SubjectRow = Database['public']['Tables']['subjects']['Row'];
@@ -337,6 +340,8 @@ export function AcademicOverview({
 }: AcademicOverviewProps) {
   const [viewMode, setViewMode] = useState<'sheet' | 'day'>('sheet');
   const [activeDay, setActiveDay] = useState<number>(() => new Date().getDay());
+  const [selectedSubjectForDialog, setSelectedSubjectForDialog] = useState<SubjectRow | null>(null);
+  const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // 1. Calculate overall attendance
@@ -350,6 +355,18 @@ export function AcademicOverview({
     const stats = calculateAttendance(
       subSessions.map((s) => ({ id: s.id, status: s.status as ClassSessionRecord['status'] }))
     );
+
+    let presentCount = 0;
+    let absentCount = 0;
+    let cancelledCount = 0;
+    let holidayCount = 0;
+
+    for (const s of subSessions) {
+      if (s.status === 'present') presentCount++;
+      else if (s.status === 'absent') absentCount++;
+      else if (s.status === 'cancelled') cancelledCount++;
+      else if (s.status === 'no_class') holidayCount++;
+    }
 
     // Margin calculation for 75% target
     let marginText = 'No conducted classes';
@@ -366,11 +383,18 @@ export function AcademicOverview({
     return {
       subject: sub,
       stats,
+      presentCount,
+      absentCount,
+      cancelledCount,
+      holidayCount,
       marginText,
     };
   });
 
-  const handleQuickLog = (subjectId: string, status: 'present' | 'absent' | 'cancelled') => {
+  const handleQuickLog = (
+    subjectId: string,
+    status: 'present' | 'absent' | 'cancelled' | 'no_class'
+  ) => {
     const today = format(new Date(), 'yyyy-MM-dd');
     startTransition(async () => {
       await logClassSessionAction({
@@ -379,6 +403,11 @@ export function AcademicOverview({
         status,
       });
     });
+  };
+
+  const handleOpenSubjectDialog = (subject: SubjectRow) => {
+    setSelectedSubjectForDialog(subject);
+    setIsSubjectDialogOpen(true);
   };
 
   const handleDeleteTimetableEntry = (id: string) => {
@@ -714,8 +743,23 @@ export function AcademicOverview({
           </div>
 
           {/* Subject Attendance Breakdown Cards */}
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-foreground tracking-tight">Course Attendance & Quick Log</h2>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-foreground tracking-tight flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Course Attendance & Date Logs
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Tap any subject to view date-wise records, change status, or log past classes.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <LogHolidayDialog subjects={subjects} />
+                <LogSessionDialog subjects={subjects} />
+              </div>
+            </div>
 
             {subjectStats.length === 0 ? (
               <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
@@ -730,108 +774,188 @@ export function AcademicOverview({
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {subjectStats.map(({ subject, stats, marginText }) => {
-                  const isSafe = stats.conductedSessions === 0 || stats.percentage >= 75;
+                {subjectStats.map(
+                  ({
+                    subject,
+                    stats,
+                    presentCount,
+                    absentCount,
+                    cancelledCount,
+                    holidayCount,
+                    marginText,
+                  }) => {
+                    const isSafe = stats.conductedSessions === 0 || stats.percentage >= 75;
 
-                  return (
-                    <Card
-                      key={subject.id}
-                      className="border-border bg-card rounded-xl shadow-xs hover:border-primary/40 transition-colors flex flex-col justify-between"
-                    >
-                      <CardHeader className="pb-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="h-3 w-3 rounded-full shrink-0"
-                              style={{ backgroundColor: subject.color || '#526653' }}
-                            />
-                            <div>
-                              <CardTitle className="text-sm font-semibold text-foreground truncate">
-                                {subject.name}
-                              </CardTitle>
-                              {subject.code && (
-                                <CardDescription className="text-[10px] font-mono text-muted-foreground">
-                                  {subject.code}
-                                </CardDescription>
-                              )}
+                    return (
+                      <Card
+                        key={subject.id}
+                        className="border-border bg-card rounded-2xl shadow-xs hover:border-primary/50 transition-all flex flex-col justify-between group overflow-hidden"
+                      >
+                        {/* Clickable Header that opens Dialog */}
+                        <div
+                          onClick={() => handleOpenSubjectDialog(subject)}
+                          className="p-4 pb-2 cursor-pointer hover:bg-muted/30 transition-colors"
+                          title="Tap to view date-wise attendance"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span
+                                className="h-3 w-3 rounded-full shrink-0 ring-2 ring-background mt-0.5"
+                                style={{ backgroundColor: subject.color || '#526653' }}
+                              />
+                              <div className="min-w-0">
+                                <CardTitle className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                                  {subject.name}
+                                </CardTitle>
+                                {subject.code && (
+                                  <CardDescription className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                                    {subject.code}
+                                  </CardDescription>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span
+                                className={`text-base font-bold font-mono ${
+                                  isSafe
+                                    ? 'text-emerald-700 dark:text-emerald-400'
+                                    : 'text-rose-700 dark:text-rose-400'
+                                }`}
+                              >
+                                {stats.conductedSessions > 0 ? `${stats.percentage}%` : '—'}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground block font-mono">
+                                Target: 75%
+                              </span>
                             </div>
                           </div>
-                          <span
-                            className={`text-base font-bold font-mono ${
-                              isSafe
-                                ? 'text-emerald-700 dark:text-emerald-400'
-                                : 'text-rose-700 dark:text-rose-400'
-                            }`}
-                          >
-                            {stats.conductedSessions > 0 ? `${stats.percentage}%` : '—'}
-                          </span>
-                        </div>
-                      </CardHeader>
 
-                      <CardContent className="pt-0 space-y-3">
-                        {/* Attendance Progress Bar */}
-                        <div className="space-y-1">
-                          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-300 rounded-full ${
-                                isSafe ? 'bg-primary' : 'bg-rose-500'
-                              }`}
-                              style={{ width: `${Math.min(100, stats.percentage)}%` }}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-                            <span>
-                              {stats.presentSessions}/{stats.conductedSessions} attended
-                            </span>
-                            <span className={isSafe ? 'text-primary font-medium' : 'text-rose-600 font-medium'}>
-                              {marginText}
-                            </span>
+                          {/* Subject-Wise Total Attendance Breakdown Chips */}
+                          <div className="grid grid-cols-4 gap-1.5 mt-3 text-center">
+                            <div className="py-1 px-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+                              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
+                                {presentCount}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground">Attended</span>
+                            </div>
+                            <div className="py-1 px-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                              <span className="text-xs font-bold text-rose-700 dark:text-rose-300 block font-mono">
+                                {absentCount}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground">Missed</span>
+                            </div>
+                            <div className="py-1 px-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+                              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block font-mono">
+                                {cancelledCount}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground">Cancel</span>
+                            </div>
+                            <div className="py-1 px-1 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
+                              <span className="text-xs font-bold text-sky-700 dark:text-sky-300 block font-mono">
+                                {holidayCount}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground">Holiday</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Quick Log Action Buttons */}
-                        <div className="pt-2 border-t border-border flex items-center justify-between gap-1.5">
-                          <span className="text-[10px] text-muted-foreground font-medium">Quick Log:</span>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              type="button"
-                              size="xs"
-                              variant="outline"
-                              onClick={() => handleQuickLog(subject.id, 'present')}
-                              disabled={isPending}
-                              className="h-6 px-2 text-[10px] rounded-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-                            >
-                              <Check className="h-3 w-3 mr-1" />
-                              Present
-                            </Button>
-                            <Button
-                              type="button"
-                              size="xs"
-                              variant="outline"
-                              onClick={() => handleQuickLog(subject.id, 'absent')}
-                              disabled={isPending}
-                              className="h-6 px-2 text-[10px] rounded-lg border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                            >
-                              <X className="h-3 w-3 mr-1" />
-                              Absent
-                            </Button>
-                            <Button
-                              type="button"
-                              size="xs"
-                              variant="ghost"
-                              onClick={() => handleQuickLog(subject.id, 'cancelled')}
-                              disabled={isPending}
-                              className="h-6 px-1.5 text-[10px] rounded-lg text-muted-foreground"
-                              title="Class Cancelled"
-                            >
-                              <MinusCircle className="h-3 w-3" />
-                            </Button>
+                        <CardContent className="p-4 pt-1 space-y-3">
+                          {/* Attendance Progress Bar */}
+                          <div className="space-y-1">
+                            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-300 rounded-full ${
+                                  isSafe ? 'bg-primary' : 'bg-rose-500'
+                                }`}
+                                style={{ width: `${Math.min(100, stats.percentage)}%` }}
+                              />
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                              <span>
+                                {stats.presentSessions}/{stats.conductedSessions} attended
+                              </span>
+                              <span className={isSafe ? 'text-primary font-medium' : 'text-rose-600 font-medium'}>
+                                {marginText}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+
+                          {/* Quick Log Action Buttons and Dates Tap Shortcut */}
+                          <div className="pt-2 border-t border-border flex items-center justify-between gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenSubjectDialog(subject)}
+                              className="text-[11px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1 group-hover:text-primary"
+                            >
+                              <CalendarDays className="h-3 w-3" />
+                              <span>View Dates</span>
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleQuickLog(subject.id, 'present');
+                                }}
+                                disabled={isPending}
+                                className="h-6 px-1.5 text-[10px] rounded-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                                title="Attended Today"
+                              >
+                                <Check className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleQuickLog(subject.id, 'absent');
+                                }}
+                                disabled={isPending}
+                                className="h-6 px-1.5 text-[10px] rounded-lg border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                title="Missed Today"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleQuickLog(subject.id, 'cancelled');
+                                }}
+                                disabled={isPending}
+                                className="h-6 px-1 text-[10px] rounded-lg text-muted-foreground hover:bg-muted cursor-pointer"
+                                title="Class Cancelled"
+                              >
+                                <MinusCircle className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleQuickLog(subject.id, 'no_class');
+                                }}
+                                disabled={isPending}
+                                className="h-6 px-1 text-[10px] rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 cursor-pointer"
+                                title="Holiday / No Class"
+                              >
+                                <Sun className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                )}
               </div>
             )}
           </div>
@@ -944,6 +1068,14 @@ export function AcademicOverview({
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Pop-up for Subject-Wise Date Attendance and Holiday Management */}
+      <SubjectAttendanceDialog
+        open={isSubjectDialogOpen}
+        onOpenChange={setIsSubjectDialogOpen}
+        subject={selectedSubjectForDialog}
+        sessions={sessions}
+      />
     </div>
   );
 }
