@@ -1,27 +1,23 @@
 import React from 'react';
-import { createClient } from '@/lib/supabase/server';
-import { FinanceView } from '@/features/finance/finance-view';
+import { getNativeFinanceWorkspaceAction } from '@/features/finance/native-actions';
+import { NativeFinanceView } from '@/features/finance/native-finance-view';
 
 export const instant = false;
 
 export default async function FinancePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const result = await getNativeFinanceWorkspaceAction();
 
-  const userId = user?.id || '';
-
-  const { data: connection } = await supabase
-    .from('integration_connections')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('provider', 'expense_manager')
-    .maybeSingle();
+  const workspace = result.data || {
+    accounts: [],
+    transactions: [],
+    bills: [],
+    fixedDeposits: [],
+    loans: [],
+  };
 
   return (
     <div className="space-y-6">
-      <FinanceView connection={connection || null} />
+      <NativeFinanceView initialWorkspace={workspace} />
     </div>
   );
 }
