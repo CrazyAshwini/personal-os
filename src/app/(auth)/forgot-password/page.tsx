@@ -1,0 +1,128 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validation/auth';
+import { forgotPasswordAction } from '@/lib/auth/actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+
+export default function ForgotPasswordPage() {
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const onSubmit = async (data: ForgotPasswordInput) => {
+    setServerError(null);
+    setIsPending(true);
+    try {
+      const result = await forgotPasswordAction(data);
+      if (result?.error) {
+        setServerError(result.error);
+      } else if (result?.success) {
+        setIsSuccess(true);
+      }
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <Card className="border-neutral-200 shadow-sm dark:border-neutral-800">
+        <CardHeader className="space-y-1 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+            <CheckCircle2 className="h-6 w-6" />
+          </div>
+          <CardTitle className="text-xl">Reset link sent</CardTitle>
+          <CardDescription>
+            We have sent a password reset link to your email address if an account exists.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="flex justify-center">
+          <Link href="/login">
+            <Button variant="outline">Return to Sign In</Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-neutral-200 shadow-sm dark:border-neutral-800">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-xl">Reset password</CardTitle>
+        <CardDescription>
+          Enter your registered email address and we will send you a reset link
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardContent className="space-y-4">
+          {serverError && (
+            <div className="flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/50 dark:text-red-400">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{serverError}</span>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              autoComplete="email"
+              disabled={isPending}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-xs text-red-600 dark:text-red-400">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex flex-col space-y-4">
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Send Reset Link
+          </Button>
+
+          <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
+            Remember your password?{' '}
+            <Link
+              href="/login"
+              className="font-medium text-neutral-900 underline underline-offset-4 hover:text-neutral-700 dark:text-neutral-100"
+            >
+              Sign In
+            </Link>
+          </p>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
