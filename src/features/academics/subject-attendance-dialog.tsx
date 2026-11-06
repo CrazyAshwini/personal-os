@@ -27,6 +27,7 @@ import {
   logClassSessionAction,
   updateClassSessionStatusAction,
   deleteClassSessionAction,
+  logHolidayAction,
 } from '@/features/academics/actions';
 import type { Database } from '@/types/database';
 
@@ -55,6 +56,7 @@ export function SubjectAttendanceDialog({
   sessions,
 }: SubjectAttendanceDialogProps) {
   const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [sessionEndDate, setSessionEndDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [topicCovered, setTopicCovered] = useState('');
   const [isPending, startTransition] = useTransition();
 
@@ -98,12 +100,46 @@ export function SubjectAttendanceDialog({
   const handleLogForDate = (status: 'present' | 'absent' | 'cancelled' | 'no_class') => {
     if (!sessionDate) return;
     startTransition(async () => {
-      await logClassSessionAction({
-        subjectId: subject.id,
-        sessionDate,
-        status,
-        topicCovered: topicCovered || null,
-      });
+      if (status === 'no_class') {
+        await logHolidayAction({
+          startDate: sessionDate,
+          endDate: sessionEndDate || sessionDate,
+          subjectId: subject.id,
+          title: topicCovered || undefined,
+        });
+      } else {
+        const fromStr = sessionDate;
+        const toStr = sessionEndDate || sessionDate;
+        if (fromStr === toStr) {
+          await logClassSessionAction({
+            subjectId: subject.id,
+            sessionDate: fromStr,
+            status,
+            topicCovered: topicCovered || null,
+          });
+        } else {
+          // Log each day in range
+          const [sY, sM, sD] = fromStr.split('-').map(Number);
+          const [eY, eM, eD] = toStr.split('-').map(Number);
+          const start = new Date(sY, sM - 1, sD);
+          const end = new Date(eY, eM - 1, eD);
+          const effStart = start <= end ? start : end;
+          const effEnd = start <= end ? end : start;
+          const cur = new Date(effStart);
+          while (cur <= effEnd) {
+            const y = cur.getFullYear();
+            const m = String(cur.getMonth() + 1).padStart(2, '0');
+            const d = String(cur.getDate()).padStart(2, '0');
+            await logClassSessionAction({
+              subjectId: subject.id,
+              sessionDate: `${y}-${m}-${d}`,
+              status,
+              topicCovered: topicCovered || null,
+            });
+            cur.setDate(cur.getDate() + 1);
+          }
+        }
+      }
       setTopicCovered('');
     });
   };
@@ -221,14 +257,20 @@ export function SubjectAttendanceDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label htmlFor="date-input" className="text-[10px] text-muted-foreground font-medium">
-                  Class Date
+                  From Date *
                 </Label>
                 <div className="relative">
                   <Input
                     id="date-input"
                     type="date"
                     value={sessionDate}
-                    onChange={(e) => setSessionDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSessionDate(val);
+                      if (!sessionEndDate || sessionEndDate < val) {
+                        setSessionEndDate(val);
+                      }
+                    }}
                     className="text-xs h-8 rounded-lg pr-8"
                   />
                   <Calendar className="h-3 w-3 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
@@ -236,18 +278,35 @@ export function SubjectAttendanceDialog({
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="topic-input" className="text-[10px] text-muted-foreground font-medium">
-                  Topic Covered / Note (Optional)
+                <Label htmlFor="date-end-input" className="text-[10px] text-muted-foreground font-medium">
+                  To Date (for range / holidays)
                 </Label>
-                <Input
-                  id="topic-input"
-                  type="text"
-                  placeholder="e.g. Unit 2 MOSFET Scaling"
-                  value={topicCovered}
-                  onChange={(e) => setTopicCovered(e.target.value)}
-                  className="text-xs h-8 rounded-lg"
-                />
+                <div className="relative">
+                  <Input
+                    id="date-end-input"
+                    type="date"
+                    value={sessionEndDate}
+                    min={sessionDate}
+                    onChange={(e) => setSessionEndDate(e.target.value)}
+                    className="text-xs h-8 rounded-lg pr-8"
+                  />
+                  <Calendar className="h-3 w-3 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="topic-input" className="text-[10px] text-muted-foreground font-medium">
+                Topic Covered / Reason (Optional)
+              </Label>
+              <Input
+                id="topic-input"
+                type="text"
+                placeholder="e.g. Unit 2 MOSFET Scaling or Diwali Break"
+                value={topicCovered}
+                onChange={(e) => setTopicCovered(e.target.value)}
+                className="text-xs h-8 rounded-lg"
+              />
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">

@@ -380,7 +380,9 @@ export async function toggleSlotAttendanceAction(params: {
 }
 
 export async function logHolidayAction(params: {
-  date: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
   title?: string;
   subjectId?: string;
 }): Promise<AcademicActionResult<void>> {
@@ -390,6 +392,12 @@ export async function logHolidayAction(params: {
   } = await supabase.auth.getUser();
 
   if (!user) return { error: 'Authentication required.' };
+
+  const fromDateStr = params.startDate || params.date;
+  if (!fromDateStr) {
+    return { error: 'Start date is required.' };
+  }
+  const toDateStr = params.endDate || fromDateStr;
 
   let subjectIds: string[] = [];
   if (params.subjectId && params.subjectId !== 'all') {
@@ -406,33 +414,59 @@ export async function logHolidayAction(params: {
     return { error: 'No subjects found to log holiday.' };
   }
 
-  for (const subId of subjectIds) {
-    const { data: existing } = await supabase
-      .from('class_sessions')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('subject_id', subId)
-      .eq('session_date', params.date)
-      .maybeSingle();
+  // Generate all date strings in the range [fromDateStr, toDateStr]
+  const dates: string[] = [];
+  const [sY, sM, sD] = fromDateStr.split('-').map(Number);
+  const [eY, eM, eD] = toDateStr.split('-').map(Number);
+  const start = new Date(sY, sM - 1, sD);
+  const end = new Date(eY, eM - 1, eD);
 
-    if (existing) {
-      await supabase
+  const effectiveStart = start <= end ? start : end;
+  const effectiveEnd = start <= end ? end : start;
+
+  // Max 90 days limit to protect against invalid massive intervals
+  const maxLimit = new Date(effectiveStart);
+  maxLimit.setDate(maxLimit.getDate() + 90);
+  const finalEnd = effectiveEnd > maxLimit ? maxLimit : effectiveEnd;
+
+  const current = new Date(effectiveStart);
+  while (current <= finalEnd) {
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    dates.push(`${y}-${m}-${d}`);
+    current.setDate(current.getDate() + 1);
+  }
+
+  for (const dateItem of dates) {
+    for (const subId of subjectIds) {
+      const { data: existing } = await supabase
         .from('class_sessions')
-        .update({
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('subject_id', subId)
+        .eq('session_date', dateItem)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from('class_sessions')
+          .update({
+            status: 'no_class',
+            notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id)
+          .eq('user_id', user.id);
+      } else {
+        await supabase.from('class_sessions').insert({
+          user_id: user.id,
+          subject_id: subId,
+          session_date: dateItem,
           status: 'no_class',
           notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existing.id)
-        .eq('user_id', user.id);
-    } else {
-      await supabase.from('class_sessions').insert({
-        user_id: user.id,
-        subject_id: subId,
-        session_date: params.date,
-        status: 'no_class',
-        notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
-      });
+        });
+      }
     }
   }
 

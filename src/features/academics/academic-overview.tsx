@@ -773,7 +773,7 @@ export function AcademicOverview({
                 </div>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {subjectStats.map(
                   ({
                     subject,
@@ -789,35 +789,103 @@ export function AcademicOverview({
                     return (
                       <Card
                         key={subject.id}
-                        className="border-border bg-card rounded-2xl shadow-xs hover:border-primary/50 transition-all flex flex-col justify-between group overflow-hidden"
+                        onClick={() => handleOpenSubjectDialog(subject)}
+                        className="border-border bg-card rounded-2xl shadow-xs hover:border-primary/50 transition-all p-3.5 sm:p-4.5 cursor-pointer group overflow-hidden"
+                        title="Tap to view date-wise attendance"
                       >
-                        {/* Clickable Header that opens Dialog */}
-                        <div
-                          onClick={() => handleOpenSubjectDialog(subject)}
-                          className="p-4 pb-2 cursor-pointer hover:bg-muted/30 transition-colors"
-                          title="Tap to view date-wise attendance"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span
-                                className="h-3 w-3 rounded-full shrink-0 ring-2 ring-background mt-0.5"
-                                style={{ backgroundColor: subject.color || '#526653' }}
-                              />
-                              <div className="min-w-0">
-                                <CardTitle className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                                  {subject.name}
-                                </CardTitle>
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                          {/* 1. Left Section: Subject Info */}
+                          <div className="flex items-start gap-3 lg:w-[280px] shrink-0 min-w-0">
+                            <span
+                              className="h-3.5 w-3.5 rounded-full shrink-0 ring-2 ring-background mt-1"
+                              style={{ backgroundColor: subject.color || '#526653' }}
+                            />
+                            <div className="min-w-0">
+                              <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                                {subject.name}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-0.5">
                                 {subject.code && (
-                                  <CardDescription className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                                  <Badge variant="outline" className="text-[10px] font-mono py-0 border-border">
                                     {subject.code}
-                                  </CardDescription>
+                                  </Badge>
                                 )}
+                                {subject.instructor && (
+                                  <span className="text-[11px] text-muted-foreground italic truncate">
+                                    Prof. {subject.instructor}
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenSubjectDialog(subject);
+                                }}
+                                className="text-[11px] font-semibold text-primary hover:underline cursor-pointer inline-flex items-center gap-1 mt-1.5"
+                              >
+                                <CalendarDays className="h-3 w-3" />
+                                <span>View Dates & History</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 2. Middle Section: Attendance Stats Chips & Progress */}
+                          <div className="flex-1 min-w-0 space-y-2">
+                            {/* Breakdown Chips */}
+                            <div className="grid grid-cols-4 gap-1.5 text-center">
+                              <div className="py-1 px-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
+                                  {presentCount}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground">Attended</span>
+                              </div>
+                              <div className="py-1 px-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                                <span className="text-xs font-bold text-rose-700 dark:text-rose-300 block font-mono">
+                                  {absentCount}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground">Missed</span>
+                              </div>
+                              <div className="py-1 px-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block font-mono">
+                                  {cancelledCount}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground">Cancelled</span>
+                              </div>
+                              <div className="py-1 px-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
+                                <span className="text-xs font-bold text-sky-700 dark:text-sky-300 block font-mono">
+                                  {holidayCount}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground">Holidays</span>
                               </div>
                             </div>
 
-                            <div className="text-right shrink-0">
+                            {/* Progress bar and margin text */}
+                            <div className="space-y-1">
+                              <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                                <div
+                                  className={`h-full transition-all duration-300 rounded-full ${
+                                    isSafe ? 'bg-primary' : 'bg-rose-500'
+                                  }`}
+                                  style={{ width: `${Math.min(100, stats.percentage)}%` }}
+                                />
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                                <span>
+                                  {stats.presentSessions}/{stats.conductedSessions} conducted lectures attended
+                                </span>
+                                <span className={isSafe ? 'text-primary font-medium' : 'text-rose-600 font-medium'}>
+                                  {marginText}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 3. Right Section: Percentage & Quick Log */}
+                          <div className="flex items-center justify-between lg:justify-end gap-3.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-border">
+                            <div className="text-left lg:text-right shrink-0">
                               <span
-                                className={`text-base font-bold font-mono ${
+                                className={`text-xl font-black font-mono leading-none ${
                                   isSafe
                                     ? 'text-emerald-700 dark:text-emerald-400'
                                     : 'text-rose-700 dark:text-rose-400'
@@ -829,68 +897,6 @@ export function AcademicOverview({
                                 Target: 75%
                               </span>
                             </div>
-                          </div>
-
-                          {/* Subject-Wise Total Attendance Breakdown Chips */}
-                          <div className="grid grid-cols-4 gap-1.5 mt-3 text-center">
-                            <div className="py-1 px-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
-                              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
-                                {presentCount}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground">Attended</span>
-                            </div>
-                            <div className="py-1 px-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
-                              <span className="text-xs font-bold text-rose-700 dark:text-rose-300 block font-mono">
-                                {absentCount}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground">Missed</span>
-                            </div>
-                            <div className="py-1 px-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
-                              <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block font-mono">
-                                {cancelledCount}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground">Cancel</span>
-                            </div>
-                            <div className="py-1 px-1 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
-                              <span className="text-xs font-bold text-sky-700 dark:text-sky-300 block font-mono">
-                                {holidayCount}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground">Holiday</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <CardContent className="p-4 pt-1 space-y-3">
-                          {/* Attendance Progress Bar */}
-                          <div className="space-y-1">
-                            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-300 rounded-full ${
-                                  isSafe ? 'bg-primary' : 'bg-rose-500'
-                                }`}
-                                style={{ width: `${Math.min(100, stats.percentage)}%` }}
-                              />
-                            </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
-                              <span>
-                                {stats.presentSessions}/{stats.conductedSessions} attended
-                              </span>
-                              <span className={isSafe ? 'text-primary font-medium' : 'text-rose-600 font-medium'}>
-                                {marginText}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Quick Log Action Buttons and Dates Tap Shortcut */}
-                          <div className="pt-2 border-t border-border flex items-center justify-between gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenSubjectDialog(subject)}
-                              className="text-[11px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1 group-hover:text-primary"
-                            >
-                              <CalendarDays className="h-3 w-3" />
-                              <span>View Dates</span>
-                            </button>
 
                             <div className="flex items-center gap-1">
                               <Button
@@ -902,10 +908,11 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'present');
                                 }}
                                 disabled={isPending}
-                                className="h-6 px-1.5 text-[10px] rounded-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
+                                className="h-7 px-2 text-[10px] rounded-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer font-medium"
                                 title="Attended Today"
                               >
-                                <Check className="h-3 w-3" />
+                                <Check className="h-3 w-3 mr-1" />
+                                Present
                               </Button>
                               <Button
                                 type="button"
@@ -916,10 +923,11 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'absent');
                                 }}
                                 disabled={isPending}
-                                className="h-6 px-1.5 text-[10px] rounded-lg border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                className="h-7 px-2 text-[10px] rounded-lg border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer font-medium"
                                 title="Missed Today"
                               >
-                                <X className="h-3 w-3" />
+                                <X className="h-3 w-3 mr-1" />
+                                Absent
                               </Button>
                               <Button
                                 type="button"
@@ -930,10 +938,10 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'cancelled');
                                 }}
                                 disabled={isPending}
-                                className="h-6 px-1 text-[10px] rounded-lg text-muted-foreground hover:bg-muted cursor-pointer"
-                                title="Class Cancelled"
+                                className="h-7 px-1.5 text-[10px] rounded-lg text-muted-foreground hover:bg-muted cursor-pointer"
+                                title="Class Cancelled Today"
                               >
-                                <MinusCircle className="h-3 w-3" />
+                                <MinusCircle className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 type="button"
@@ -944,14 +952,14 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'no_class');
                                 }}
                                 disabled={isPending}
-                                className="h-6 px-1 text-[10px] rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 cursor-pointer"
-                                title="Holiday / No Class"
+                                className="h-7 px-1.5 text-[10px] rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 cursor-pointer"
+                                title="Holiday Today"
                               >
-                                <Sun className="h-3 w-3" />
+                                <Sun className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </div>
-                        </CardContent>
+                        </div>
                       </Card>
                     );
                   }
