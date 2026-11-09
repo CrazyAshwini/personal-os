@@ -3,7 +3,6 @@ import {
   GraduationCap,
   CheckSquare,
   Timer,
-  Calendar,
   Wallet,
   Plane,
   BookOpen,
@@ -36,7 +35,6 @@ export const navSections: NavSection[] = [
       { title: 'Academics', href: '/academics', icon: GraduationCap },
       { title: 'Tasks', href: '/productivity', icon: CheckSquare },
       { title: 'Pomodoro', href: '/pomodoro', icon: Timer },
-      { title: 'Calendar', href: '/calendar', icon: Calendar },
     ],
   },
   {
@@ -64,5 +62,5 @@ export const mobilePrimaryNav: NavItem[] = [
   { title: 'Home', href: '/dashboard', icon: LayoutDashboard },
   { title: 'Academics', href: '/academics', icon: GraduationCap },
   { title: 'Tasks', href: '/productivity', icon: CheckSquare },
-  { title: 'Calendar', href: '/calendar', icon: Calendar },
+  { title: 'Pomodoro', href: '/pomodoro', icon: Timer },
 ];

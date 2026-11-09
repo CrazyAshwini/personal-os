@@ -146,10 +146,10 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-[10px] font-medium ${
+              className={`flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-xs font-semibold ${
                 isActive
-                  ? 'text-primary font-semibold bg-primary/10 dark:bg-primary/15'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                  ? 'text-primary font-bold bg-primary/10 dark:bg-primary/15'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 font-medium'
               }`}
             >
               <Icon className={`h-5 w-5 mb-0.5 ${isActive ? 'stroke-[2.25px]' : 'stroke-[1.75px]'}`} />
@@ -160,7 +160,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
 
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer"
           aria-label="Open full menu"
         >
           <Menu className="h-5 w-5 mb-0.5 stroke-[1.75px]" />

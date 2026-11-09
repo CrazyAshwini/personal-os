@@ -165,23 +165,23 @@ export function SubjectAttendanceDialog({
         {/* Header */}
         <DialogHeader className="p-4 sm:p-5 border-b border-border bg-muted/20">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <span
-                className="h-3.5 w-3.5 rounded-full shrink-0 ring-2 ring-background"
+                className="h-4 w-4 rounded-full shrink-0 ring-2 ring-background"
                 style={{ backgroundColor: subject.color || '#526653' }}
               />
               <div>
-                <DialogTitle className="text-sm sm:text-base font-bold text-foreground">
+                <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
                   {subject.name}
                 </DialogTitle>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-2 mt-1">
                   {subject.code && (
-                    <Badge variant="outline" className="text-[10px] font-mono py-0 border-border">
+                    <Badge variant="outline" className="text-xs font-mono font-semibold py-0.5 px-2 border-border">
                       {subject.code}
                     </Badge>
                   )}
                   {subject.instructor && (
-                    <span className="text-[11px] text-muted-foreground italic">
+                    <span className="text-xs sm:text-sm text-muted-foreground italic">
                       Prof. {subject.instructor}
                     </span>
                   )}
@@ -191,7 +191,7 @@ export function SubjectAttendanceDialog({
 
             <div className="text-right">
               <span
-                className={`text-xl sm:text-2xl font-black font-mono leading-none ${
+                className={`text-2xl sm:text-3xl font-black font-mono leading-none ${
                   conductedSessions === 0
                     ? 'text-foreground'
                     : percentage >= 75
@@ -201,7 +201,7 @@ export function SubjectAttendanceDialog({
               >
                 {conductedSessions > 0 ? `${percentage}%` : '—'}
               </span>
-              <span className="text-[10px] text-muted-foreground block font-mono">
+              <span className="text-xs text-muted-foreground block font-mono font-medium mt-0.5">
                 {marginText}
               </span>
             </div>
@@ -216,47 +216,47 @@ export function SubjectAttendanceDialog({
         <div className="p-4 sm:p-5 overflow-y-auto space-y-5 flex-1">
           {/* Total Breakdown Bar */}
           <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
-              <span className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
+            <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+              <span className="text-lg sm:text-xl font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
                 {presentCount}
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium">Attended</span>
+              <span className="text-xs text-muted-foreground font-semibold">Attended</span>
             </div>
-            <div className="p-2 sm:p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
-              <span className="text-base sm:text-lg font-bold text-rose-700 dark:text-rose-300 block font-mono">
+            <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+              <span className="text-lg sm:text-xl font-bold text-rose-700 dark:text-rose-300 block font-mono">
                 {absentCount}
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium">Missed</span>
+              <span className="text-xs text-muted-foreground font-semibold">Missed</span>
             </div>
-            <div className="p-2 sm:p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
-              <span className="text-base sm:text-lg font-bold text-amber-700 dark:text-amber-300 block font-mono">
+            <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+              <span className="text-lg sm:text-xl font-bold text-amber-700 dark:text-amber-300 block font-mono">
                 {cancelledCount}
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium">Cancelled</span>
+              <span className="text-xs text-muted-foreground font-semibold">Cancelled</span>
             </div>
-            <div className="p-2 sm:p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
-              <span className="text-base sm:text-lg font-bold text-sky-700 dark:text-sky-300 block font-mono">
+            <div className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
+              <span className="text-lg sm:text-xl font-bold text-sky-700 dark:text-sky-300 block font-mono">
                 {holidayCount}
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium">Holidays</span>
+              <span className="text-xs text-muted-foreground font-semibold">Holidays</span>
             </div>
           </div>
 
           {/* Quick Log for Date Form */}
-          <div className="p-3.5 rounded-xl border border-border bg-card shadow-xs space-y-3">
+          <div className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-3.5">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
-                <Plus className="h-3.5 w-3.5 text-primary" />
+              <h4 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+                <Plus className="h-4 w-4 text-primary" />
                 Log Attendance for a Date
               </h4>
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 Pick date & choose status
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label htmlFor="date-input" className="text-[10px] text-muted-foreground font-medium">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="space-y-1.5">
+                <Label htmlFor="date-input" className="text-xs text-muted-foreground font-semibold">
                   From Date *
                 </Label>
                 <div className="relative">
@@ -271,14 +271,14 @@ export function SubjectAttendanceDialog({
                         setSessionEndDate(val);
                       }
                     }}
-                    className="text-xs h-8 rounded-lg pr-8"
+                    className="text-xs sm:text-sm h-9 rounded-xl pr-8 font-mono"
                   />
-                  <Calendar className="h-3 w-3 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
+                  <Calendar className="h-3.5 w-3.5 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="date-end-input" className="text-[10px] text-muted-foreground font-medium">
+              <div className="space-y-1.5">
+                <Label htmlFor="date-end-input" className="text-xs text-muted-foreground font-semibold">
                   To Date (for range / holidays)
                 </Label>
                 <div className="relative">
@@ -288,15 +288,15 @@ export function SubjectAttendanceDialog({
                     value={sessionEndDate}
                     min={sessionDate}
                     onChange={(e) => setSessionEndDate(e.target.value)}
-                    className="text-xs h-8 rounded-lg pr-8"
+                    className="text-xs sm:text-sm h-9 rounded-xl pr-8 font-mono"
                   />
-                  <Calendar className="h-3 w-3 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
+                  <Calendar className="h-3.5 w-3.5 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="topic-input" className="text-[10px] text-muted-foreground font-medium">
+            <div className="space-y-1.5">
+              <Label htmlFor="topic-input" className="text-xs text-muted-foreground font-semibold">
                 Topic Covered / Reason (Optional)
               </Label>
               <Input
@@ -349,36 +349,36 @@ export function SubjectAttendanceDialog({
                 variant="outline"
                 onClick={() => handleLogForDate('no_class')}
                 disabled={isPending}
-                className="h-7 text-xs rounded-lg border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/40 gap-1 font-medium cursor-pointer"
+                className="h-8 text-xs rounded-xl border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/40 gap-1.5 font-semibold cursor-pointer"
               >
-                <Sun className="h-3 w-3" />
+                <Sun className="h-3.5 w-3.5" />
                 <span>+ Holiday</span>
               </Button>
             </div>
           </div>
 
           {/* Date-wise Attendance History */}
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
-                <CalendarDays className="h-3.5 w-3.5 text-primary" />
+              <h4 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+                <CalendarDays className="h-4 w-4 text-primary" />
                 Logged Dates & History ({subjectSessions.length})
               </h4>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground font-mono">
                 Tap status to change or delete
               </span>
             </div>
 
             {subjectSessions.length === 0 ? (
-              <div className="p-6 rounded-xl border border-dashed border-border text-center text-xs text-muted-foreground">
-                <CalendarDays className="h-7 w-7 mx-auto text-primary/40 mb-1.5" />
-                <p className="font-medium text-foreground">No attendance records logged for this course yet.</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+              <div className="p-8 rounded-2xl border border-dashed border-border text-center text-sm text-muted-foreground">
+                <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
+                <p className="font-bold text-foreground text-sm sm:text-base">No attendance records logged for this course yet.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Use the quick log buttons above to record dates you attended or missed.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+              <div className="divide-y divide-border rounded-2xl border border-border bg-card overflow-hidden">
                 {subjectSessions.map((session) => {
                   const isPresent = session.status === 'present';
                   const isAbsent = session.status === 'absent';
@@ -388,55 +388,55 @@ export function SubjectAttendanceDialog({
                   return (
                     <div
                       key={session.id}
-                      className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:bg-muted/20 transition-colors"
+                      className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
                     >
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-xs text-foreground font-mono">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-bold text-xs sm:text-sm text-foreground font-mono">
                             {formatSessionDate(session.session_date)}
                           </span>
 
                           {/* Current Status Pill */}
                           {isPresent && (
-                            <Badge className="bg-emerald-600 text-white text-[10px] py-0 px-1.5 font-medium">
+                            <Badge className="bg-emerald-600 text-white text-xs py-0.5 px-2 font-semibold">
                               Attended
                             </Badge>
                           )}
                           {isAbsent && (
-                            <Badge className="bg-rose-600 text-white text-[10px] py-0 px-1.5 font-medium">
+                            <Badge className="bg-rose-600 text-white text-xs py-0.5 px-2 font-semibold">
                               Missed
                             </Badge>
                           )}
                           {isCancelled && (
-                            <Badge className="bg-amber-600 text-white text-[10px] py-0 px-1.5 font-medium">
+                            <Badge className="bg-amber-600 text-white text-xs py-0.5 px-2 font-semibold">
                               Cancelled
                             </Badge>
                           )}
                           {isHoliday && (
-                            <Badge className="bg-sky-600 text-white text-[10px] py-0 px-1.5 font-medium">
+                            <Badge className="bg-sky-600 text-white text-xs py-0.5 px-2 font-semibold">
                               Holiday
                             </Badge>
                           )}
                         </div>
 
                         {(session.topic_covered || session.notes) && (
-                          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate mt-1">
                             {session.topic_covered || session.notes}
                           </p>
                         )}
                       </div>
 
                       {/* Status quick switcher and delete */}
-                      <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
-                        <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+                      <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                        <div className="inline-flex rounded-xl border border-border bg-muted/40 p-0.5">
                           <button
                             type="button"
                             onClick={() => handleUpdateStatus(session.id, 'present')}
                             disabled={isPending}
                             title="Mark Attended"
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                               isPresent
-                                ? 'bg-emerald-600 text-white font-bold'
+                                ? 'bg-emerald-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
                             }`}
                           >
@@ -447,9 +447,9 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'absent')}
                             disabled={isPending}
                             title="Mark Missed"
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                               isAbsent
-                                ? 'bg-rose-600 text-white font-bold'
+                                ? 'bg-rose-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
                             }`}
                           >
@@ -460,9 +460,9 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'cancelled')}
                             disabled={isPending}
                             title="Mark Cancelled"
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                               isCancelled
-                                ? 'bg-amber-600 text-white font-bold'
+                                ? 'bg-amber-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
                             }`}
                           >
@@ -473,9 +473,9 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'no_class')}
                             disabled={isPending}
                             title="Mark Holiday"
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                               isHoliday
-                                ? 'bg-sky-600 text-white font-bold'
+                                ? 'bg-sky-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
                             }`}
                           >

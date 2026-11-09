@@ -12,8 +12,6 @@ import {
   Check,
   X,
   MinusCircle,
-  LayoutGrid,
-  Calendar,
   Sun,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,9 +58,6 @@ interface AcademicOverviewProps {
   examinations: ExaminationRow[];
   syllabusTopics: SyllabusTopicRow[];
 }
-
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const DAY_MOTTO: Record<number, string> = {
   1: 'New week, same goals',
@@ -159,22 +154,22 @@ function DayTimetableTable({
         className="group hover:bg-muted/30 transition-colors border-b border-border/50 last:border-b-0"
       >
         {/* Time */}
-        <td className="py-2.5 px-3 font-mono text-[11px] font-semibold text-foreground whitespace-nowrap">
+        <td className="py-3 px-3.5 font-mono text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
           {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
         </td>
 
         {/* Subject */}
-        <td className="py-2.5 px-3 min-w-[140px]">
-          <div className="flex items-center gap-1.5 flex-wrap">
+        <td className="py-3 px-3.5 min-w-[150px]">
+          <div className="flex items-center gap-2 flex-wrap">
             <span
-              className="h-2 w-2 rounded-full shrink-0"
+              className="h-2.5 w-2.5 rounded-full shrink-0"
               style={{ backgroundColor: sub?.color || '#526653' }}
             />
-            <span className="font-semibold text-xs text-foreground">
+            <span className="font-bold text-sm sm:text-base text-foreground">
               {sub?.name || 'Class Session'}
             </span>
             {sub?.code && (
-              <span className="font-mono text-[9px] px-1 py-0.2 rounded border border-border bg-muted/40 text-muted-foreground shrink-0">
+              <span className="font-mono text-xs px-1.5 py-0.5 rounded border border-border bg-muted/50 text-muted-foreground font-semibold shrink-0">
                 {sub.code}
               </span>
             )}
@@ -182,9 +177,9 @@ function DayTimetableTable({
         </td>
 
         {/* Room */}
-        <td className="py-2.5 px-2.5 text-center font-mono text-xs whitespace-nowrap">
+        <td className="py-3 px-3 text-center font-mono text-xs whitespace-nowrap">
           {slot.classroom ? (
-            <span className="px-1.5 py-0.5 rounded bg-muted/60 font-semibold text-foreground text-[11px]">
+            <span className="px-2 py-0.5 rounded bg-muted/80 font-bold text-foreground text-xs sm:text-sm">
               {slot.classroom}
             </span>
           ) : (
@@ -193,20 +188,20 @@ function DayTimetableTable({
         </td>
 
         {/* Faculty */}
-        <td className="py-2.5 px-3 text-right font-medium text-xs text-muted-foreground whitespace-nowrap">
+        <td className="py-3 px-3.5 text-right font-medium text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
           {sub?.instructor || '—'}
         </td>
 
         {/* Delete Action */}
-        <td className="py-2.5 pr-2.5 pl-1 text-center w-7">
+        <td className="py-3 pr-3 pl-1 text-center w-8">
           <button
             type="button"
             onClick={() => onDelete(slot.id)}
             disabled={disabled}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-rose-600 rounded cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-rose-600 rounded-lg cursor-pointer"
             title="Delete class"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </td>
       </tr>
@@ -220,46 +215,46 @@ function DayTimetableTable({
       }`}
     >
       {/* Table Day Header */}
-      <div className={`py-2.5 px-4 border-b ${theme.header} flex items-center justify-between`}>
-        <div className="flex items-center gap-2">
-          <h3 className="font-bold text-sm tracking-tight">{dayName}</h3>
+      <div className={`py-3 px-4 border-b ${theme.header} flex items-center justify-between`}>
+        <div className="flex items-center gap-2.5">
+          <h3 className="font-bold text-base sm:text-lg tracking-tight">{dayName}</h3>
           {motto && (
-            <span className="text-xs opacity-75 italic hidden sm:inline">
+            <span className="text-xs sm:text-sm opacity-85 italic hidden sm:inline">
               • “{motto}”
             </span>
           )}
           {isToday && (
-            <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.2 rounded-full shadow-xs">
+            <Badge className="bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs">
               Today
             </Badge>
           )}
         </div>
-        <span className="font-mono text-xs opacity-80">
+        <span className="font-mono text-xs sm:text-sm opacity-90 font-medium">
           {slots.length} {slots.length === 1 ? 'class' : 'classes'}
         </span>
       </div>
 
       {/* Responsive Table */}
       <div className="overflow-x-auto scrollbar-none">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className="w-full text-left text-sm border-collapse">
           <thead>
-            <tr className={`border-b ${theme.th} text-[10px] uppercase font-mono font-semibold tracking-wider`}>
-              <th className="py-2 px-3 w-[130px]">Time</th>
-              <th className="py-2 px-3">Subject</th>
-              <th className="py-2 px-2.5 text-center w-[80px]">Class No. (Room)</th>
-              <th className="py-2 px-3 text-right w-[90px]">Faculty</th>
-              <th className="w-7"></th>
+            <tr className={`border-b ${theme.th} text-xs uppercase font-mono font-bold tracking-wider`}>
+              <th className="py-2.5 px-3.5 w-[140px]">Time</th>
+              <th className="py-2.5 px-3.5">Subject</th>
+              <th className="py-2.5 px-3 text-center w-[90px]">Class No. (Room)</th>
+              <th className="py-2.5 px-3.5 text-right w-[100px]">Faculty</th>
+              <th className="w-8"></th>
             </tr>
           </thead>
           <tbody>
             {morningSlots.map(renderSlotRow)}
 
             {/* Lunch Break Row */}
-            <tr className="bg-muted/20 border-y border-dashed border-border/70 text-muted-foreground">
-              <td className="py-1.5 px-3 font-mono text-[10px] font-medium whitespace-nowrap text-muted-foreground/80">
+            <tr className="bg-muted/25 border-y border-dashed border-border/80 text-muted-foreground">
+              <td className="py-2 px-3.5 font-mono text-xs font-semibold whitespace-nowrap text-muted-foreground">
                 1:00 – 2:30 PM
               </td>
-              <td colSpan={4} className="py-1.5 px-3 text-center text-[10px] font-semibold tracking-wider uppercase opacity-75">
+              <td colSpan={4} className="py-2 px-3.5 text-center text-xs font-bold tracking-wider uppercase opacity-85">
                 ☕ L U N C H &nbsp; B R E A K
               </td>
             </tr>
@@ -276,46 +271,46 @@ function SubjectsAtAGlance({ subjects }: { subjects: SubjectRow[] }) {
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs flex flex-col justify-between">
       {/* Header */}
-      <div className="py-2.5 px-4 border-b border-border bg-muted/60 flex items-center justify-between">
+      <div className="py-3 px-4 border-b border-border bg-muted/60 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BookOpen className="h-4 w-4 text-primary" />
-          <h3 className="font-bold text-sm text-foreground tracking-tight">
+          <BookOpen className="h-5 w-5 text-primary" />
+          <h3 className="font-bold text-base text-foreground tracking-tight">
             SUBJECTS AT A GLANCE
           </h3>
         </div>
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-mono text-xs sm:text-sm text-muted-foreground font-medium">
           {subjects.length} Courses
         </span>
       </div>
 
       {/* Subject List Table */}
       <div className="overflow-x-auto p-0">
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted/30 text-[10px] uppercase font-mono font-semibold text-muted-foreground">
-              <th className="py-2 px-3 w-[85px]">Code</th>
-              <th className="py-2 px-3">Subject Name</th>
-              <th className="py-2 px-3 text-right w-[75px]">Faculty</th>
+            <tr className="border-b border-border bg-muted/30 text-xs uppercase font-mono font-bold text-muted-foreground">
+              <th className="py-2.5 px-3.5 w-[95px]">Code</th>
+              <th className="py-2.5 px-3.5">Subject Name</th>
+              <th className="py-2.5 px-3.5 text-right w-[90px]">Faculty</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
             {subjects.map((sub) => (
               <tr key={sub.id} className="hover:bg-muted/20 transition-colors">
-                <td className="py-2 px-3 font-mono text-[10px] font-semibold text-foreground whitespace-nowrap">
+                <td className="py-2.5 px-3.5 font-mono text-xs font-bold text-foreground whitespace-nowrap">
                   {sub.code || '—'}
                 </td>
-                <td className="py-2 px-3">
-                  <div className="flex items-center gap-1.5">
+                <td className="py-2.5 px-3.5">
+                  <div className="flex items-center gap-2">
                     <span
-                      className="h-2 w-2 rounded-full shrink-0"
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: sub.color || '#526653' }}
                     />
-                    <span className="font-medium text-xs text-foreground truncate">
+                    <span className="font-bold text-sm text-foreground truncate">
                       {sub.name}
                     </span>
                   </div>
                 </td>
-                <td className="py-2 px-3 text-right text-xs text-muted-foreground font-mono whitespace-nowrap">
+                <td className="py-2.5 px-3.5 text-right text-xs sm:text-sm text-muted-foreground font-mono whitespace-nowrap font-medium">
                   {sub.instructor || '—'}
                 </td>
               </tr>
@@ -324,7 +319,7 @@ function SubjectsAtAGlance({ subjects }: { subjects: SubjectRow[] }) {
         </table>
       </div>
 
-      <div className="p-3 border-t border-border bg-muted/20 text-center text-[11px] text-muted-foreground italic">
+      <div className="p-3.5 border-t border-border bg-muted/20 text-center text-xs sm:text-sm text-muted-foreground italic">
         “Small steps every day lead to big results.”
       </div>
     </div>
@@ -337,8 +332,6 @@ export function AcademicOverview({
   sessions,
   syllabusTopics,
 }: AcademicOverviewProps) {
-  const [viewMode, setViewMode] = useState<'sheet' | 'day'>('sheet');
-  const [activeDay, setActiveDay] = useState<number>(() => new Date().getDay());
   const [selectedSubjectForDialog, setSelectedSubjectForDialog] = useState<SubjectRow | null>(null);
   const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -424,23 +417,22 @@ export function AcademicOverview({
   };
 
   const currentDayIndex = new Date().getDay();
-  const selectedDayClasses = timetable.filter((t) => t.day_of_week === activeDay);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
+            <GraduationCap className="h-7 w-7 text-primary" />
             Academic Hub
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground mt-1">
             Your daily class timetable, 75% attendance engine, and curriculum syllabus.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <CreateSubjectDialog />
           {subjects.length > 0 && (
             <>
@@ -452,223 +444,121 @@ export function AcademicOverview({
       </div>
 
       {/* 3-Pillar Tabbed Interface */}
-      <Tabs defaultValue="schedule" className="space-y-5">
-        <TabsList className="bg-card border border-border p-1 rounded-xl shadow-xs w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
-          <TabsTrigger value="schedule" className="text-xs gap-1.5 rounded-lg font-medium cursor-pointer">
-            <CalendarDays className="h-3.5 w-3.5" />
+      <Tabs defaultValue="schedule" className="space-y-6">
+        <TabsList className="bg-card border border-border p-1.5 rounded-2xl shadow-xs w-full sm:w-auto grid grid-cols-3 sm:inline-flex gap-1">
+          <TabsTrigger value="schedule" className="text-sm gap-2 rounded-xl font-semibold cursor-pointer py-2 px-3.5">
+            <Clock className="h-4 w-4" />
             <span>Class Schedule</span>
           </TabsTrigger>
-          <TabsTrigger value="attendance" className="text-xs gap-1.5 rounded-lg font-medium cursor-pointer">
-            <CheckCircle2 className="h-3.5 w-3.5" />
+          <TabsTrigger value="attendance" className="text-sm gap-2 rounded-xl font-semibold cursor-pointer py-2 px-3.5">
+            <CheckCircle2 className="h-4 w-4" />
             <span>Attendance ({overallStats.percentage}%)</span>
           </TabsTrigger>
-          <TabsTrigger value="syllabus" className="text-xs gap-1.5 rounded-lg font-medium cursor-pointer">
-            <BookOpen className="h-3.5 w-3.5" />
+          <TabsTrigger value="syllabus" className="text-sm gap-2 rounded-xl font-semibold cursor-pointer py-2 px-3.5">
+            <BookOpen className="h-4 w-4" />
             <span>Syllabus ({syllabusTopics.length})</span>
           </TabsTrigger>
         </TabsList>
 
         {/* ======================================================== */}
-        {/* PILLAR 1: CLASS SCHEDULE & TIMETABLE                     */}
+        {/* PILLAR 1: CLASS SCHEDULE & TIMETABLE (Weekly Sheet)     */}
         {/* ======================================================== */}
-        <TabsContent value="schedule" className="space-y-5">
-          {/* Header & View Mode Switcher */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card p-3 rounded-2xl border border-border shadow-xs">
+        <TabsContent value="schedule" className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card p-4 rounded-2xl border border-border shadow-xs">
             <div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-bold text-foreground tracking-tight">
-                  {viewMode === 'sheet' ? 'M.Tech (SO) I Semester Time Table' : `${DAY_NAMES[activeDay]} Schedule`}
+              <div className="flex items-center gap-2.5">
+                <Clock className="h-5 w-5 text-primary" />
+                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                  M.Tech (SO) I Semester Time Table
                 </h2>
-                {viewMode === 'sheet' && (
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/10">
-                    {timetable.length} Lectures
-                  </Badge>
-                )}
-                {viewMode === 'day' && activeDay === currentDayIndex && (
-                  <Badge variant="outline" className="text-[10px] font-mono border-primary text-primary bg-primary/10">
-                    Today
-                  </Badge>
-                )}
+                <Badge variant="outline" className="text-xs font-mono font-semibold border-primary/30 text-primary bg-primary/10 px-2 py-0.5">
+                  {timetable.length} Lectures
+                </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {viewMode === 'sheet'
-                  ? 'Weekly schedule tables with Time, Subject, Class No. (Room), and Faculty.'
-                  : `Showing ${selectedDayClasses.length} ${selectedDayClasses.length === 1 ? 'class' : 'classes'} scheduled for ${DAY_NAMES[activeDay]}.`}
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Weekly schedule tables with Time, Subject, Class No. (Room), and Faculty.
               </p>
             </div>
 
-            {/* Toggle Switch between Weekly Sheet and Day View */}
-            <div className="inline-flex items-center p-1 rounded-xl bg-muted/60 border border-border/80 self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setViewMode('sheet')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1.5 cursor-pointer ${
-                  viewMode === 'sheet'
-                    ? 'bg-background text-foreground shadow-xs font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                <span>Weekly Sheet</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('day')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1.5 cursor-pointer ${
-                  viewMode === 'day'
-                    ? 'bg-background text-foreground shadow-xs font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Calendar className="h-3.5 w-3.5" />
-                <span>Day View</span>
-              </button>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              {subjects.length > 0 && <CreateTimetableEntryDialog subjects={subjects} />}
             </div>
           </div>
 
-          {/* ======================================================== */}
-          {/* VIEW A: VISUAL WEEKLY TIMETABLE SHEET (Grid of Tables)   */}
-          {/* ======================================================== */}
-          {viewMode === 'sheet' ? (
-            timetable.length === 0 ? (
-              <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
-                <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
-                <p className="font-medium text-foreground">No classes scheduled in your timetable.</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Add lecture timeslots to populate your weekly academic routine.
-                </p>
-                {subjects.length > 0 && (
-                  <div className="mt-4">
-                    <CreateTimetableEntryDialog subjects={subjects} />
-                  </div>
-                )}
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {/* 1. MONDAY */}
-                <DayTimetableTable
-                  dayIdx={1}
-                  dayName="MONDAY"
-                  motto={DAY_MOTTO[1]}
-                  slots={timetable.filter((t) => t.day_of_week === 1)}
-                  isToday={currentDayIndex === 1}
-                  onDelete={handleDeleteTimetableEntry}
-                  disabled={isPending}
-                />
-
-                {/* 2. TUESDAY */}
-                <DayTimetableTable
-                  dayIdx={2}
-                  dayName="TUESDAY"
-                  motto={DAY_MOTTO[2]}
-                  slots={timetable.filter((t) => t.day_of_week === 2)}
-                  isToday={currentDayIndex === 2}
-                  onDelete={handleDeleteTimetableEntry}
-                  disabled={isPending}
-                />
-
-                {/* 3. WEDNESDAY */}
-                <DayTimetableTable
-                  dayIdx={3}
-                  dayName="WEDNESDAY"
-                  motto={DAY_MOTTO[3]}
-                  slots={timetable.filter((t) => t.day_of_week === 3)}
-                  isToday={currentDayIndex === 3}
-                  onDelete={handleDeleteTimetableEntry}
-                  disabled={isPending}
-                />
-
-                {/* 4. THURSDAY */}
-                <DayTimetableTable
-                  dayIdx={4}
-                  dayName="THURSDAY"
-                  motto={DAY_MOTTO[4]}
-                  slots={timetable.filter((t) => t.day_of_week === 4)}
-                  isToday={currentDayIndex === 4}
-                  onDelete={handleDeleteTimetableEntry}
-                  disabled={isPending}
-                />
-
-                {/* 5. FRIDAY */}
-                <DayTimetableTable
-                  dayIdx={5}
-                  dayName="FRIDAY"
-                  motto={DAY_MOTTO[5]}
-                  slots={timetable.filter((t) => t.day_of_week === 5)}
-                  isToday={currentDayIndex === 5}
-                  onDelete={handleDeleteTimetableEntry}
-                  disabled={isPending}
-                />
-
-                {/* 6. SUBJECTS AT A GLANCE */}
-                <SubjectsAtAGlance subjects={subjects} />
-              </div>
-            )
-          ) : (
-            /* ======================================================== */
-            /* VIEW B: DAY-BY-DAY SCHEDULE VIEW                         */
-            /* ======================================================== */
-            <div className="space-y-4">
-              {/* Day Pills Bar */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                {SHORT_DAYS.map((day, idx) => {
-                  const isToday = idx === currentDayIndex;
-                  const isSelected = idx === activeDay;
-                  const daySlotCount = timetable.filter((t) => t.day_of_week === idx).length;
-
-                  return (
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={() => setActiveDay(idx)}
-                      className={`flex-1 sm:flex-initial min-w-[56px] py-2 px-3 rounded-xl border text-center transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                          : 'bg-card border-border text-foreground hover:bg-muted/50'
-                      }`}
-                    >
-                      <span className="text-[10px] uppercase font-mono block opacity-80 leading-none">
-                        {day}
-                      </span>
-                      <span className="text-xs font-bold block mt-1 leading-none">
-                        {daySlotCount}
-                      </span>
-                      {isToday && (
-                        <span className="text-[9px] uppercase tracking-tighter block mt-0.5 opacity-90 font-medium">
-                          Today
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Day Table or Empty State */}
-              {selectedDayClasses.length === 0 ? (
-                <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
-                  <CalendarDays className="h-8 w-8 mx-auto text-primary/40 mb-2" />
-                  <p className="font-medium text-foreground">No classes scheduled for {DAY_NAMES[activeDay]}.</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Add lecture timeslots to track your weekly routine seamlessly.
-                  </p>
-                  {subjects.length > 0 && (
-                    <div className="mt-4">
-                      <CreateTimetableEntryDialog subjects={subjects} />
-                    </div>
-                  )}
-                </Card>
-              ) : (
-                <DayTimetableTable
-                  dayIdx={activeDay}
-                  dayName={DAY_NAMES[activeDay].toUpperCase()}
-                  motto={DAY_MOTTO[activeDay]}
-                  slots={selectedDayClasses}
-                  isToday={activeDay === currentDayIndex}
-                  onDelete={handleDeleteTimetableEntry}
-                  disabled={isPending}
-                />
+          {/* Grid of Day Tables */}
+          {timetable.length === 0 ? (
+            <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
+              <Clock className="h-10 w-10 mx-auto text-primary/40 mb-3" />
+              <p className="font-bold text-base text-foreground">No classes scheduled in your timetable.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Add lecture timeslots to populate your weekly academic routine.
+              </p>
+              {subjects.length > 0 && (
+                <div className="mt-4">
+                  <CreateTimetableEntryDialog subjects={subjects} />
+                </div>
               )}
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 1. MONDAY */}
+              <DayTimetableTable
+                dayIdx={1}
+                dayName="MONDAY"
+                motto={DAY_MOTTO[1]}
+                slots={timetable.filter((t) => t.day_of_week === 1)}
+                isToday={currentDayIndex === 1}
+                onDelete={handleDeleteTimetableEntry}
+                disabled={isPending}
+              />
+
+              {/* 2. TUESDAY */}
+              <DayTimetableTable
+                dayIdx={2}
+                dayName="TUESDAY"
+                motto={DAY_MOTTO[2]}
+                slots={timetable.filter((t) => t.day_of_week === 2)}
+                isToday={currentDayIndex === 2}
+                onDelete={handleDeleteTimetableEntry}
+                disabled={isPending}
+              />
+
+              {/* 3. WEDNESDAY */}
+              <DayTimetableTable
+                dayIdx={3}
+                dayName="WEDNESDAY"
+                motto={DAY_MOTTO[3]}
+                slots={timetable.filter((t) => t.day_of_week === 3)}
+                isToday={currentDayIndex === 3}
+                onDelete={handleDeleteTimetableEntry}
+                disabled={isPending}
+              />
+
+              {/* 4. THURSDAY */}
+              <DayTimetableTable
+                dayIdx={4}
+                dayName="THURSDAY"
+                motto={DAY_MOTTO[4]}
+                slots={timetable.filter((t) => t.day_of_week === 4)}
+                isToday={currentDayIndex === 4}
+                onDelete={handleDeleteTimetableEntry}
+                disabled={isPending}
+              />
+
+              {/* 5. FRIDAY */}
+              <DayTimetableTable
+                dayIdx={5}
+                dayName="FRIDAY"
+                motto={DAY_MOTTO[5]}
+                slots={timetable.filter((t) => t.day_of_week === 5)}
+                isToday={currentDayIndex === 5}
+                onDelete={handleDeleteTimetableEntry}
+                disabled={isPending}
+              />
+
+              {/* 6. SUBJECTS AT A GLANCE */}
+              <SubjectsAtAGlance subjects={subjects} />
             </div>
           )}
         </TabsContent>
@@ -679,16 +569,16 @@ export function AcademicOverview({
         <TabsContent value="attendance" className="space-y-6">
           {/* Cumulative Attendance Hero Card */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card className="sm:col-span-1 border-border bg-card rounded-xl shadow-xs">
+            <Card className="sm:col-span-1 border-border bg-card rounded-2xl shadow-xs">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
+                <CardTitle className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider font-mono">
                   Total Attendance
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
                   <span
-                    className={`text-3xl font-extrabold tracking-tight font-mono ${
+                    className={`text-4xl font-extrabold tracking-tight font-mono ${
                       overallStats.percentage >= 75
                         ? 'text-emerald-700 dark:text-emerald-400'
                         : overallStats.conductedSessions === 0
@@ -698,46 +588,46 @@ export function AcademicOverview({
                   >
                     {overallStats.percentage}%
                   </span>
-                  <span className="text-[11px] text-muted-foreground font-mono">
+                  <span className="text-xs sm:text-sm text-muted-foreground font-mono font-medium">
                     Target: 75%
                   </span>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1.5 font-medium">
                   Derived from {overallStats.conductedSessions} conducted lectures
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="sm:col-span-3 border-border bg-card rounded-xl shadow-xs">
+            <Card className="sm:col-span-3 border-border bg-card rounded-2xl shadow-xs">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">
+                <CardTitle className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-wider font-mono">
                   Attendance Breakdown
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
-                  <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+                  <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
                     {overallStats.presentSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Attended</span>
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 block">Attended</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
-                  <span className="text-lg font-bold text-rose-700 dark:text-rose-300 block font-mono">
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                  <span className="text-2xl font-bold text-rose-700 dark:text-rose-300 block font-mono">
                     {overallStats.absentSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Missed</span>
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 block">Missed</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
-                  <span className="text-lg font-bold text-amber-700 dark:text-amber-300 block font-mono">
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+                  <span className="text-2xl font-bold text-amber-700 dark:text-amber-300 block font-mono">
                     {overallStats.cancelledSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Cancelled</span>
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 block">Cancelled</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-muted border border-border">
-                  <span className="text-lg font-bold text-foreground block font-mono">
+                <div className="p-3 rounded-xl bg-muted border border-border">
+                  <span className="text-2xl font-bold text-foreground block font-mono">
                     {overallStats.totalSessions}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Total Logged</span>
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 block">Total Logged</span>
                 </div>
               </CardContent>
             </Card>
@@ -747,26 +637,26 @@ export function AcademicOverview({
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h2 className="text-sm font-bold text-foreground tracking-tight flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
                   Course Attendance & Date Logs
                 </h2>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Tap any subject to view date-wise records, change status, or log past classes.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto">
+              <div className="flex items-center gap-2.5 self-start sm:self-auto">
                 <LogHolidayDialog subjects={subjects} />
                 <LogSessionDialog subjects={subjects} />
               </div>
             </div>
 
             {subjectStats.length === 0 ? (
-              <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
-                <GraduationCap className="h-8 w-8 mx-auto text-primary/40 mb-2" />
-                <p className="font-medium text-foreground">No academic courses enrolled.</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+              <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
+                <GraduationCap className="h-10 w-10 mx-auto text-primary/40 mb-3" />
+                <p className="font-bold text-base text-foreground">No academic courses enrolled.</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   Add your semester courses to start tracking attendance and 75% thresholds.
                 </p>
                 <div className="mt-4">
@@ -774,7 +664,7 @@ export function AcademicOverview({
                 </div>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-3.5">
                 {subjectStats.map(
                   ({
                     subject,
@@ -795,28 +685,28 @@ export function AcademicOverview({
                       <Card
                         key={subject.id}
                         onClick={() => handleOpenSubjectDialog(subject)}
-                        className="border-border bg-card rounded-2xl shadow-xs hover:border-primary/50 transition-all p-3.5 sm:p-4.5 cursor-pointer group overflow-hidden"
+                        className="border-border bg-card rounded-2xl shadow-xs hover:border-primary/50 transition-all p-4 sm:p-5 cursor-pointer group overflow-hidden"
                         title="Tap to view date-wise attendance"
                       >
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                           {/* 1. Left Section: Subject Info */}
-                          <div className="flex items-start gap-3 lg:w-[280px] shrink-0 min-w-0">
+                          <div className="flex items-start gap-3.5 lg:w-[300px] shrink-0 min-w-0">
                             <span
-                              className="h-3.5 w-3.5 rounded-full shrink-0 ring-2 ring-background mt-1"
+                              className="h-4 w-4 rounded-full shrink-0 ring-2 ring-background mt-1"
                               style={{ backgroundColor: subject.color || '#526653' }}
                             />
                             <div className="min-w-0">
-                              <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                              <h3 className="text-base sm:text-lg font-bold text-foreground truncate group-hover:text-primary transition-colors">
                                 {subject.name}
                               </h3>
-                              <div className="flex items-center gap-2 mt-0.5">
+                              <div className="flex items-center gap-2 mt-1">
                                 {subject.code && (
-                                  <Badge variant="outline" className="text-[10px] font-mono py-0 border-border">
+                                  <Badge variant="outline" className="text-xs font-mono font-semibold py-0.5 px-2 border-border">
                                     {subject.code}
                                   </Badge>
                                 )}
                                 {subject.instructor && (
-                                  <span className="text-[11px] text-muted-foreground italic truncate">
+                                  <span className="text-xs sm:text-sm text-muted-foreground italic truncate">
                                     Prof. {subject.instructor}
                                   </span>
                                 )}
@@ -827,47 +717,47 @@ export function AcademicOverview({
                                   e.stopPropagation();
                                   handleOpenSubjectDialog(subject);
                                 }}
-                                className="text-[11px] font-semibold text-primary hover:underline cursor-pointer inline-flex items-center gap-1 mt-1.5"
+                                className="text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer inline-flex items-center gap-1.5 mt-2"
                               >
-                                <CalendarDays className="h-3 w-3" />
+                                <CalendarDays className="h-3.5 w-3.5" />
                                 <span>View Dates & History</span>
                               </button>
                             </div>
                           </div>
 
                           {/* 2. Middle Section: Attendance Stats Chips & Progress */}
-                          <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex-1 min-w-0 space-y-2.5">
                             {/* Breakdown Chips */}
-                            <div className="grid grid-cols-4 gap-1.5 text-center">
-                              <div className="py-1 px-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
-                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
+                            <div className="grid grid-cols-4 gap-2 text-center">
+                              <div className="py-1.5 px-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+                                <span className="text-sm sm:text-base font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
                                   {presentCount}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground">Attended</span>
+                                <span className="text-xs font-semibold text-muted-foreground">Attended</span>
                               </div>
-                              <div className="py-1 px-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
-                                <span className="text-xs font-bold text-rose-700 dark:text-rose-300 block font-mono">
+                              <div className="py-1.5 px-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                                <span className="text-sm sm:text-base font-bold text-rose-700 dark:text-rose-300 block font-mono">
                                   {absentCount}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground">Missed</span>
+                                <span className="text-xs font-semibold text-muted-foreground">Missed</span>
                               </div>
-                              <div className="py-1 px-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
-                                <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block font-mono">
+                              <div className="py-1.5 px-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+                                <span className="text-sm sm:text-base font-bold text-amber-700 dark:text-amber-300 block font-mono">
                                   {cancelledCount}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground">Cancelled</span>
+                                <span className="text-xs font-semibold text-muted-foreground">Cancelled</span>
                               </div>
-                              <div className="py-1 px-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
-                                <span className="text-xs font-bold text-sky-700 dark:text-sky-300 block font-mono">
+                              <div className="py-1.5 px-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
+                                <span className="text-sm sm:text-base font-bold text-sky-700 dark:text-sky-300 block font-mono">
                                   {holidayCount}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground">Holidays</span>
+                                <span className="text-xs font-semibold text-muted-foreground">Holidays</span>
                               </div>
                             </div>
 
                             {/* Progress bar and margin text */}
-                            <div className="space-y-1">
-                              <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                            <div className="space-y-1.5">
+                              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                                 <div
                                   className={`h-full transition-all duration-300 rounded-full ${
                                     isSafe ? 'bg-primary' : 'bg-rose-500'
@@ -875,11 +765,11 @@ export function AcademicOverview({
                                   style={{ width: `${Math.min(100, stats.percentage)}%` }}
                                 />
                               </div>
-                              <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground font-mono font-medium">
                                 <span>
                                   {stats.presentSessions}/{stats.conductedSessions} conducted lectures attended
                                 </span>
-                                <span className={isSafe ? 'text-primary font-medium' : 'text-rose-600 font-medium'}>
+                                <span className={isSafe ? 'text-primary font-bold' : 'text-rose-600 font-bold'}>
                                   {marginText}
                                 </span>
                               </div>
@@ -887,10 +777,10 @@ export function AcademicOverview({
                           </div>
 
                           {/* 3. Right Section: Percentage & Quick Log */}
-                          <div className="flex items-center justify-between lg:justify-end gap-3.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-border">
+                          <div className="flex items-center justify-between lg:justify-end gap-4 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-border">
                             <div className="text-left lg:text-right shrink-0">
                               <span
-                                className={`text-xl font-black font-mono leading-none ${
+                                className={`text-2xl sm:text-3xl font-black font-mono leading-none ${
                                   isSafe
                                     ? 'text-emerald-700 dark:text-emerald-400'
                                     : 'text-rose-700 dark:text-rose-400'
@@ -898,7 +788,7 @@ export function AcademicOverview({
                               >
                                 {stats.conductedSessions > 0 ? `${stats.percentage}%` : '—'}
                               </span>
-                              <span className="text-[9px] text-muted-foreground block font-mono">
+                              <span className="text-xs text-muted-foreground block font-mono font-medium mt-0.5">
                                 Target: 75%
                               </span>
                             </div>
@@ -912,9 +802,9 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'present');
                                 }}
                                 disabled={isPending}
-                                className={`h-7 px-2.5 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                className={`h-8 px-3 text-xs rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer font-semibold ${
                                   todayStatus === 'present'
-                                    ? 'bg-emerald-600 text-white shadow-xs font-semibold'
+                                    ? 'bg-emerald-600 text-white shadow-xs font-bold'
                                     : 'border border-border bg-background text-muted-foreground hover:text-emerald-700 hover:border-emerald-300 dark:hover:text-emerald-300 dark:hover:border-emerald-800'
                                 }`}
                                 title={
@@ -923,7 +813,7 @@ export function AcademicOverview({
                                     : 'Mark Attended Today'
                                 }
                               >
-                                <Check className="h-3 w-3" />
+                                <Check className="h-3.5 w-3.5" />
                                 <span>Present</span>
                               </button>
 
@@ -935,9 +825,9 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'absent');
                                 }}
                                 disabled={isPending}
-                                className={`h-7 px-2.5 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                className={`h-8 px-3 text-xs rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer font-semibold ${
                                   todayStatus === 'absent'
-                                    ? 'bg-rose-600 text-white shadow-xs font-semibold'
+                                    ? 'bg-rose-600 text-white shadow-xs font-bold'
                                     : 'border border-border bg-background text-muted-foreground hover:text-rose-700 hover:border-rose-300 dark:hover:text-rose-300 dark:hover:border-rose-800'
                                 }`}
                                 title={
@@ -946,7 +836,7 @@ export function AcademicOverview({
                                     : 'Mark Missed Today'
                                 }
                               >
-                                <X className="h-3 w-3" />
+                                <X className="h-3.5 w-3.5" />
                                 <span>Absent</span>
                               </button>
 
@@ -958,9 +848,9 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'cancelled');
                                 }}
                                 disabled={isPending}
-                                className={`h-7 px-2 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                className={`h-8 px-2.5 text-xs rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer font-semibold ${
                                   todayStatus === 'cancelled'
-                                    ? 'bg-amber-600 text-white shadow-xs font-semibold'
+                                    ? 'bg-amber-600 text-white shadow-xs font-bold'
                                     : 'border border-border bg-background text-muted-foreground hover:text-amber-700 hover:border-amber-300 dark:hover:text-amber-300 dark:hover:border-amber-800'
                                 }`}
                                 title={
@@ -969,7 +859,7 @@ export function AcademicOverview({
                                     : 'Mark Class Cancelled Today'
                                 }
                               >
-                                <MinusCircle className="h-3 w-3" />
+                                <MinusCircle className="h-3.5 w-3.5" />
                                 <span>Cancel</span>
                               </button>
 
@@ -981,9 +871,9 @@ export function AcademicOverview({
                                   handleQuickLog(subject.id, 'no_class');
                                 }}
                                 disabled={isPending}
-                                className={`h-7 px-2 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                className={`h-8 px-2.5 text-xs rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer font-semibold ${
                                   todayStatus === 'no_class'
-                                    ? 'bg-sky-600 text-white shadow-xs font-semibold'
+                                    ? 'bg-sky-600 text-white shadow-xs font-bold'
                                     : 'border border-border bg-background text-muted-foreground hover:text-sky-700 hover:border-sky-300 dark:hover:text-sky-300 dark:hover:border-sky-800'
                                 }`}
                                 title={
@@ -992,7 +882,7 @@ export function AcademicOverview({
                                     : 'Mark Holiday Today'
                                 }
                               >
-                                <Sun className="h-3 w-3" />
+                                <Sun className="h-3.5 w-3.5" />
                                 <span>Holiday</span>
                               </button>
                             </div>
@@ -1012,17 +902,17 @@ export function AcademicOverview({
         {/* ======================================================== */}
         <TabsContent value="syllabus" className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground tracking-tight">Curriculum Syllabus & Modules</h2>
-            <span className="text-xs text-muted-foreground font-mono">
+            <h2 className="text-base font-bold text-foreground tracking-tight">Curriculum Syllabus & Modules</h2>
+            <span className="text-xs sm:text-sm text-muted-foreground font-mono font-medium">
               {syllabusTopics.filter((t) => t.is_completed).length}/{syllabusTopics.length} completed
             </span>
           </div>
 
           {syllabusTopics.length === 0 ? (
-            <Card className="border-border bg-card rounded-xl shadow-xs p-8 text-center text-xs text-muted-foreground">
-              <BookOpen className="h-8 w-8 mx-auto text-primary/40 mb-2" />
-              <p className="font-medium text-foreground">No syllabus topics entered yet.</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+            <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
+              <BookOpen className="h-10 w-10 mx-auto text-primary/40 mb-3" />
+              <p className="font-bold text-base text-foreground">No syllabus topics entered yet.</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Organize your course modules, lecture notes, and exam topics step-by-step.
               </p>
             </Card>
@@ -1036,20 +926,20 @@ export function AcademicOverview({
                 const pct = Math.round((completedCount / subTopics.length) * 100);
 
                 return (
-                  <Card key={sub.id} className="border-border bg-card rounded-xl shadow-xs overflow-hidden">
+                  <Card key={sub.id} className="border-border bg-card rounded-2xl shadow-xs overflow-hidden">
                     <CardHeader className="pb-3 border-b border-border bg-muted/20">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2.5">
                           <span
-                            className="h-3 w-3 rounded-full shrink-0"
+                            className="h-3.5 w-3.5 rounded-full shrink-0"
                             style={{ backgroundColor: sub.color || '#526653' }}
                           />
                           <div>
-                            <CardTitle className="text-xs sm:text-sm font-semibold text-foreground">
+                            <CardTitle className="text-sm sm:text-base font-bold text-foreground">
                               {sub.name}
                             </CardTitle>
                             {sub.code && (
-                              <CardDescription className="text-[10px] font-mono text-muted-foreground">
+                              <CardDescription className="text-xs font-mono font-medium text-muted-foreground">
                                 {sub.code}
                               </CardDescription>
                             )}
@@ -1057,14 +947,14 @@ export function AcademicOverview({
                         </div>
 
                         <div className="text-right">
-                          <span className="text-xs font-bold font-mono text-foreground">
+                          <span className="text-xs sm:text-sm font-bold font-mono text-foreground">
                             {completedCount}/{subTopics.length} ({pct}%)
                           </span>
                         </div>
                       </div>
 
                       {/* Subject syllabus progress bar */}
-                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden mt-2">
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden mt-2.5">
                         <div
                           className="h-full bg-primary transition-all duration-300 rounded-full"
                           style={{ width: `${pct}%` }}
@@ -1077,7 +967,7 @@ export function AcademicOverview({
                         {subTopics.map((topic) => (
                           <div
                             key={topic.id}
-                            className="p-3 flex items-center justify-between gap-3 text-xs hover:bg-muted/20 transition-colors"
+                            className="p-3.5 flex items-center justify-between gap-3 text-sm hover:bg-muted/20 transition-colors"
                           >
                             <label className="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
                               <input
@@ -1085,14 +975,14 @@ export function AcademicOverview({
                                 checked={topic.is_completed}
                                 onChange={() => handleToggleTopic(topic.id, topic.is_completed)}
                                 disabled={isPending}
-                                className="h-4 w-4 rounded border-border text-primary cursor-pointer accent-primary shrink-0"
+                                className="h-4.5 w-4.5 rounded border-border text-primary cursor-pointer accent-primary shrink-0"
                               />
                               <div className="min-w-0">
                                 <span
                                   className={`block truncate ${
                                     topic.is_completed
                                       ? 'line-through text-muted-foreground'
-                                      : 'font-medium text-foreground'
+                                      : 'font-semibold text-foreground'
                                   }`}
                                 >
                                   {topic.title}
@@ -1100,7 +990,7 @@ export function AcademicOverview({
                               </div>
                             </label>
 
-                            <Badge variant="outline" className="text-[10px] font-mono shrink-0 border-border">
+                            <Badge variant="outline" className="text-xs font-mono font-semibold shrink-0 border-border">
                               Unit {topic.unit_number}
                             </Badge>
                           </div>
