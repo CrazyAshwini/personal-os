@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
   Star,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,20 +22,27 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   createMediaItemAction,
   updateMediaProgressAction,
   deleteMediaItemAction,
 } from '@/features/personal-life/actions';
+import { MarvelTracker } from './marvel-tracker';
 import type { Database } from '@/types/database';
+import type { MarvelProgressMap } from '@/types/marvel';
 
 type MediaRow = Database['public']['Tables']['media_items']['Row'];
 
 interface EntertainmentViewProps {
   mediaItems: MediaRow[];
+  initialMarvelProgress?: MarvelProgressMap;
 }
 
-export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
+export function EntertainmentView({
+  mediaItems,
+  initialMarvelProgress = {},
+}: EntertainmentViewProps) {
   const [filterType, setFilterType] = useState<'all' | 'movie' | 'series' | 'anime'>('all');
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -91,30 +99,51 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
     });
   };
 
+  const personalMediaItems = mediaItems.filter((m) => !m.review?.startsWith('marvel:'));
+
   const filteredItems =
     filterType === 'all'
-      ? mediaItems
-      : mediaItems.filter((m) => m.type === filterType);
+      ? personalMediaItems
+      : personalMediaItems.filter((m) => m.type === filterType);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Film className="h-5 w-5 text-primary" />
-            Movies & Series Tracker
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Log movies, web series, and anime with episode progress and personal scores.
-          </p>
-        </div>
+      <Tabs defaultValue="watchlist" className="space-y-6">
+        <TabsList className="bg-muted/70 p-1 rounded-2xl border border-border h-auto flex flex-wrap">
+          <TabsTrigger
+            value="watchlist"
+            className="text-xs sm:text-sm font-semibold rounded-xl py-2 px-3.5 gap-2 cursor-pointer data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          >
+            <Film className="h-4 w-4" />
+            <span>My Watchlist ({personalMediaItems.length})</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="marvel"
+            className="text-xs sm:text-sm font-semibold rounded-xl py-2 px-3.5 gap-2 cursor-pointer data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+          >
+            <Sparkles className="h-4 w-4 text-red-600 dark:text-red-400" />
+            <span>Marvel Universe Watchlist (124)</span>
+          </TabsTrigger>
+        </TabsList>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
-            <Plus className="h-3.5 w-3.5" />
-            Add Media
-          </DialogTrigger>
+        <TabsContent value="watchlist" className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <Film className="h-5 w-5 text-primary" />
+                Movies & Series Tracker
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Log movies, web series, and anime with episode progress and personal scores.
+              </p>
+            </div>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
+                <Plus className="h-3.5 w-3.5" />
+                Add Media
+              </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-base">Add Show or Movie</DialogTitle>
@@ -394,6 +423,12 @@ export function EntertainmentView({ mediaItems }: EntertainmentViewProps) {
           })}
         </div>
       )}
+        </TabsContent>
+
+        <TabsContent value="marvel" className="space-y-6">
+          <MarvelTracker initialCloudProgress={initialMarvelProgress} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

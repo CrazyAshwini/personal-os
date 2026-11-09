@@ -42,6 +42,18 @@ export const createSubjectSchema = z.object({
     .default('#3b82f6'),
 });
 
+export const updateSubjectSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(1, 'Subject name is required').max(100).optional(),
+  code: z.string().trim().max(20).optional().nullable(),
+  instructor: z.string().trim().max(100).optional().nullable(),
+  credits: z.number().int().min(0).max(30).optional(),
+  color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Must be a valid hex color')
+    .optional(),
+});
+
 export const createTimetableEntrySchema = z.object({
   subjectId: z.string().uuid('Subject is required'),
   dayOfWeek: z.number().int().min(0).max(6),
@@ -98,3 +110,4 @@ export type LogClassSessionInput = z.infer<typeof logClassSessionSchema>;
 export type CreateAssignmentInput = z.infer<typeof createAssignmentSchema>;
 export type CreateExaminationInput = z.infer<typeof createExaminationSchema>;
 export type CreateSyllabusTopicInput = z.infer<typeof createSyllabusTopicSchema>;
+export type UpdateSubjectInput = z.infer<typeof updateSubjectSchema>;

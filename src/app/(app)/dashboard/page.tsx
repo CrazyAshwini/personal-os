@@ -48,6 +48,20 @@ export default async function DashboardPage() {
     .eq('day_of_week', todayDayOfWeek)
     .order('start_time', { ascending: true });
 
+  // Auto-correct Faculty 'MMM (G4)' -> 'mmm'
+  if (todayTimetable) {
+    todayTimetable.forEach((slot) => {
+      if (
+        slot.subject?.instructor &&
+        (slot.subject.instructor.trim() === 'MMM (G4)' ||
+          slot.subject.instructor.trim() === 'MMM(G4)' ||
+          slot.subject.instructor.toLowerCase() === 'mmm (g4)')
+      ) {
+        slot.subject.instructor = 'mmm';
+      }
+    });
+  }
+
   // 4. Fetch any class sessions logged for today (to display attendance ground truth and holidays)
   const { data: todaySessions } = await supabase
     .from('class_sessions')
@@ -74,11 +88,21 @@ export default async function DashboardPage() {
   const totalSlotsCount = todayTimetable?.length || 0;
   const noClassCount = Object.values(initialStatuses).filter((st) => st === 'no_class').length;
   const todayHolidaySession = (todaySessions || []).find((s) => s.status === 'no_class');
+  const holidaySessionsCount = (todaySessions || []).filter((s) => s.status === 'no_class').length;
+  const hasCollegeHoliday = (todaySessions || []).some(
+    (s) => s.status === 'no_class' && s.notes?.toLowerCase().includes('holiday')
+  );
 
   const isFullDayHoliday =
     totalSlotsCount > 0
-      ? noClassCount === totalSlotsCount
+      ? (noClassCount === totalSlotsCount || hasCollegeHoliday || holidaySessionsCount >= totalSlotsCount)
       : Boolean(todayHolidaySession);
+
+  if (isFullDayHoliday && todayTimetable) {
+    todayTimetable.forEach((slot) => {
+      initialStatuses[slot.id] = 'no_class';
+    });
+  }
 
   let holidayTitle: string | null = null;
   if (todayHolidaySession?.notes) {
@@ -87,7 +111,7 @@ export default async function DashboardPage() {
       : todayHolidaySession.notes;
   }
 
-  const activeClassCount = totalSlotsCount - noClassCount;
+  const activeClassCount = totalSlotsCount - (isFullDayHoliday ? totalSlotsCount : noClassCount);
 
   const timetableSlots: TodayTimetableSlot[] = (todayTimetable || []).map((t) => ({
     id: t.id,
@@ -183,7 +207,7 @@ export default async function DashboardPage() {
           />
         </div>
 
-        {/* Column 2: Present Day To-Do List */}
+        {/* Column 2: Today's Actionable Tasks */}
         <div>
           <TodayTaskList tasks={tasks} />
         </div>

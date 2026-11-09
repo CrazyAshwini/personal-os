@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Sun } from 'lucide-react';
+import { Sun, Trash2, CalendarDays } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,20 +14,23 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { logHolidayAction } from '@/features/academics/actions';
+import { logHolidayAction, deleteHolidayRangeAction } from '@/features/academics/actions';
 import type { Database } from '@/types/database';
 
 type SubjectRow = Database['public']['Tables']['subjects']['Row'];
+type ClassSessionRow = Database['public']['Tables']['class_sessions']['Row'];
 
 interface LogHolidayDialogProps {
   subjects: SubjectRow[];
   defaultSubjectId?: string;
+  sessions?: ClassSessionRow[];
   onSuccess?: () => void;
 }
 
 export function LogHolidayDialog({
   subjects,
   defaultSubjectId,
+  sessions,
   onSuccess,
 }: LogHolidayDialogProps) {
   const [open, setOpen] = useState(false);
@@ -37,6 +40,33 @@ export function LogHolidayDialog({
   const [subjectId, setSubjectId] = useState(defaultSubjectId || 'all');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Extract unique holiday periods from sessions
+  const holidayGroups = React.useMemo(() => {
+    if (!sessions) return [];
+    const holidaySessions = sessions.filter((s) => s.status === 'no_class');
+    const groupMap: Record<string, { title: string; dates: string[] }> = {};
+
+    for (const s of holidaySessions) {
+      const key = s.notes || 'Academic Holiday';
+      if (!groupMap[key]) {
+        groupMap[key] = { title: key, dates: [] };
+      }
+      if (!groupMap[key].dates.includes(s.session_date)) {
+        groupMap[key].dates.push(s.session_date);
+      }
+    }
+
+    return Object.values(groupMap).map((g) => {
+      g.dates.sort();
+      return {
+        title: g.title.startsWith('Holiday: ') ? g.title.replace('Holiday: ', '') : g.title,
+        startDate: g.dates[0],
+        endDate: g.dates[g.dates.length - 1],
+        count: g.dates.length,
+      };
+    });
+  }, [sessions]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +95,20 @@ export function LogHolidayDialog({
     });
   };
 
+  const handleDeleteHoliday = (delStart: string, delEnd: string) => {
+    startTransition(async () => {
+      const res = await deleteHolidayRangeAction({
+        startDate: delStart,
+        endDate: delEnd,
+      });
+      if (res.error) {
+        setError(res.error);
+      } else {
+        onSuccess?.();
+      }
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="inline-flex items-center justify-center rounded-xl border border-border bg-background hover:bg-muted text-foreground h-8 px-2.5 text-xs gap-1.5 font-medium cursor-pointer hover:border-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
@@ -72,7 +116,7 @@ export function LogHolidayDialog({
         <span>Add Holiday</span>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <span className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">
@@ -189,10 +233,52 @@ export function LogHolidayDialog({
               disabled={isPending}
               className="h-8 rounded-xl text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium"
             >
-              {isPending ? 'Logging Holiday...' : 'Confirm Holiday'}
+              {isPending ? 'Saving Holiday...' : 'Confirm Holiday'}
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Active Holidays List */}
+        {holidayGroups.length > 0 && (
+          <div className="pt-4 border-t border-border space-y-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+              <CalendarDays className="h-3.5 w-3.5 text-primary" />
+              <span>Logged Holidays ({holidayGroups.length})</span>
+            </div>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {holidayGroups.map((grp) => (
+                <div
+                  key={`${grp.startDate}-${grp.endDate}-${grp.title}`}
+                  className="flex items-center justify-between p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 text-xs gap-2"
+                >
+                  <div className="min-w-0">
+                    <span className="font-bold text-foreground truncate block">
+                      {grp.title}
+                    </span>
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                      {grp.startDate === grp.endDate
+                        ? grp.startDate
+                        : `${grp.startDate} → ${grp.endDate}`}{' '}
+                      ({grp.count} {grp.count === 1 ? 'day' : 'days'})
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isPending}
+                    onClick={() => handleDeleteHoliday(grp.startDate, grp.endDate)}
+                    className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer shrink-0 font-medium"
+                    title="Delete Holiday"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

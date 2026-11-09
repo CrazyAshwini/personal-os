@@ -19,6 +19,25 @@ export default async function AcademicsPage() {
     .eq('user_id', userId)
     .order('name', { ascending: true });
 
+  // Auto-correct Faculty 'MMM (G4)' -> 'mmm' if present
+  if (subjects) {
+    for (const sub of subjects) {
+      if (
+        sub.instructor &&
+        (sub.instructor.trim() === 'MMM (G4)' ||
+          sub.instructor.trim() === 'MMM(G4)' ||
+          sub.instructor.toLowerCase() === 'mmm (g4)')
+      ) {
+        await supabase
+          .from('subjects')
+          .update({ instructor: 'mmm' })
+          .eq('id', sub.id)
+          .eq('user_id', userId);
+        sub.instructor = 'mmm';
+      }
+    }
+  }
+
   // 2. Fetch timetable entries with subject
   const { data: timetable } = await supabase
     .from('timetable_entries')
@@ -26,6 +45,20 @@ export default async function AcademicsPage() {
     .eq('user_id', userId)
     .order('day_of_week', { ascending: true })
     .order('start_time', { ascending: true });
+
+  // Ensure joined timetable subject instructor is synchronized
+  if (timetable) {
+    for (const entry of timetable) {
+      if (
+        entry.subject?.instructor &&
+        (entry.subject.instructor.trim() === 'MMM (G4)' ||
+          entry.subject.instructor.trim() === 'MMM(G4)' ||
+          entry.subject.instructor.toLowerCase() === 'mmm (g4)')
+      ) {
+        entry.subject.instructor = 'mmm';
+      }
+    }
+  }
 
   // 3. Fetch class sessions with subject
   const { data: sessions } = await supabase

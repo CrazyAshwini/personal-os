@@ -2,10 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import type { Database } from '@/types/database';
 import {
   createAcademicYearSchema,
   createSemesterSchema,
   createSubjectSchema,
+  updateSubjectSchema,
   createTimetableEntrySchema,
   logClassSessionSchema,
   createAssignmentSchema,
@@ -14,6 +16,7 @@ import {
   type CreateAcademicYearInput,
   type CreateSemesterInput,
   type CreateSubjectInput,
+  type UpdateSubjectInput,
   type CreateTimetableEntryInput,
   type LogClassSessionInput,
   type CreateAssignmentInput,
@@ -152,6 +155,43 @@ export async function createSubjectAction(
 
   revalidatePath('/academics');
   return { success: true, data: { id: data.id } };
+}
+
+export async function updateSubjectAction(
+  values: UpdateSubjectInput
+): Promise<AcademicActionResult<void>> {
+  const parsed = updateSubjectSchema.safeParse(values);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || 'Invalid subject update data.' };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Authentication required.' };
+
+  const payload: Partial<Database['public']['Tables']['subjects']['Update']> = {};
+  if (parsed.data.name !== undefined) payload.name = parsed.data.name;
+  if (parsed.data.code !== undefined) payload.code = parsed.data.code;
+  if (parsed.data.instructor !== undefined) payload.instructor = parsed.data.instructor;
+  if (parsed.data.credits !== undefined) payload.credits = parsed.data.credits;
+  if (parsed.data.color !== undefined) payload.color = parsed.data.color;
+
+  const { error } = await supabase
+    .from('subjects')
+    .update(payload)
+    .eq('id', parsed.data.id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { error: error.message || 'Failed to update subject.' };
+  }
+
+  revalidatePath('/academics');
+  revalidatePath('/dashboard');
+  return { success: true };
 }
 
 // 4. Timetable Entry
@@ -518,49 +558,130 @@ export async function logHolidayAction(params: {
     current.setDate(current.getDate() + 1);
   }
 
+  // 1. Batch delete existing sessions for these subjects on these dates
+  await supabase
+    .from('class_sessions')
+    .delete()
+    .eq('user_id', user.id)
+    .in('subject_id', subjectIds)
+    .in('session_date', dates);
+
+  // 2. Prepare batch insert rows
+  const holidayNotes = params.title ? `Holiday: ${params.title.trim()}` : 'Holiday';
+  const rowsToInsert: Database['public']['Tables']['class_sessions']['Insert'][] = [];
   for (const dateItem of dates) {
     for (const subId of subjectIds) {
-      const { data: existingList } = await supabase
-        .from('class_sessions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('subject_id', subId)
-        .eq('session_date', dateItem);
-
-      if (existingList && existingList.length > 0) {
-        const primary = existingList[0];
-        await supabase
-          .from('class_sessions')
-          .update({
-            status: 'no_class',
-            notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', primary.id)
-          .eq('user_id', user.id);
-
-        if (existingList.length > 1) {
-          const dupes = existingList.slice(1).map((s) => s.id);
-          await supabase
-            .from('class_sessions')
-            .delete()
-            .in('id', dupes)
-            .eq('user_id', user.id);
-        }
-      } else {
-        await supabase.from('class_sessions').insert({
-          user_id: user.id,
-          subject_id: subId,
-          session_date: dateItem,
-          status: 'no_class',
-          notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
-        });
-      }
+      rowsToInsert.push({
+        user_id: user.id,
+        subject_id: subId,
+        session_date: dateItem,
+        status: 'no_class',
+        notes: holidayNotes,
+      });
     }
   }
 
+  // 3. Batch insert in safe chunks of 100
+  const chunkSize = 100;
+  for (let i = 0; i < rowsToInsert.length; i += chunkSize) {
+    const chunk = rowsToInsert.slice(i, i + chunkSize);
+    const { error: insertErr } = await supabase.from('class_sessions').insert(chunk);
+    if (insertErr) {
+      console.error('Error inserting holiday sessions:', insertErr);
+      return { error: 'Failed to record holiday: ' + insertErr.message };
+    }
+  }
+
+  // 4. Also record in calendar_events so it appears on personal calendar
+  const holidayTitle = params.title ? `Holiday: ${params.title.trim()}` : 'Academic Holiday';
+  await supabase.from('calendar_events').insert({
+    user_id: user.id,
+    title: holidayTitle,
+    description: 'Academic holiday / No class. Attendance preserved.',
+    event_type: 'holiday',
+    start_time: `${dates[0]}T00:00:00`,
+    end_time: `${dates[dates.length - 1]}T23:59:59`,
+    is_all_day: true,
+    color: '#f59e0b',
+  });
+
   revalidatePath('/dashboard');
   revalidatePath('/academics');
+  revalidatePath('/calendar');
+  return { success: true };
+}
+
+export async function deleteHolidayAction(params: {
+  sessionDate: string;
+  subjectId?: string;
+}): Promise<AcademicActionResult<void>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Authentication required.' };
+
+  let query = supabase
+    .from('class_sessions')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('session_date', params.sessionDate)
+    .eq('status', 'no_class');
+
+  if (params.subjectId && params.subjectId !== 'all') {
+    query = query.eq('subject_id', params.subjectId);
+  }
+
+  const { error } = await query;
+  if (error) return { error: error.message };
+
+  await supabase
+    .from('calendar_events')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('event_type', 'holiday')
+    .gte('start_time', `${params.sessionDate}T00:00:00`)
+    .lte('start_time', `${params.sessionDate}T23:59:59`);
+
+  revalidatePath('/dashboard');
+  revalidatePath('/academics');
+  revalidatePath('/calendar');
+  return { success: true };
+}
+
+export async function deleteHolidayRangeAction(params: {
+  startDate: string;
+  endDate: string;
+}): Promise<AcademicActionResult<void>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: 'Authentication required.' };
+
+  const { error } = await supabase
+    .from('class_sessions')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('status', 'no_class')
+    .gte('session_date', params.startDate)
+    .lte('session_date', params.endDate);
+
+  if (error) return { error: error.message };
+
+  await supabase
+    .from('calendar_events')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('event_type', 'holiday')
+    .gte('start_time', `${params.startDate}T00:00:00`)
+    .lte('start_time', `${params.endDate}T23:59:59`);
+
+  revalidatePath('/dashboard');
+  revalidatePath('/academics');
+  revalidatePath('/calendar');
   return { success: true };
 }
 

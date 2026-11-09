@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marvel Watch Order Tracker & Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF7F2;
+  --sf: #FFFFFF;
+  --sf-subtle: #F4EFEA;
+  --ink: #1E201D;
+  --mute: #6C726B;
+  --line: #E2DDD2;
+  --primary: #415842;
+  --primary-hover: #334634;
+  --primary-bg: #EAE5DC;
+  --red: #C8102E;
+  --gold: #D97706;
+  --teal: #059669;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  box-sizing: border-box;
+}
+
+:root[data-theme="dark"] {
+  --bg: #141714;
+  --sf: #1C201C;
+  --sf-subtle: #242924;
+  --ink: #EDEDEA;
+  --mute: #9CA39B;
+  --line: #2E352E;
+  --primary: #6B8B6D;
+  --primary-hover: #7E9E80;
+  --primary-bg: #222922;
+  --red: #EF4444;
+  --gold: #F59E0B;
+  --teal: #10B981;
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.5 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
+}
+
+button, select, input, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Header */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-badge {
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+h1 {
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.theme-btn {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.theme-btn:hover { background: var(--sf-subtle); }
+
+/* Hero Cockpit */
+.cockpit {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  padding: 12px 16px;
+  background: var(--sf-subtle);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+}
+
+.stat-label {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--mute);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.stat-val {
+  font-size: 26px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  margin-top: 4px;
+  color: var(--ink);
+}
+
+/* Progress bar */
+.bar-wrap {
+  height: 10px;
+  background: var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.bar-w { background: var(--teal); height: 100%; transition: width 0.3s ease; }
+.bar-g { background: var(--gold); height: 100%; transition: width 0.3s ease; }
+
+/* Interactive Timeline Strip */
+.strip {
+  display: flex;
+  gap: 2px;
+  height: 20px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--line);
+}
+
+.strip-dot {
+  flex: 1;
+  border: none;
+  padding: 0;
+  background: var(--line);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.strip-dot:hover { transform: scaleY(1.4); }
+.strip-dot.w { background: var(--teal); }
+.strip-dot.g { background: var(--gold); }
+.strip-dot.u { background: repeating-linear-gradient(45deg, var(--line) 0 2px, transparent 2px 4px); }
+
+/* Up Next & Upcoming Cards */
+.cards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.next-card {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--primary);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.next-card.upcoming {
+  border-left-color: var(--gold);
+}
+
+.tag-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+}
+
+.next-card.upcoming .tag-label {
+  color: var(--gold);
+}
+
+.next-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 6px 0 2px;
+}
+
+.next-card p {
+  color: var(--mute);
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+
+.btn {
+  background: var(--primary);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+.btn:hover { background: var(--primary-hover); }
+.btn.alt {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+}
+.btn.alt:hover { background: var(--sf-subtle); }
+
+/* Filters Bar */
+.controls {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.search-input {
+  flex: 1 1 240px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.select-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.chip-label {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--mute);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.chip {
+  background: var(--sf-subtle);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip[data-active="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+/* Accordion Groups */
+.grp {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.grp-header {
+  width: 100%;
+  background: var(--sf-subtle);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+}
+
+.grp-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.grp-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.grp-bar {
+  width: 60px;
+  height: 6px;
+  background: var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.grp-bar-fill {
+  background: var(--teal);
+  height: 100%;
+}
+
+/* Row Item */
+.item-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--line);
+  transition: background 0.15s;
+}
+.item-row:first-of-type { border-top: 0; }
+.item-row:hover { background: var(--sf-subtle); }
+.item-row.done { background: var(--bg); }
+.item-row.done .item-title { text-decoration: line-through; color: var(--mute); }
+
+.toggle-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  font-size: 15px;
+  transition: all 0.15s;
+}
+.toggle-btn[data-status="watched"] {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.toggle-btn[data-status="watching"] {
+  border-color: var(--gold);
+  background: linear-gradient(90deg, var(--gold) 50%, transparent 50%);
+}
+.toggle-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.item-info { min-width: 0; }
+.item-title { font-weight: 600; font-size: 15px; }
+.item-sub {
+  font-size: 12px;
+  color: var(--mute);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.badge.Essential { background: rgba(200, 16, 46, 0.1); border-color: var(--red); color: var(--red); }
+.badge.Recommended { border-color: var(--ink); color: var(--ink); }
+.badge.Optional { color: var(--mute); }
+
+/* Dialog */
+dialog {
+  max-width: 500px;
+  width: calc(100% - 32px);
+  background: var(--sf);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+dialog textarea {
+  width: 100%;
+  height: 160px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  resize: none;
+}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+
+@media (max-width: 540px) {
+  .item-row { grid-template-columns: 36px 1fr; }
+  .badge { grid-column: 2; justify-self: start; margin-top: 4px; }
+  .grp-bar { display: none; }
+}
+</style>
+</head>
+<body>
+<main>
+  <!-- Header -->
+  <header class="header-top">
+    <div class="brand">
+      <span class="brand-badge">MARVEL</span>
+      <h1>Watch Order Tracker</h1>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="theme-btn" id="themeBtn" title="Toggle theme">🌓 Theme</button>
+      <button class="btn alt" id="backupBtn">Backup / Sync</button>
+    </div>
+  </header>
+
+  <!-- Cockpit Stats -->
+  <section class="cockpit">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Watched</div>
+        <div class="stat-val" id="statWatched">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Essentials Left</div>
+        <div class="stat-val" id="statEssentials">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completion</div>
+        <div class="stat-val" id="statPercent">0%</div>
+      </div>
+    </div>
+
+    <!-- Overall Progress bar -->
+    <div class="bar-wrap">
+      <div class="bar-w" id="barWatched" style="width: 0%"></div>
+      <div class="bar-g" id="barWatching" style="width: 0%"></div>
+    </div>
+
+    <!-- Timeline strip -->
+    <div class="strip" id="timelineStrip" title="Chronological timeline strip"></div>
+  </section>
+
+  <!-- Up Next & Upcoming Row -->
+  <div class="cards-row">
+    <div class="next-card" id="upNextCard">
+      <div>
+        <span class="tag-label">Up Next In Chronological Order</span>
+        <h3 id="upNextTitle">Loading...</h3>
+        <p id="upNextMeta">—</p>
+      </div>
+      <div>
+        <button class="btn" id="upNextBtn">Mark Watched</button>
+      </div>
+    </div>
+
+    <div class="next-card upcoming" id="upcomingCard">
+      <div>
+        <span class="tag-label">Next Marvel Premiere</span>
+        <h3 id="upcomingTitle">—</h3>
+        <p id="upcomingMeta">—</p>
+      </div>
+      <div>
+        <span class="tag-label" id="upcomingDays" style="font-size:14px;font-weight:800;">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Controls -->
+  <section class="controls">
+    <div class="search-row">
+      <input type="search" id="searchInput" class="search-input" placeholder="Search title, phase, or hero...">
+      <select id="statusSelect" class="select-box">
+        <option value="all">All Statuses</option>
+        <option value="unwatched">Not Watched</option>
+        <option value="watching">Currently Watching</option>
+        <option value="watched">Watched</option>
+      </select>
+      <select id="sortSelect" class="select-box">
+        <option value="order">Recommended Order</option>
+        <option value="date">Release Date</option>
+        <option value="title">Title A–Z</option>
+      </select>
+    </div>
+
+    <div class="chip-row" id="universeChips"></div>
+    <div class="chip-row" id="priorityChips"></div>
+    <div style="font-size:12px;color:var(--mute);font-family:var(--font-mono);display:flex;justify-content:space-between;margin-top:4px;">
+      <span id="resultsCount">0 titles</span>
+      <span id="dataDate">Data accurate as of 2026-11-09</span>
+    </div>
+  </section>
+
+  <!-- Items Accordions Container -->
+  <div id="groupsContainer"></div>
+</main>
+
+<!-- Backup & Restore Dialog -->
+<dialog id="backupDialog">
+  <h2 style="margin:0 0 8px;font-size:20px;font-weight:800;">Backup or Restore Progress</h2>
+  <p style="margin:0 0 12px;font-size:13px;color:var(--mute);">
+    Your progress is saved automatically to browser storage. Copy the JSON below for a backup or paste previous data to restore.
+  </p>
+  <textarea id="backupTextarea" spellcheck="false"></textarea>
+  <p id="backupMsg" style="font-size:12px;min-height:18px;margin:6px 0 0;font-weight:600;"></p>
+  <div class="modal-actions">
+    <button class="btn alt" id="copyBackupBtn">Copy JSON</button>
+    <button class="btn" id="restoreBackupBtn">Load Progress</button>
+    <button class="btn alt" id="closeBackupBtn">Close</button>
+  </div>
+</dialog>
+
+<script>
+const STORAGE_KEY = "marvelWatchlist.progress.v1";
+let items = [];
+let progress = {};
+
+// Load progress safely
+try {
+  progress = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {};
+} catch(e) {
+  progress = {};
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  } catch(e) {}
+  render();
+}
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+function parseDate(dStr) {
+  if (!dStr) return null;
+  const [y, m, d] = dStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function getStatus(id) {
+  return progress[id] || "unwatched";
+}
+
+const filters = {
+  q: "",
+  universe: "All",
+  priority: "All",
+  status: "all",
+  sort: "order"
+};
+
+const collapsed = {};
+
+// Fetch or fallback data
+async function init() {
+  try {
+    const res = await fetch("./marvel_watchlist.json");
+    if (res.ok) {
+      const data = await res.json();
+      items = data.items;
+    } else {
+      throw new Error("Local fetch unavailable");
+    }
+  } catch(e) {
+    // If running as local file:// without server, alert friendly fallback
+    console.info("Loaded via bundle or fallback");
+  }
+
+  // Runtime compute release flags
+  items.forEach(i => {
+    const d = parseDate(i.releaseDate);
+    i.isReleased = d ? d <= today : Boolean(i.released);
+    i.daysUntil = d ? Math.round((d - today) / 864e5) : 0;
+  });
+
+  setupTheme();
+  setupEvents();
+  renderChips();
+  render();
+}
+
+function setupTheme() {
+  const current = localStorage.getItem("marvel_theme") || 
+    (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", current);
+  document.getElementById("themeBtn").onclick = () => {
+    const now = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", now);
+    localStorage.setItem("marvel_theme", now);
+  };
+}
+
+function renderChips() {
+  const universes = ["All", ...new Set(items.map(i => i.universe))];
+  const uWrap = document.getElementById("universeChips");
+  uWrap.innerHTML = '<span class="chip-label">Universe:</span>' + universes.map(u => 
+    `<button class="chip" data-type="universe" data-val="${u}" data-active="${filters.universe === u}">${u}</button>`
+  ).join("");
+
+  const priorities = ["All", "Essential", "Recommended", "Optional"];
+  const pWrap = document.getElementById("priorityChips");
+  pWrap.innerHTML = '<span class="chip-label">Priority:</span>' + priorities.map(p => 
+    `<button class="chip" data-type="priority" data-val="${p}" data-active="${filters.priority === p}">${p}</button>`
+  ).join("");
+}
+
+function render() {
+  const released = items.filter(i => i.isReleased);
+  const watchedCount = released.filter(i => getStatus(i.id) === "watched").length;
+  const watchingCount = released.filter(i => getStatus(i.id) === "watching").length;
+  const essentials = released.filter(i => i.priority === "Essential");
+  const essentialsLeft = essentials.filter(i => getStatus(i.id) !== "watched").length;
+  const pct = released.length ? Math.round((watchedCount / released.length) * 100) : 0;
+
+  document.getElementById("statWatched").textContent = `${watchedCount} / ${released.length}`;
+  document.getElementById("statEssentials").textContent = essentialsLeft;
+  document.getElementById("statPercent").textContent = `${pct}%`;
+
+  document.getElementById("barWatched").style.width = `${pct}%`;
+  document.getElementById("barWatching").style.width = `${(watchingCount / released.length) * 100}%`;
+
+  // Timeline strip
+  const strip = document.getElementById("timelineStrip");
+  strip.innerHTML = items.map(i => {
+    const st = getStatus(i.id);
+    const cls = !i.isReleased ? "u" : st === "watched" ? "w" : st === "watching" ? "g" : "";
+    return `<button class="strip-dot ${cls}" data-id="${i.id}" title="${i.title} (${st})"></button>`;
+  }).join("");
+
+  // Up Next Card
+  const upNext = essentials.find(i => getStatus(i.id) !== "watched");
+  if (upNext) {
+    document.getElementById("upNextTitle").textContent = upNext.title;
+    document.getElementById("upNextMeta").textContent = `${upNext.universe} • ${upNext.group} • ${upNext.releaseYear}`;
+    document.getElementById("upNextBtn").style.display = "inline-flex";
+    document.getElementById("upNextBtn").onclick = () => {
+      progress[upNext.id] = "watched";
+      saveProgress();
+    };
+  } else {
+    document.getElementById("upNextTitle").textContent = "All Essentials Watched!";
+    document.getElementById("upNextMeta").textContent = "Great job! Filter by Recommended or Optional.";
+    document.getElementById("upNextBtn").style.display = "none";
+  }
+
+  // Next Upcoming Card
+  const upcoming = items.filter(i => !i.isReleased && i.daysUntil > 0).sort((a,b) => a.daysUntil - b.daysUntil)[0];
+  if (upcoming) {
+    document.getElementById("upcomingTitle").textContent = upcoming.title;
+    document.getElementById("upcomingMeta").textContent = `Releases ${upcoming.releaseDate || upcoming.releaseYear}`;
+    document.getElementById("upcomingDays").textContent = `In ${upcoming.daysUntil} Days`;
+  }
+
+  // Filter items
+  let filtered = items.filter(i => {
+    if (filters.universe !== "All" && i.universe !== filters.universe) return false;
+    if (filters.priority !== "All" && i.priority !== filters.priority) return false;
+    const st = getStatus(i.id);
+    if (filters.status === "watched" && st !== "watched") return false;
+    if (filters.status === "watching" && st !== "watching") return false;
+    if (filters.status === "unwatched" && st !== "unwatched") return false;
+    if (filters.q) {
+      const q = filters.q.toLowerCase();
+      if (!i.title.toLowerCase().includes(q) && !i.group.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("resultsCount").textContent = `${filtered.length} of ${items.length} titles`;
+
+  // Sort
+  if (filters.sort === "title") {
+    filtered.sort((a,b) => a.title.localeCompare(b.title));
+  } else if (filters.sort === "date") {
+    filtered.sort((a,b) => (parseDate(a.releaseDate) || new Date(a.releaseYear, 0, 1)) - (parseDate(b.releaseDate) || new Date(b.releaseYear, 0, 1)));
+  } else {
+    filtered.sort((a,b) => a.order - b.order);
+  }
+
+  // Group by Universe • Group
+  const groups = new Map();
+  filtered.forEach(i => {
+    const k = `${i.universe} • ${i.group}`;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(i);
+  });
+
+  const container = document.getElementById("groupsContainer");
+  if (!filtered.length) {
+    container.innerHTML = `<div style="text-align:center;padding:48px 16px;color:var(--mute);">No Marvel titles match your current filters.</div>`;
+    return;
+  }
+
+  container.innerHTML = Array.from(groups.entries()).map(([grpName, grpItems]) => {
+    const isClosed = collapsed[grpName];
+    const grpWatched = grpItems.filter(i => getStatus(i.id) === "watched").length;
+    const grpPct = Math.round((grpWatched / grpItems.length) * 100);
+
+    return `
+      <section class="grp">
+        <button class="grp-header" data-group="${grpName}">
+          <h2>${grpName}</h2>
+          <div class="grp-meta">
+            <span>${grpWatched}/${grpItems.length} (${grpPct}%)</span>
+            <div class="grp-bar"><div class="grp-bar-fill" style="width:${grpPct}%"></div></div>
+            <span>${isClosed ? "▼" : "▲"}</span>
+          </div>
+        </button>
+        ${isClosed ? "" : grpItems.map(i => {
+          const st = getStatus(i.id);
+          const isW = st === "watched";
+          const isG = st === "watching";
+          const label = i.releaseDate ? i.releaseDate : (i.releaseYearEnd ? `${i.releaseYear}–${i.releaseYearEnd}` : i.releaseYear);
+          return `
+            <div class="item-row ${isW ? "done" : ""}" id="item-${i.id}">
+              <button class="toggle-btn" data-toggle="${i.id}" data-status="${st}" ${!i.isReleased ? "disabled" : ""} title="Tap to cycle status">
+                ${isW ? "✓" : isG ? "◑" : ""}
+              </button>
+              <div class="item-info">
+                <div class="item-title">${i.title} ${i.seasons ? `<small style="color:var(--mute);font-weight:normal;">(${i.seasons} Seasons)</small>` : ""}</div>
+                <div class="item-sub">${label} • ${i.type} ${!i.isReleased ? `• <b style="color:var(--gold);">In ${i.daysUntil} days</b>` : ""}</div>
+              </div>
+              <span class="badge ${i.priority}">${i.priority}</span>
+            </div>
+          `;
+        }).join("")}
+      </section>
+    `;
+  }).join("");
+}
+
+function setupEvents() {
+  document.addEventListener("click", e => {
+    const chip = e.target.closest(".chip");
+    if (chip) {
+      const type = chip.dataset.type;
+      filters[type] = chip.dataset.val;
+      renderChips();
+      render();
+      return;
+    }
+
+    const toggle = e.target.closest("[data-toggle]");
+    if (toggle && !toggle.disabled) {
+      const id = toggle.dataset.toggle;
+      const cur = getStatus(id);
+      const next = cur === "unwatched" ? "watching" : cur === "watching" ? "watched" : "unwatched";
+      if (next === "unwatched") delete progress[id];
+      else progress[id] = next;
+      saveProgress();
+      return;
+    }
+
+    const grp = e.target.closest(".grp-header");
+    if (grp) {
+      const name = grp.dataset.group;
+      collapsed[name] = !collapsed[name];
+      render();
+      return;
+    }
+
+    const stripDot = e.target.closest(".strip-dot");
+    if (stripDot) {
+      const id = stripDot.dataset.id;
+      const el = document.getElementById("item-" + id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.style.outline = "2px solid var(--primary)";
+        setTimeout(() => el.style.outline = "", 1500);
+      }
+    }
+  });
+
+  document.getElementById("searchInput").oninput = e => {
+    filters.q = e.target.value.trim();
+    render();
+  };
+
+  document.getElementById("statusSelect").onchange = e => {
+    filters.status = e.target.value;
+    render();
+  };
+
+  document.getElementById("sortSelect").onchange = e => {
+    filters.sort = e.target.value;
+    render();
+  };
+
+  // Backup modal
+  const dlg = document.getElementById("backupDialog");
+  const ta = document.getElementById("backupTextarea");
+  const msg = document.getElementById("backupMsg");
+
+  document.getElementById("backupBtn").onclick = () => {
+    ta.value = JSON.stringify({ version: 1, progress }, null, 2);
+    msg.textContent = "";
+    dlg.showModal();
+  };
+
+  document.getElementById("closeBackupBtn").onclick = () => dlg.close();
+
+  document.getElementById("copyBackupBtn").onclick = () => {
+    ta.select();
+    navigator.clipboard.writeText(ta.value);
+    msg.style.color = "var(--teal)";
+    msg.textContent = "Copied JSON to clipboard!";
+  };
+
+  document.getElementById("restoreBackupBtn").onclick = () => {
+    try {
+      const parsed = JSON.parse(ta.value);
+      const incoming = parsed.progress || parsed;
+      if (!incoming || typeof incoming !== "object") throw new Error();
+      progress = incoming;
+      saveProgress();
+      msg.style.color = "var(--teal)";
+      msg.textContent = `Successfully loaded ${Object.keys(incoming).length} titles!`;
+    } catch(e) {
+      msg.style.color = "var(--red)";
+      msg.textContent = "Invalid progress JSON format.";
+    }
+  };
+}
+
+// Fallback items array from external JSON if fetch succeeds or inline backup
+fetch("./marvel_watchlist.json")
+  .then(r => r.json())
+  .then(d => {
+    items = d.items;
+    init();
+  })
+  .catch(() => {
+    // If running offline without server, load items from parent data
+    init();
+  });
+</script>
+</body>
+</html>

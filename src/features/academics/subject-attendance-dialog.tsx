@@ -1,5 +1,7 @@
 'use client';
 
+import { EditSubjectDialog } from '@/features/academics/edit-subject-dialog';
+
 import React, { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import {
@@ -184,6 +186,7 @@ export function SubjectAttendanceDialog({
                       Prof. {subject.instructor}
                     </span>
                   )}
+                  <EditSubjectDialog subject={subject} />
                 </div>
               </div>
             </div>

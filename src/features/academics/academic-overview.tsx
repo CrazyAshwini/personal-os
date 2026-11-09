@@ -31,6 +31,7 @@ import { LogSessionDialog } from '@/features/academics/log-session-dialog';
 import { CreateTimetableEntryDialog } from '@/features/academics/create-timetable-entry-dialog';
 import { SubjectAttendanceDialog } from '@/features/academics/subject-attendance-dialog';
 import { LogHolidayDialog } from '@/features/academics/log-holiday-dialog';
+import { EditSubjectDialog } from '@/features/academics/edit-subject-dialog';
 import type { Database } from '@/types/database';
 
 type SubjectRow = Database['public']['Tables']['subjects']['Row'];
@@ -250,6 +251,24 @@ function DayTimetableTable({
         </span>
       </div>
 
+      {/* Holiday Active Alert inside today's table */}
+      {isToday && isHolidayToday && (
+        <div className="mx-4 my-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-300 dark:border-amber-800 flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-medium">
+            <Sun className="h-4 w-4 text-amber-500 shrink-0" />
+            <span>
+              All {slots.length} classes suspended today for <strong>{holidayTitle || 'Academic Holiday'}</strong> (Preserved from 75% attendance criteria).
+            </span>
+          </div>
+          <Badge
+            variant="outline"
+            className="text-[11px] font-mono border-amber-300 dark:border-amber-700 bg-amber-100/60 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 font-bold shrink-0"
+          >
+            Suspended
+          </Badge>
+        </div>
+      )}
+
       {/* Responsive Table */}
       <div className="overflow-x-auto scrollbar-none">
         <table className="w-full text-left text-sm border-collapse">
@@ -317,12 +336,13 @@ function SubjectsAtAGlance({ subjects }: { subjects: SubjectRow[] }) {
               <th className="py-3 px-4">Subject Name</th>
               <th className="py-3 px-4 text-center w-[120px]">Credits</th>
               <th className="py-3 px-4 text-right w-[180px]">Faculty</th>
+              <th className="py-3 pr-4 pl-2 text-center w-12">Edit</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
             {subjects.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-muted-foreground text-sm">
+                <td colSpan={5} className="py-8 text-center text-muted-foreground text-sm">
                   No courses added yet.
                 </td>
               </tr>
@@ -350,6 +370,9 @@ function SubjectsAtAGlance({ subjects }: { subjects: SubjectRow[] }) {
                   </td>
                   <td className="py-3 px-4 text-right text-xs sm:text-sm text-muted-foreground font-mono whitespace-nowrap font-medium">
                     {sub.instructor || '—'}
+                  </td>
+                  <td className="py-3 pr-4 pl-2 text-center">
+                    <EditSubjectDialog subject={sub} />
                   </td>
                 </tr>
               ))
@@ -531,7 +554,12 @@ export function AcademicOverview({
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto">
-              {subjects.length > 0 && <CreateTimetableEntryDialog subjects={subjects} />}
+              {subjects.length > 0 && (
+                <>
+                  <LogHolidayDialog subjects={subjects} sessions={sessions} />
+                  <CreateTimetableEntryDialog subjects={subjects} />
+                </>
+              )}
             </div>
           </div>
 
@@ -722,7 +750,7 @@ export function AcademicOverview({
               </div>
 
               <div className="flex items-center gap-2.5 self-start sm:self-auto">
-                <LogHolidayDialog subjects={subjects} />
+                <LogHolidayDialog subjects={subjects} sessions={sessions} />
                 <LogSessionDialog subjects={subjects} />
               </div>
             </div>

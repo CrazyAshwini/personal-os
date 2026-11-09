@@ -129,4 +129,10 @@
     @apply font-sans;
     font-size: 16px;
   }
+
+  /* Prevent duplicate calendar icons in WebKit browsers (Brave / Chrome / Edge) */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none !important;
+    -webkit-appearance: none !important;
+  }
 }
