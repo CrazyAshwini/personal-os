@@ -59,6 +59,7 @@ export const logClassSessionSchema = z.object({
   status: classSessionStatusEnum.default('present'),
   topicCovered: z.string().trim().max(200).optional().nullable(),
   notes: z.string().trim().max(500).optional().nullable(),
+  toggleIfSame: z.boolean().optional(),
 });
 
 export const createAssignmentSchema = z.object({

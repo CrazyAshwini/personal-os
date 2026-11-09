@@ -218,7 +218,7 @@ export async function deleteTimetableEntryAction(
 // 5. Class Session (Attendance Source of Truth)
 export async function logClassSessionAction(
   values: LogClassSessionInput
-): Promise<AcademicActionResult<{ id: string }>> {
+): Promise<AcademicActionResult<{ id?: string; removed?: boolean }>> {
   const parsed = logClassSessionSchema.safeParse(values);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message || 'Invalid class session data.' };
@@ -231,6 +231,70 @@ export async function logClassSessionAction(
 
   if (!user) return { error: 'Authentication required.' };
 
+  // 1. Check for existing session(s) for this user, subject, and date
+  const { data: existingList, error: queryError } = await supabase
+    .from('class_sessions')
+    .select('id, status')
+    .eq('user_id', user.id)
+    .eq('subject_id', parsed.data.subjectId)
+    .eq('session_date', parsed.data.sessionDate);
+
+  if (queryError) {
+    return { error: queryError.message };
+  }
+
+  if (existingList && existingList.length > 0) {
+    const primary = existingList[0];
+
+    // If toggleIfSame is requested and the session already matches this status, toggle it off (delete it)
+    if (parsed.data.toggleIfSame && primary.status === parsed.data.status) {
+      const allIds = existingList.map((s) => s.id);
+      const { error: deleteError } = await supabase
+        .from('class_sessions')
+        .delete()
+        .in('id', allIds)
+        .eq('user_id', user.id);
+
+      if (deleteError) return { error: deleteError.message };
+
+      revalidatePath('/academics');
+      revalidatePath('/dashboard');
+      return { success: true, data: { removed: true } };
+    }
+
+    // Otherwise, mutate the existing session to the newly chosen status (replaces previous choice)
+    const { error: updateError } = await supabase
+      .from('class_sessions')
+      .update({
+        status: parsed.data.status,
+        timetable_entry_id: parsed.data.timetableEntryId || null,
+        start_time: parsed.data.startTime || null,
+        end_time: parsed.data.endTime || null,
+        topic_covered: parsed.data.topicCovered || null,
+        notes: parsed.data.notes || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', primary.id)
+      .eq('user_id', user.id);
+
+    if (updateError) return { error: updateError.message };
+
+    // Clean up any remaining duplicate rows if more than 1 existed
+    if (existingList.length > 1) {
+      const duplicateIds = existingList.slice(1).map((s) => s.id);
+      await supabase
+        .from('class_sessions')
+        .delete()
+        .in('id', duplicateIds)
+        .eq('user_id', user.id);
+    }
+
+    revalidatePath('/academics');
+    revalidatePath('/dashboard');
+    return { success: true, data: { id: primary.id } };
+  }
+
+  // If no existing session found, insert a new record
   const { data, error } = await supabase
     .from('class_sessions')
     .insert({
@@ -323,20 +387,24 @@ export async function toggleSlotAttendanceAction(params: {
 
   if (!user) return { error: 'Authentication required.' };
 
-  const { data: existing } = await supabase
+  const { data: existingList } = await supabase
     .from('class_sessions')
-    .select('id, status')
+    .select('id, status, timetable_entry_id')
     .eq('user_id', user.id)
-    .eq('timetable_entry_id', params.timetableEntryId)
-    .eq('session_date', params.sessionDate)
-    .maybeSingle();
+    .eq('subject_id', params.subjectId)
+    .eq('session_date', params.sessionDate);
 
-  if (existing) {
-    if (existing.status === params.status) {
+  if (existingList && existingList.length > 0) {
+    const matched =
+      existingList.find((s) => s.timetable_entry_id === params.timetableEntryId) ||
+      existingList[0];
+
+    if (matched.status === params.status) {
+      const allIds = existingList.map((s) => s.id);
       await supabase
         .from('class_sessions')
         .delete()
-        .eq('id', existing.id)
+        .in('id', allIds)
         .eq('user_id', user.id);
 
       revalidatePath('/dashboard');
@@ -347,14 +415,26 @@ export async function toggleSlotAttendanceAction(params: {
         .from('class_sessions')
         .update({
           status: params.status,
+          timetable_entry_id: params.timetableEntryId,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', existing.id)
+        .eq('id', matched.id)
         .eq('user_id', user.id);
+
+      if (existingList.length > 1) {
+        const otherIds = existingList.filter((s) => s.id !== matched.id).map((s) => s.id);
+        if (otherIds.length > 0) {
+          await supabase
+            .from('class_sessions')
+            .delete()
+            .in('id', otherIds)
+            .eq('user_id', user.id);
+        }
+      }
 
       revalidatePath('/dashboard');
       revalidatePath('/academics');
-      return { success: true, data: { sessionId: existing.id, status: params.status } };
+      return { success: true, data: { sessionId: matched.id, status: params.status } };
     }
   } else {
     const { data: inserted, error } = await supabase
@@ -440,15 +520,15 @@ export async function logHolidayAction(params: {
 
   for (const dateItem of dates) {
     for (const subId of subjectIds) {
-      const { data: existing } = await supabase
+      const { data: existingList } = await supabase
         .from('class_sessions')
         .select('id')
         .eq('user_id', user.id)
         .eq('subject_id', subId)
-        .eq('session_date', dateItem)
-        .maybeSingle();
+        .eq('session_date', dateItem);
 
-      if (existing) {
+      if (existingList && existingList.length > 0) {
+        const primary = existingList[0];
         await supabase
           .from('class_sessions')
           .update({
@@ -456,8 +536,17 @@ export async function logHolidayAction(params: {
             notes: params.title ? `Holiday: ${params.title}` : 'Holiday',
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existing.id)
+          .eq('id', primary.id)
           .eq('user_id', user.id);
+
+        if (existingList.length > 1) {
+          const dupes = existingList.slice(1).map((s) => s.id);
+          await supabase
+            .from('class_sessions')
+            .delete()
+            .in('id', dupes)
+            .eq('user_id', user.id);
+        }
       } else {
         await supabase.from('class_sessions').insert({
           user_id: user.id,

@@ -19,7 +19,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import {
   calculateAttendance,
   type ClassSessionRecord,
@@ -391,16 +390,18 @@ export function AcademicOverview({
     };
   });
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
   const handleQuickLog = (
     subjectId: string,
     status: 'present' | 'absent' | 'cancelled' | 'no_class'
   ) => {
-    const today = format(new Date(), 'yyyy-MM-dd');
     startTransition(async () => {
       await logClassSessionAction({
         subjectId,
-        sessionDate: today,
+        sessionDate: todayStr,
         status,
+        toggleIfSame: true,
       });
     });
   };
@@ -785,6 +786,10 @@ export function AcademicOverview({
                     marginText,
                   }) => {
                     const isSafe = stats.conductedSessions === 0 || stats.percentage >= 75;
+                    const todaySession = sessions.find(
+                      (s) => s.subject_id === subject.id && s.session_date === todayStr
+                    );
+                    const todayStatus = todaySession?.status;
 
                     return (
                       <Card
@@ -898,65 +903,98 @@ export function AcademicOverview({
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1">
-                              <Button
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {/* 1. Present / Attended */}
+                              <button
                                 type="button"
-                                size="xs"
-                                variant="outline"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleQuickLog(subject.id, 'present');
                                 }}
                                 disabled={isPending}
-                                className="h-7 px-2 text-[10px] rounded-lg border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer font-medium"
-                                title="Attended Today"
+                                className={`h-7 px-2.5 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                  todayStatus === 'present'
+                                    ? 'bg-emerald-600 text-white shadow-xs font-semibold'
+                                    : 'border border-border bg-background text-muted-foreground hover:text-emerald-700 hover:border-emerald-300 dark:hover:text-emerald-300 dark:hover:border-emerald-800'
+                                }`}
+                                title={
+                                  todayStatus === 'present'
+                                    ? 'Attended Today (Click to unmark)'
+                                    : 'Mark Attended Today'
+                                }
                               >
-                                <Check className="h-3 w-3 mr-1" />
-                                Present
-                              </Button>
-                              <Button
+                                <Check className="h-3 w-3" />
+                                <span>Present</span>
+                              </button>
+
+                              {/* 2. Absent / Missed */}
+                              <button
                                 type="button"
-                                size="xs"
-                                variant="outline"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleQuickLog(subject.id, 'absent');
                                 }}
                                 disabled={isPending}
-                                className="h-7 px-2 text-[10px] rounded-lg border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer font-medium"
-                                title="Missed Today"
+                                className={`h-7 px-2.5 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                  todayStatus === 'absent'
+                                    ? 'bg-rose-600 text-white shadow-xs font-semibold'
+                                    : 'border border-border bg-background text-muted-foreground hover:text-rose-700 hover:border-rose-300 dark:hover:text-rose-300 dark:hover:border-rose-800'
+                                }`}
+                                title={
+                                  todayStatus === 'absent'
+                                    ? 'Missed Today (Click to unmark)'
+                                    : 'Mark Missed Today'
+                                }
                               >
-                                <X className="h-3 w-3 mr-1" />
-                                Absent
-                              </Button>
-                              <Button
+                                <X className="h-3 w-3" />
+                                <span>Absent</span>
+                              </button>
+
+                              {/* 3. Cancelled */}
+                              <button
                                 type="button"
-                                size="xs"
-                                variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleQuickLog(subject.id, 'cancelled');
                                 }}
                                 disabled={isPending}
-                                className="h-7 px-1.5 text-[10px] rounded-lg text-muted-foreground hover:bg-muted cursor-pointer"
-                                title="Class Cancelled Today"
+                                className={`h-7 px-2 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                  todayStatus === 'cancelled'
+                                    ? 'bg-amber-600 text-white shadow-xs font-semibold'
+                                    : 'border border-border bg-background text-muted-foreground hover:text-amber-700 hover:border-amber-300 dark:hover:text-amber-300 dark:hover:border-amber-800'
+                                }`}
+                                title={
+                                  todayStatus === 'cancelled'
+                                    ? 'Cancelled Today (Click to unmark)'
+                                    : 'Mark Class Cancelled Today'
+                                }
                               >
-                                <MinusCircle className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
+                                <MinusCircle className="h-3 w-3" />
+                                <span>Cancel</span>
+                              </button>
+
+                              {/* 4. Holiday */}
+                              <button
                                 type="button"
-                                size="xs"
-                                variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleQuickLog(subject.id, 'no_class');
                                 }}
                                 disabled={isPending}
-                                className="h-7 px-1.5 text-[10px] rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 cursor-pointer"
-                                title="Holiday Today"
+                                className={`h-7 px-2 text-[11px] rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer font-medium ${
+                                  todayStatus === 'no_class'
+                                    ? 'bg-sky-600 text-white shadow-xs font-semibold'
+                                    : 'border border-border bg-background text-muted-foreground hover:text-sky-700 hover:border-sky-300 dark:hover:text-sky-300 dark:hover:border-sky-800'
+                                }`}
+                                title={
+                                  todayStatus === 'no_class'
+                                    ? 'Holiday Today (Click to unmark)'
+                                    : 'Mark Holiday Today'
+                                }
                               >
-                                <Sun className="h-3.5 w-3.5" />
-                              </Button>
+                                <Sun className="h-3 w-3" />
+                                <span>Holiday</span>
+                              </button>
                             </div>
                           </div>
                         </div>
