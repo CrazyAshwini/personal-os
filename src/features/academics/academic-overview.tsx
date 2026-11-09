@@ -154,13 +154,13 @@ function DayTimetableTable({
         className="group hover:bg-muted/30 transition-colors border-b border-border/50 last:border-b-0"
       >
         {/* Time */}
-        <td className="py-3 px-3.5 font-mono text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
+        <td className="py-3.5 px-4 font-mono text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
           {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
         </td>
 
         {/* Subject */}
-        <td className="py-3 px-3.5 min-w-[150px]">
-          <div className="flex items-center gap-2 flex-wrap">
+        <td className="py-3.5 px-4 min-w-[200px]">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <span
               className="h-2.5 w-2.5 rounded-full shrink-0"
               style={{ backgroundColor: sub?.color || '#526653' }}
@@ -169,7 +169,7 @@ function DayTimetableTable({
               {sub?.name || 'Class Session'}
             </span>
             {sub?.code && (
-              <span className="font-mono text-xs px-1.5 py-0.5 rounded border border-border bg-muted/50 text-muted-foreground font-semibold shrink-0">
+              <span className="font-mono text-xs px-2 py-0.5 rounded border border-border bg-muted/50 text-muted-foreground font-semibold shrink-0">
                 {sub.code}
               </span>
             )}
@@ -177,9 +177,9 @@ function DayTimetableTable({
         </td>
 
         {/* Room */}
-        <td className="py-3 px-3 text-center font-mono text-xs whitespace-nowrap">
+        <td className="py-3.5 px-4 text-center font-mono text-xs whitespace-nowrap">
           {slot.classroom ? (
-            <span className="px-2 py-0.5 rounded bg-muted/80 font-bold text-foreground text-xs sm:text-sm">
+            <span className="px-2.5 py-1 rounded-lg bg-muted/80 font-bold text-foreground text-xs sm:text-sm">
               {slot.classroom}
             </span>
           ) : (
@@ -188,12 +188,12 @@ function DayTimetableTable({
         </td>
 
         {/* Faculty */}
-        <td className="py-3 px-3.5 text-right font-medium text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+        <td className="py-3.5 px-4 text-right font-medium text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
           {sub?.instructor || '—'}
         </td>
 
         {/* Delete Action */}
-        <td className="py-3 pr-3 pl-1 text-center w-8">
+        <td className="py-3.5 pr-4 pl-1 text-center w-10">
           <button
             type="button"
             onClick={() => onDelete(slot.id)}
@@ -201,7 +201,7 @@ function DayTimetableTable({
             className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-rose-600 rounded-lg cursor-pointer"
             title="Delete class"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
           </button>
         </td>
       </tr>
@@ -239,11 +239,11 @@ function DayTimetableTable({
         <table className="w-full text-left text-sm border-collapse">
           <thead>
             <tr className={`border-b ${theme.th} text-xs uppercase font-mono font-bold tracking-wider`}>
-              <th className="py-2.5 px-3.5 w-[140px]">Time</th>
-              <th className="py-2.5 px-3.5">Subject</th>
-              <th className="py-2.5 px-3 text-center w-[90px]">Class No. (Room)</th>
-              <th className="py-2.5 px-3.5 text-right w-[100px]">Faculty</th>
-              <th className="w-8"></th>
+              <th className="py-3 px-4 w-[180px]">Time</th>
+              <th className="py-3 px-4">Subject</th>
+              <th className="py-3 px-4 text-center w-[140px]">Class No. (Room)</th>
+              <th className="py-3 px-4 text-right w-[150px]">Faculty</th>
+              <th className="w-10"></th>
             </tr>
           </thead>
           <tbody>
@@ -251,10 +251,10 @@ function DayTimetableTable({
 
             {/* Lunch Break Row */}
             <tr className="bg-muted/25 border-y border-dashed border-border/80 text-muted-foreground">
-              <td className="py-2 px-3.5 font-mono text-xs font-semibold whitespace-nowrap text-muted-foreground">
+              <td className="py-2.5 px-4 font-mono text-xs font-semibold whitespace-nowrap text-muted-foreground">
                 1:00 – 2:30 PM
               </td>
-              <td colSpan={4} className="py-2 px-3.5 text-center text-xs font-bold tracking-wider uppercase opacity-85">
+              <td colSpan={4} className="py-2.5 px-4 text-center text-xs font-bold tracking-wider uppercase opacity-85">
                 ☕ L U N C H &nbsp; B R E A K
               </td>
             </tr>
@@ -288,29 +288,29 @@ function SubjectsAtAGlance({ subjects }: { subjects: SubjectRow[] }) {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30 text-xs uppercase font-mono font-bold text-muted-foreground">
-              <th className="py-2.5 px-3.5 w-[95px]">Code</th>
-              <th className="py-2.5 px-3.5">Subject Name</th>
-              <th className="py-2.5 px-3.5 text-right w-[90px]">Faculty</th>
+              <th className="py-3 px-4 w-[140px]">Code</th>
+              <th className="py-3 px-4">Subject Name</th>
+              <th className="py-3 px-4 text-right w-[180px]">Faculty</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
             {subjects.map((sub) => (
               <tr key={sub.id} className="hover:bg-muted/20 transition-colors">
-                <td className="py-2.5 px-3.5 font-mono text-xs font-bold text-foreground whitespace-nowrap">
+                <td className="py-3 px-4 font-mono text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
                   {sub.code || '—'}
                 </td>
-                <td className="py-2.5 px-3.5">
-                  <div className="flex items-center gap-2">
+                <td className="py-3 px-4">
+                  <div className="flex items-center gap-2.5">
                     <span
                       className="h-2.5 w-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: sub.color || '#526653' }}
                     />
-                    <span className="font-bold text-sm text-foreground truncate">
+                    <span className="font-bold text-sm sm:text-base text-foreground">
                       {sub.name}
                     </span>
                   </div>
                 </td>
-                <td className="py-2.5 px-3.5 text-right text-xs sm:text-sm text-muted-foreground font-mono whitespace-nowrap font-medium">
+                <td className="py-3 px-4 text-right text-xs sm:text-sm text-muted-foreground font-mono whitespace-nowrap font-medium">
                   {sub.instructor || '—'}
                 </td>
               </tr>
@@ -486,7 +486,7 @@ export function AcademicOverview({
             </div>
           </div>
 
-          {/* Grid of Day Tables */}
+          {/* Grid of Day Tables - 1 Day Per Row */}
           {timetable.length === 0 ? (
             <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
               <Clock className="h-10 w-10 mx-auto text-primary/40 mb-3" />
@@ -501,7 +501,7 @@ export function AcademicOverview({
               )}
             </Card>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* 1. MONDAY */}
               <DayTimetableTable
                 dayIdx={1}
