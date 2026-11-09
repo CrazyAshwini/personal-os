@@ -84,6 +84,8 @@ function DayTimetableTable({
   motto,
   slots,
   isToday,
+  isHolidayToday,
+  holidayTitle,
   onDelete,
   disabled,
 }: {
@@ -92,6 +94,8 @@ function DayTimetableTable({
   motto?: string;
   slots: TimetableRow[];
   isToday: boolean;
+  isHolidayToday?: boolean;
+  holidayTitle?: string | null;
   onDelete: (id: string) => void;
   disabled?: boolean;
 }) {
@@ -232,6 +236,12 @@ function DayTimetableTable({
           {isToday && (
             <Badge className="bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs">
               Today
+            </Badge>
+          )}
+          {isToday && isHolidayToday && (
+            <Badge variant="outline" className="border-amber-300 dark:border-amber-800 bg-amber-100/50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+              <Sun className="h-3 w-3 text-amber-500" />
+              {holidayTitle ? `Holiday: ${holidayTitle}` : 'Holiday Active'}
             </Badge>
           )}
         </div>
@@ -413,6 +423,16 @@ export function AcademicOverview({
   });
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todayHolidaySession = sessions.find(
+    (s) => s.session_date === todayStr && s.status === 'no_class'
+  );
+  const isTodayHoliday = Boolean(todayHolidaySession);
+  let todayHolidayTitle: string | null = null;
+  if (todayHolidaySession?.notes) {
+    todayHolidayTitle = todayHolidaySession.notes.startsWith('Holiday: ')
+      ? todayHolidaySession.notes.replace('Holiday: ', '')
+      : todayHolidaySession.notes;
+  }
 
   const handleQuickLog = (
     subjectId: string,
@@ -515,6 +535,22 @@ export function AcademicOverview({
             </div>
           </div>
 
+          {/* Academic Holiday Active Alert Banner */}
+          {isTodayHoliday && (
+            <div className="p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 flex items-center justify-between gap-3 text-xs sm:text-sm">
+              <div className="flex items-center gap-2.5">
+                <Sun className="h-5 w-5 text-amber-500 shrink-0" />
+                <span className="font-medium text-amber-900 dark:text-amber-200">
+                  <strong className="font-bold">Academic Holiday Active Today:</strong>{' '}
+                  {todayHolidayTitle ? `${todayHolidayTitle} (Classes suspended)` : 'All lectures today are suspended and preserved from attendance criteria.'}
+                </span>
+              </div>
+              <span className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-400 shrink-0 hidden sm:inline">
+                No attendance penalty
+              </span>
+            </div>
+          )}
+
           {/* Grid of Day Tables - 1 Day Per Row */}
           {timetable.length === 0 ? (
             <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
@@ -538,6 +574,8 @@ export function AcademicOverview({
                 motto={DAY_MOTTO[1]}
                 slots={timetable.filter((t) => t.day_of_week === 1)}
                 isToday={currentDayIndex === 1}
+                isHolidayToday={isTodayHoliday}
+                holidayTitle={todayHolidayTitle}
                 onDelete={handleDeleteTimetableEntry}
                 disabled={isPending}
               />
@@ -549,6 +587,8 @@ export function AcademicOverview({
                 motto={DAY_MOTTO[2]}
                 slots={timetable.filter((t) => t.day_of_week === 2)}
                 isToday={currentDayIndex === 2}
+                isHolidayToday={isTodayHoliday}
+                holidayTitle={todayHolidayTitle}
                 onDelete={handleDeleteTimetableEntry}
                 disabled={isPending}
               />
@@ -560,6 +600,8 @@ export function AcademicOverview({
                 motto={DAY_MOTTO[3]}
                 slots={timetable.filter((t) => t.day_of_week === 3)}
                 isToday={currentDayIndex === 3}
+                isHolidayToday={isTodayHoliday}
+                holidayTitle={todayHolidayTitle}
                 onDelete={handleDeleteTimetableEntry}
                 disabled={isPending}
               />
@@ -571,6 +613,8 @@ export function AcademicOverview({
                 motto={DAY_MOTTO[4]}
                 slots={timetable.filter((t) => t.day_of_week === 4)}
                 isToday={currentDayIndex === 4}
+                isHolidayToday={isTodayHoliday}
+                holidayTitle={todayHolidayTitle}
                 onDelete={handleDeleteTimetableEntry}
                 disabled={isPending}
               />
@@ -582,6 +626,8 @@ export function AcademicOverview({
                 motto={DAY_MOTTO[5]}
                 slots={timetable.filter((t) => t.day_of_week === 5)}
                 isToday={currentDayIndex === 5}
+                isHolidayToday={isTodayHoliday}
+                holidayTitle={todayHolidayTitle}
                 onDelete={handleDeleteTimetableEntry}
                 disabled={isPending}
               />

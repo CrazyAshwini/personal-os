@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { createClient } from '@/lib/supabase/server';
 import { TodayTaskList, type TodayTaskItem } from '@/features/tasks/today-task-list';
 import { TodayScheduleList, type TodayTimetableSlot } from '@/features/academics/today-schedule-list';
-import { Timer, Play } from 'lucide-react';
+import { Timer, Play, Sun } from 'lucide-react';
 
 export const instant = false;
 
@@ -48,22 +48,46 @@ export default async function DashboardPage() {
     .eq('day_of_week', todayDayOfWeek)
     .order('start_time', { ascending: true });
 
-  // 4. Fetch any class sessions logged for today (to display attendance ground truth)
+  // 4. Fetch any class sessions logged for today (to display attendance ground truth and holidays)
   const { data: todaySessions } = await supabase
     .from('class_sessions')
-    .select('id, timetable_entry_id, status')
+    .select('id, timetable_entry_id, subject_id, status, notes')
     .eq('user_id', userId)
     .eq('session_date', todayDateStr);
 
-  const initialStatuses: Record<string, 'present' | 'absent' | 'cancelled'> = {};
-  (todaySessions || []).forEach((s) => {
-    if (
-      s.timetable_entry_id &&
-      (s.status === 'present' || s.status === 'absent' || s.status === 'cancelled')
-    ) {
-      initialStatuses[s.timetable_entry_id] = s.status;
+  const initialStatuses: Record<string, 'present' | 'absent' | 'cancelled' | 'no_class'> = {};
+  const holidayNotes: Record<string, string> = {};
+
+  (todayTimetable || []).forEach((slot) => {
+    const matchedSession =
+      (todaySessions || []).find((s) => s.timetable_entry_id === slot.id) ||
+      (todaySessions || []).find((s) => s.subject_id === slot.subject_id);
+
+    if (matchedSession) {
+      initialStatuses[slot.id] = matchedSession.status;
+      if (matchedSession.notes) {
+        holidayNotes[slot.id] = matchedSession.notes;
+      }
     }
   });
+
+  const totalSlotsCount = todayTimetable?.length || 0;
+  const noClassCount = Object.values(initialStatuses).filter((st) => st === 'no_class').length;
+  const todayHolidaySession = (todaySessions || []).find((s) => s.status === 'no_class');
+
+  const isFullDayHoliday =
+    totalSlotsCount > 0
+      ? noClassCount === totalSlotsCount
+      : Boolean(todayHolidaySession);
+
+  let holidayTitle: string | null = null;
+  if (todayHolidaySession?.notes) {
+    holidayTitle = todayHolidaySession.notes.startsWith('Holiday: ')
+      ? todayHolidaySession.notes.replace('Holiday: ', '')
+      : todayHolidaySession.notes;
+  }
+
+  const activeClassCount = totalSlotsCount - noClassCount;
 
   const timetableSlots: TodayTimetableSlot[] = (todayTimetable || []).map((t) => ({
     id: t.id,
@@ -92,8 +116,6 @@ export default async function DashboardPage() {
     due_date: t.due_date,
   }));
 
-  const classCount = todayTimetable?.length || 0;
-
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header: Greeting on Left & Aligned Pomodoro Clock on Right */}
@@ -105,9 +127,17 @@ export default async function DashboardPage() {
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
             {greeting}, {displayName}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
-            Your daily cockpit &bull; {classCount} class{classCount === 1 ? '' : 'es'} scheduled today
-          </p>
+          {isFullDayHoliday ? (
+            <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mt-0.5 flex items-center gap-1.5">
+              <Sun className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <span>Academic Holiday today &bull; {holidayTitle || 'No classes scheduled'}</span>
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+              Your daily cockpit &bull; {activeClassCount} class{activeClassCount === 1 ? '' : 'es'} scheduled today
+              {noClassCount > 0 && ` (${noClassCount} on holiday)`}
+            </p>
+          )}
         </div>
 
         {/* Mobile: Square Pomodoro Launcher Button aligned with greeting */}
@@ -146,6 +176,9 @@ export default async function DashboardPage() {
           <TodayScheduleList
             slots={timetableSlots}
             initialStatuses={initialStatuses}
+            holidayNotes={holidayNotes}
+            isFullDayHoliday={isFullDayHoliday}
+            holidayTitle={holidayTitle}
             sessionDate={todayDateStr}
           />
         </div>
