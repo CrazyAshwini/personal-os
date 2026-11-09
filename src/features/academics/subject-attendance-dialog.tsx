@@ -9,7 +9,6 @@ import {
   MinusCircle,
   Sun,
   Trash2,
-  Calendar,
   Plus,
 } from 'lucide-react';
 import {
@@ -259,39 +258,33 @@ export function SubjectAttendanceDialog({
                 <Label htmlFor="date-input" className="text-xs text-muted-foreground font-semibold">
                   From Date *
                 </Label>
-                <div className="relative">
-                  <Input
-                    id="date-input"
-                    type="date"
-                    value={sessionDate}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setSessionDate(val);
-                      if (!sessionEndDate || sessionEndDate < val) {
-                        setSessionEndDate(val);
-                      }
-                    }}
-                    className="text-xs sm:text-sm h-9 rounded-xl pr-8 font-mono"
-                  />
-                  <Calendar className="h-3.5 w-3.5 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
-                </div>
+                <Input
+                  id="date-input"
+                  type="date"
+                  value={sessionDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSessionDate(val);
+                    if (!sessionEndDate || sessionEndDate < val) {
+                      setSessionEndDate(val);
+                    }
+                  }}
+                  className="text-xs sm:text-sm h-9 rounded-xl font-mono"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="date-end-input" className="text-xs text-muted-foreground font-semibold">
                   To Date (for range / holidays)
                 </Label>
-                <div className="relative">
-                  <Input
-                    id="date-end-input"
-                    type="date"
-                    value={sessionEndDate}
-                    min={sessionDate}
-                    onChange={(e) => setSessionEndDate(e.target.value)}
-                    className="text-xs sm:text-sm h-9 rounded-xl pr-8 font-mono"
-                  />
-                  <Calendar className="h-3.5 w-3.5 absolute right-2.5 top-2.5 text-muted-foreground pointer-events-none" />
-                </div>
+                <Input
+                  id="date-end-input"
+                  type="date"
+                  value={sessionEndDate}
+                  min={sessionDate}
+                  onChange={(e) => setSessionEndDate(e.target.value)}
+                  className="text-xs sm:text-sm h-9 rounded-xl font-mono"
+                />
               </div>
             </div>
 

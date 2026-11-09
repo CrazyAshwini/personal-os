@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Sun, Calendar } from 'lucide-react';
+import { Sun } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -99,44 +99,38 @@ export function LogHolidayDialog({
           {/* 2 Date Range Options: From - To */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="holiday-start-date" className="text-xs font-medium">
+              <Label htmlFor="holiday-start-date" className="text-xs font-semibold">
                 From Date *
               </Label>
-              <div className="relative">
-                <Input
-                  id="holiday-start-date"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => {
-                    const newStart = e.target.value;
-                    setStartDate(newStart);
-                    if (!endDate || endDate < newStart) {
-                      setEndDate(newStart);
-                    }
-                  }}
-                  required
-                  className="text-xs h-9 rounded-xl pr-9"
-                />
-                <Calendar className="h-3.5 w-3.5 absolute right-3 top-3 text-muted-foreground pointer-events-none" />
-              </div>
+              <Input
+                id="holiday-start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  setStartDate(newStart);
+                  if (!endDate || endDate < newStart) {
+                    setEndDate(newStart);
+                  }
+                }}
+                required
+                className="text-xs sm:text-sm h-9 rounded-xl font-mono"
+              />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="holiday-end-date" className="text-xs font-medium">
+              <Label htmlFor="holiday-end-date" className="text-xs font-semibold">
                 To Date *
               </Label>
-              <div className="relative">
-                <Input
-                  id="holiday-end-date"
-                  type="date"
-                  value={endDate}
-                  min={startDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  required
-                  className="text-xs h-9 rounded-xl pr-9"
-                />
-                <Calendar className="h-3.5 w-3.5 absolute right-3 top-3 text-muted-foreground pointer-events-none" />
-              </div>
+              <Input
+                id="holiday-end-date"
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+                className="text-xs sm:text-sm h-9 rounded-xl font-mono"
+              />
             </div>
           </div>
           <p className="text-[11px] text-muted-foreground -mt-1 font-mono">
