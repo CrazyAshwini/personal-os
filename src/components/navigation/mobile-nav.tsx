@@ -135,7 +135,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-card/95 dark:bg-[#171A18]/95 backdrop-blur-xl px-2 flex items-center justify-around select-none shadow-[0_-4px_16px_rgba(0,0,0,0.03)] pb-[env(safe-area-inset-bottom)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-card/95 backdrop-blur-xl px-2 flex items-center justify-around select-none shadow-[0_-4px_16px_rgba(0,0,0,0.03)] pb-[env(safe-area-inset-bottom)]">
         {mobilePrimaryNav.map((item) => {
           const isActive =
             pathname === item.href ||
