@@ -12,8 +12,11 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
+  Check,
+  Zap,
+  RotateCcw,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import rawData from '@/data/marvel-watchlist.json';
-import { toggleMarvelItemAction } from './marvel-actions';
+import { toggleMarvelItemAction, batchSetMarvelItemsAction } from './marvel-actions';
 import type {
   MarvelItem,
   MarvelWatchStatus,
@@ -35,6 +38,9 @@ import type {
 } from '@/types/marvel';
 
 const STORAGE_KEY = 'marvelWatchlist.progress.v1';
+
+export type ViewingTrack = 'all' | 'essential' | 'golden' | 'spider' | 'defenders';
+export type MediaTypeFilter = 'all' | 'movie' | 'series' | 'special';
 
 interface MarvelTrackerProps {
   initialCloudProgress?: MarvelProgressMap;
@@ -62,10 +68,13 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
     return { ...local, ...initialCloudProgress };
   });
 
+  // Filters & State
+  const [activeTrack, setActiveTrack] = useState<ViewingTrack>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUniverse, setSelectedUniverse] = useState<string>('All');
   const [selectedPriority, setSelectedPriority] = useState<string>('All');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedMediaType, setSelectedMediaType] = useState<MediaTypeFilter>('all');
   const [sortBy, setSortBy] = useState<'order' | 'date' | 'title'>('order');
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [backupOpen, setBackupOpen] = useState(false);
@@ -113,16 +122,15 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
     [progress]
   );
 
-  const handleToggleStatus = (item: MarvelItem) => {
-    if (!item.released && item.releaseDate && new Date(item.releaseDate) > today) {
-      return; // Cannot mark unreleased titles as watched
+  // 1-Click Status Setting (Direct Watched or Watching)
+  const handleSetStatus = (item: MarvelItem, targetStatus: MarvelWatchStatus) => {
+    if (!item.isReleased && targetStatus !== 'unwatched') {
+      return; // Cannot mark unreleased titles as watched/watching
     }
 
     const current = getStatus(item.id);
-    let nextStatus: MarvelWatchStatus = 'unwatched';
-    if (current === 'unwatched') nextStatus = 'watching';
-    else if (current === 'watching') nextStatus = 'watched';
-    else nextStatus = 'unwatched';
+    // If clicking the current status, toggle it back to unwatched
+    const nextStatus: MarvelWatchStatus = current === targetStatus ? 'unwatched' : targetStatus;
 
     const nextProgress = { ...progress };
     if (nextStatus === 'unwatched') {
@@ -142,17 +150,60 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
     });
   };
 
-  const handleMarkWatchedDirectly = (item: MarvelItem) => {
-    const nextProgress = {
-      ...progress,
-      [item.id]: {
-        status: 'watched' as MarvelWatchStatus,
-        watchedOn: new Date().toISOString(),
-      },
-    };
+  // Batch Mark Phase/Group as Watched
+  const handleBatchMarkGroup = (groupItems: MarvelItem[]) => {
+    const releasedInGroup = groupItems.filter((i) => i.isReleased);
+    if (releasedInGroup.length === 0) return;
+
+    const allWatched = releasedInGroup.every((i) => getStatus(i.id) === 'watched');
+    const targetStatus: MarvelWatchStatus = allWatched ? 'unwatched' : 'watched';
+
+    const nextProgress = { ...progress };
+    const updates: { item: MarvelItem; status: MarvelWatchStatus }[] = [];
+
+    releasedInGroup.forEach((item) => {
+      if (targetStatus === 'unwatched') {
+        delete nextProgress[item.id];
+      } else {
+        nextProgress[item.id] = {
+          ...nextProgress[item.id],
+          status: 'watched',
+          watchedOn: new Date().toISOString(),
+        };
+      }
+      updates.push({ item, status: targetStatus });
+    });
+
     saveProgress(nextProgress);
+
     startTransition(async () => {
-      await toggleMarvelItemAction(item, 'watched');
+      await batchSetMarvelItemsAction(updates);
+    });
+  };
+
+  // Catch-Up: Mark All Prior Items as Watched
+  const handleCatchUpPrior = (targetItem: MarvelItem) => {
+    const priorItems = items.filter(
+      (i) => i.isReleased && i.order <= targetItem.order && getStatus(i.id) !== 'watched'
+    );
+    if (priorItems.length === 0) return;
+
+    const nextProgress = { ...progress };
+    const updates: { item: MarvelItem; status: MarvelWatchStatus }[] = [];
+
+    priorItems.forEach((item) => {
+      nextProgress[item.id] = {
+        ...nextProgress[item.id],
+        status: 'watched',
+        watchedOn: new Date().toISOString(),
+      };
+      updates.push({ item, status: 'watched' });
+    });
+
+    saveProgress(nextProgress);
+
+    startTransition(async () => {
+      await batchSetMarvelItemsAction(updates);
     });
   };
 
@@ -166,17 +217,28 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
     () => releasedItems.filter((i) => getStatus(i.id) === 'watching').length,
     [releasedItems, getStatus]
   );
+
+  const currentlyWatchingItems = useMemo(
+    () => releasedItems.filter((i) => getStatus(i.id) === 'watching'),
+    [releasedItems, getStatus]
+  );
+
   const totalEssentials = useMemo(
     () => releasedItems.filter((i) => i.priority === 'Essential'),
     [releasedItems]
   );
-  const essentialsRemaining = useMemo(
-    () => totalEssentials.filter((i) => getStatus(i.id) !== 'watched').length,
+  const watchedEssentials = useMemo(
+    () => totalEssentials.filter((i) => getStatus(i.id) === 'watched').length,
     [totalEssentials, getStatus]
   );
+  const essentialsRemaining = totalEssentials.length - watchedEssentials;
 
   const percentComplete = releasedItems.length
     ? Math.round((totalWatched / releasedItems.length) * 100)
+    : 0;
+
+  const percentEssentials = totalEssentials.length
+    ? Math.round((watchedEssentials / totalEssentials.length) * 100)
     : 0;
 
   // "Up Next" essential title
@@ -207,23 +269,73 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
   }, [releasedItems, getStatus]);
 
   const isSpiderVerseComplete = useMemo(() => {
-    const sp = releasedItems.filter((i) => i.group.includes('Spider'));
-    return sp.length > 0 && sp.every((i) => getStatus(i.id) === 'watched');
+    const spidey = releasedItems.filter(
+      (i) => i.universe === 'Sony' || i.title.toLowerCase().includes('spider-man')
+    );
+    return spidey.length > 0 && spidey.every((i) => getStatus(i.id) === 'watched');
   }, [releasedItems, getStatus]);
 
-  // Filter and sort items
+  // Filter application with Curated Tracks
   const filteredItems = useMemo(() => {
     return items.filter((i) => {
-      // Universe filter
-      if (selectedUniverse !== 'All' && i.universe !== selectedUniverse) return false;
-      // Priority filter
-      if (selectedPriority !== 'All' && i.priority !== selectedPriority) return false;
-      // Status filter
+      // 1. Viewing Track Presets
+      if (activeTrack === 'essential') {
+        if (i.priority !== 'Essential') return false;
+      } else if (activeTrack === 'golden') {
+        if (i.priority !== 'Essential' && i.priority !== 'Recommended') return false;
+      } else if (activeTrack === 'spider') {
+        const isSpidey =
+          i.universe === 'Sony' ||
+          i.title.toLowerCase().includes('spider') ||
+          i.title.toLowerCase().includes('venom') ||
+          i.title.toLowerCase().includes('morbius') ||
+          i.title.toLowerCase().includes('madame');
+        if (!isSpidey) return false;
+      } else if (activeTrack === 'defenders') {
+        const isDef =
+          i.universe === 'Netflix/Marvel TV' ||
+          i.title.toLowerCase().includes('daredevil') ||
+          i.title.toLowerCase().includes('punisher') ||
+          i.title.toLowerCase().includes('echo') ||
+          i.title.toLowerCase().includes('jessica jones') ||
+          i.title.toLowerCase().includes('luke cage') ||
+          i.title.toLowerCase().includes('iron fist');
+        if (!isDef) return false;
+      }
+
+      // 2. Media Type Filter
+      if (selectedMediaType === 'movie') {
+        if (!i.type.toLowerCase().includes('movie')) return false;
+      } else if (selectedMediaType === 'series') {
+        if (!i.type.toLowerCase().includes('series')) return false;
+      } else if (selectedMediaType === 'special') {
+        if (!i.type.toLowerCase().includes('special') && !i.type.toLowerCase().includes('one-shot')) return false;
+      }
+
+      // 3. Universe Filter
+      if (selectedUniverse !== 'All' && i.universe !== selectedUniverse) {
+        return false;
+      }
+
+      // 4. Priority Filter
+      if (selectedPriority !== 'All') {
+        if (selectedPriority === 'Essential+Recommended') {
+          if (i.priority !== 'Essential' && i.priority !== 'Recommended') return false;
+        } else if (i.priority !== selectedPriority) {
+          return false;
+        }
+      }
+
+      // 5. Watch Status Filter
       const st = getStatus(i.id);
-      if (selectedStatus === 'watched' && st !== 'watched') return false;
-      if (selectedStatus === 'watching' && st !== 'watching') return false;
       if (selectedStatus === 'unwatched' && st !== 'unwatched') return false;
-      // Search
+      if (selectedStatus === 'watching' && st !== 'watching') return false;
+      if (selectedStatus === 'watched' && st !== 'watched') return false;
+      if (selectedStatus === 'unwatched_essentials') {
+        if (i.priority !== 'Essential' || st === 'watched') return false;
+      }
+
+      // 6. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchTitle = i.title.toLowerCase().includes(q);
@@ -233,7 +345,16 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
       }
       return true;
     });
-  }, [items, selectedUniverse, selectedPriority, selectedStatus, searchQuery, getStatus]);
+  }, [
+    items,
+    activeTrack,
+    selectedMediaType,
+    selectedUniverse,
+    selectedPriority,
+    selectedStatus,
+    searchQuery,
+    getStatus,
+  ]);
 
   // Sorted items
   const sortedItems = useMemo(() => {
@@ -326,9 +447,9 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
       {/* 1. HERO COCKPIT */}
       <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          {/* Left stats */}
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
+          {/* Left stats & Dual Progress Bars */}
+          <div className="space-y-3 max-w-xl">
+            <div className="flex items-center gap-2 mb-1">
               <span className="p-1.5 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400">
                 <Film className="h-4 w-4" />
               </span>
@@ -336,175 +457,299 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                 MARVEL UNIVERSE WATCHLIST
               </h1>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-              124-title curated viewing order spanning the Marvel Cinematic Universe, Multiverse branches, Defenders Saga, and Marvel Classics.
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Curated chronological and recommended viewing guide across the MCU, Spider-Verse, Defenders, and Multiverse.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-4 font-mono text-xs sm:text-sm">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-extrabold text-foreground">{totalWatched}</span>
-                <span className="text-muted-foreground font-sans">of {releasedItems.length} watched</span>
+            {/* Dual Progress Gauges */}
+            <div className="space-y-2 pt-1 font-mono text-xs">
+              {/* Gauge 1: Essential Core Storyline */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span className="font-sans font-semibold text-foreground flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                    Essential Saga Progress
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {watchedEssentials} / {totalEssentials.length} ({percentEssentials}%)
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-red-600 rounded-full transition-all duration-500"
+                    style={{ width: `${percentEssentials}%` }}
+                  />
+                </div>
               </div>
-              <span className="text-border">•</span>
-              <div className="text-primary font-bold">
-                {percentComplete}% Complete
+
+              {/* Gauge 2: Full Universe Completion */}
+              <div className="space-y-1 pt-1">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span className="font-sans font-semibold text-foreground flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                    Overall Universe Completion
+                  </span>
+                  <span className="font-bold text-foreground">
+                    {totalWatched} / {releasedItems.length} ({percentComplete}%)
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-600 rounded-full transition-all duration-500"
+                    style={{ width: `${percentComplete}%` }}
+                  />
+                </div>
               </div>
-              <span className="text-border">•</span>
-              <div className="text-muted-foreground">
-                <strong className="text-foreground">{essentialsRemaining}</strong> essentials remaining
-              </div>
+            </div>
+
+            <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground pt-1">
+              <span>{essentialsRemaining} essentials left</span>
+              <span>&bull;</span>
+              <span>{totalWatching} currently watching</span>
             </div>
           </div>
 
-          {/* Right Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenBackup}
-              className="text-xs font-medium h-9 rounded-xl border-border gap-1.5 cursor-pointer"
-            >
-              <Download className="h-3.5 w-3.5" />
-              <span>Backup / Restore</span>
-            </Button>
+          {/* Right Action Buttons & Milestones */}
+          <div className="flex flex-col sm:items-end gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenBackup}
+                className="rounded-xl text-xs h-8 border-border"
+              >
+                <Download className="h-3.5 w-3.5 mr-1" />
+                Backup / Sync
+              </Button>
+            </div>
+
+            {/* Milestone Badges */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge
+                variant="outline"
+                className={`text-xs font-mono py-0.5 px-2 transition-all ${
+                  isInfinitySagaComplete
+                    ? 'border-amber-400 bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold'
+                    : 'border-border text-muted-foreground opacity-60'
+                }`}
+              >
+                <Award className="h-3 w-3 mr-1" />
+                Infinity Saga
+              </Badge>
+
+              <Badge
+                variant="outline"
+                className={`text-xs font-mono py-0.5 px-2 transition-all ${
+                  isDefendersComplete
+                    ? 'border-purple-400 bg-purple-500/15 text-purple-700 dark:text-purple-300 font-bold'
+                    : 'border-border text-muted-foreground opacity-60'
+                }`}
+              >
+                <Award className="h-3 w-3 mr-1" />
+                Defenders
+              </Badge>
+
+              <Badge
+                variant="outline"
+                className={`text-xs font-mono py-0.5 px-2 transition-all ${
+                  isSpiderVerseComplete
+                    ? 'border-sky-400 bg-sky-500/15 text-sky-700 dark:text-sky-300 font-bold'
+                    : 'border-border text-muted-foreground opacity-60'
+                }`}
+              >
+                <Award className="h-3 w-3 mr-1" />
+                Spider-Verse
+              </Badge>
+            </div>
           </div>
-        </div>
-
-        {/* Global Progress Bar */}
-        <div className="mt-5 space-y-1.5">
-          <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden flex">
-            <div
-              className="bg-emerald-600 transition-all duration-300"
-              style={{ width: `${percentComplete}%` }}
-              title={`Watched: ${totalWatched} (${percentComplete}%)`}
-            />
-            {totalWatching > 0 && (
-              <div
-                className="bg-amber-500 transition-all duration-300"
-                style={{ width: `${(totalWatching / releasedItems.length) * 100}%` }}
-                title={`Currently Watching: ${totalWatching}`}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Milestone Badges Strip */}
-        <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-2">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground mr-1">
-            Achievements:
-          </span>
-          <Badge
-            variant={isInfinitySagaComplete ? 'default' : 'outline'}
-            className={`text-xs gap-1 py-0.5 px-2.5 rounded-full ${
-              isInfinitySagaComplete
-                ? 'bg-amber-500 text-white border-amber-600'
-                : 'border-border text-muted-foreground opacity-60'
-            }`}
-          >
-            <Sparkles className="h-3 w-3" />
-            <span>Infinity Saga (Phases 1-3)</span>
-          </Badge>
-
-          <Badge
-            variant={isDefendersComplete ? 'default' : 'outline'}
-            className={`text-xs gap-1 py-0.5 px-2.5 rounded-full ${
-              isDefendersComplete
-                ? 'bg-purple-600 text-white border-purple-700'
-                : 'border-border text-muted-foreground opacity-60'
-            }`}
-          >
-            <Award className="h-3 w-3" />
-            <span>Defenders Saga</span>
-          </Badge>
-
-          <Badge
-            variant={isSpiderVerseComplete ? 'default' : 'outline'}
-            className={`text-xs gap-1 py-0.5 px-2.5 rounded-full ${
-              isSpiderVerseComplete
-                ? 'bg-rose-600 text-white border-rose-700'
-                : 'border-border text-muted-foreground opacity-60'
-            }`}
-          >
-            <Layers className="h-3 w-3" />
-            <span>Spider-Verse Complete</span>
-          </Badge>
         </div>
       </div>
 
-      {/* 2. "UP NEXT" CARD & UPCOMING BANNER */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Up Next Card */}
-        {upNextItem ? (
-          <Card className="border-border bg-card rounded-2xl shadow-xs border-l-4 border-l-primary overflow-hidden">
-            <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <span className="text-[11px] font-mono text-primary font-bold uppercase tracking-wider block">
-                  Up Next In Recommended Order
-                </span>
-                <h3 className="font-bold text-base sm:text-lg text-foreground truncate mt-0.5">
-                  {upNextItem.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {upNextItem.group} &bull; {formatDateDisplay(upNextItem)} &bull; {upNextItem.type}
-                </p>
-              </div>
+      {/* 2. CURRENTLY WATCHING ACTIVE SHELF (Visible when watching items exist) */}
+      {currentlyWatchingItems.length > 0 && (
+        <div className="p-4 rounded-2xl border border-amber-300/70 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <h2 className="text-sm font-bold text-foreground">
+                Currently Watching ({currentlyWatchingItems.length})
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('watching')}
+              className="text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline cursor-pointer"
+            >
+              Filter in list
+            </button>
+          </div>
 
-              <Button
-                size="sm"
-                onClick={() => handleMarkWatchedDirectly(upNextItem)}
-                disabled={isPending}
-                className="shrink-0 rounded-xl text-xs font-semibold gap-1.5 shadow-xs"
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            {currentlyWatchingItems.map((item) => (
+              <div
+                key={item.id}
+                className="p-3 rounded-xl border border-border bg-card flex items-center justify-between gap-2 shadow-xs"
               >
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Mark Watched</span>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-border bg-card rounded-2xl shadow-xs p-5 flex items-center justify-center text-center">
-            <div>
-              <CheckCircle2 className="h-6 w-6 text-emerald-600 mx-auto mb-1" />
-              <h4 className="font-bold text-sm text-foreground">All Essential Titles Watched!</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Switch filters to Recommended or Optional to dive deeper.
+                <div className="min-w-0">
+                  <span className="font-bold text-xs sm:text-sm text-foreground truncate block">
+                    {item.title}
+                  </span>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    #{item.order} &bull; {item.group}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => handleSetStatus(item, 'watched')}
+                  disabled={isPending}
+                  className="h-7 px-2.5 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 font-medium"
+                >
+                  <Check className="h-3.5 w-3.5 mr-1" />
+                  Done
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. "UP NEXT" CARD & NEXT UPCOMING COUNTDOWN */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {upNextItem && (
+          <Card className="border-border bg-card rounded-2xl shadow-xs p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-red-600 dark:text-red-400 mb-0.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>UP NEXT IN THE SAGA</span>
+              </div>
+              <h2 className="font-bold text-base text-foreground truncate">
+                {upNextItem.title}
+              </h2>
+              <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                #{upNextItem.order} &bull; {upNextItem.group} &bull; {formatDateDisplay(upNextItem)}
               </p>
             </div>
+
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <Button
+                size="sm"
+                onClick={() => handleSetStatus(upNextItem, 'watched')}
+                disabled={isPending}
+                className="rounded-xl text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+              >
+                <Check className="h-3.5 w-3.5 mr-1" />
+                Mark Watched
+              </Button>
+              <button
+                type="button"
+                onClick={() => handleCatchUpPrior(upNextItem)}
+                className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 cursor-pointer font-medium"
+                title="Mark all preceding movies as watched in 1 click"
+              >
+                <Zap className="h-3 w-3 text-amber-500" />
+                Catch up prior
+              </button>
+            </div>
           </Card>
         )}
 
-        {/* Upcoming Movie Countdown */}
         {nextUpcoming && (
-          <Card className="border-border bg-card rounded-2xl shadow-xs border-l-4 border-l-amber-500 overflow-hidden">
-            <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider block">
-                  Next Marvel Premiere
-                </span>
-                <h3 className="font-bold text-base sm:text-lg text-foreground truncate mt-0.5">
-                  {nextUpcoming.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {nextUpcoming.group} &bull; Releases {formatDateDisplay(nextUpcoming)}
-                </p>
+          <Card className="border-border bg-card rounded-2xl shadow-xs p-4 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary mb-0.5">
+                <Layers className="h-3.5 w-3.5" />
+                <span>NEXT PREMIERE</span>
               </div>
+              <h2 className="font-bold text-base text-foreground truncate">
+                {nextUpcoming.title}
+              </h2>
+              <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                {nextUpcoming.group} &bull; {formatDateDisplay(nextUpcoming)}
+              </p>
+            </div>
 
-              <div className="shrink-0 text-right">
-                <span className="text-xl sm:text-2xl font-black font-mono text-amber-600 dark:text-amber-400 block">
-                  {nextUpcoming.daysUntil}
-                </span>
-                <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-tight">
-                  Days Left
-                </span>
-              </div>
-            </CardContent>
+            <Badge
+              variant="outline"
+              className="text-xs font-mono font-bold border-primary/30 text-primary bg-primary/10 px-2.5 py-1 shrink-0"
+            >
+              In {nextUpcoming.daysUntil} days
+            </Badge>
           </Card>
         )}
       </div>
 
-      {/* 3. SEARCH & FILTER CONTROLS */}
+      {/* 4. CURATED VIEWING TRACK PRESETS */}
+      <div className="space-y-2">
+        <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider block">
+          Curated Viewing Tracks
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTrack('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTrack === 'all'
+                ? 'bg-foreground text-background shadow-xs'
+                : 'border border-border bg-card text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            🏆 Full Universe (124)
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTrack('essential')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTrack === 'essential'
+                ? 'bg-red-600 text-white shadow-xs'
+                : 'border border-red-300 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 text-red-700 dark:text-red-300 hover:bg-red-100'
+            }`}
+          >
+            🎯 Essential Saga (~32)
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTrack('golden')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTrack === 'golden'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'border border-amber-300 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 hover:bg-amber-100'
+            }`}
+          >
+            💎 Golden Path (Essential + Recommended)
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTrack('spider')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTrack === 'spider'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'border border-sky-300 dark:border-sky-900/60 bg-sky-50/50 dark:bg-sky-950/20 text-sky-800 dark:text-sky-300 hover:bg-sky-100'
+            }`}
+          >
+            🕸️ Spider-Verse & Multiverse
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTrack('defenders')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTrack === 'defenders'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'border border-purple-300 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 text-purple-800 dark:text-purple-300 hover:bg-purple-100'
+            }`}
+          >
+            🛡️ Street-Level & Defenders
+          </button>
+        </div>
+      </div>
+
+      {/* 5. SEARCH & FILTER CONTROLS */}
       <div className="space-y-3.5 bg-card border border-border p-4 rounded-2xl shadow-xs">
         {/* Row 1: Search & Dropdowns */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
           <div className="relative sm:col-span-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -524,6 +769,19 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
             <option value="unwatched">Not Watched</option>
             <option value="watching">Currently Watching</option>
             <option value="watched">Watched</option>
+            <option value="unwatched_essentials">⭐ Unwatched Essentials Only</option>
+          </select>
+
+          <select
+            value={selectedPriority}
+            onChange={(e) => setSelectedPriority(e.target.value)}
+            className="h-9 rounded-xl border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground cursor-pointer"
+          >
+            <option value="All">All Priorities</option>
+            <option value="Essential">Essential Only</option>
+            <option value="Essential+Recommended">Essential + Recommended</option>
+            <option value="Recommended">Recommended Only</option>
+            <option value="Optional">Optional / Deep Cuts</option>
           </select>
 
           <select
@@ -537,8 +795,67 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
           </select>
         </div>
 
-        {/* Row 2: Universe Filter Chips */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+        {/* Row 2: Media Type & Quick Smart Chips */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/60">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-mono font-semibold text-muted-foreground mr-1">
+              Media:
+            </span>
+            {(
+              [
+                ['all', 'All Media'],
+                ['movie', '🎬 Movies'],
+                ['series', '📺 Series'],
+                ['special', '✨ Specials'],
+              ] as const
+            ).map(([t, label]) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setSelectedMediaType(t)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                  selectedMediaType === t
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border bg-muted/40 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {(activeTrack !== 'all' ||
+              selectedUniverse !== 'All' ||
+              selectedPriority !== 'All' ||
+              selectedStatus !== 'all' ||
+              selectedMediaType !== 'all' ||
+              searchQuery) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTrack('all');
+                  setSelectedUniverse('All');
+                  setSelectedPriority('All');
+                  setSelectedStatus('all');
+                  setSelectedMediaType('all');
+                  setSearchQuery('');
+                }}
+                className="text-xs text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reset Filters
+              </button>
+            )}
+
+            <span className="text-xs font-mono text-muted-foreground">
+              Showing {sortedItems.length} of {items.length} titles
+            </span>
+          </div>
+        </div>
+
+        {/* Row 3: Universe Chips */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/40">
           <span className="text-xs font-mono font-semibold text-muted-foreground mr-1">
             Universe:
           </span>
@@ -547,8 +864,8 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
             onClick={() => setSelectedUniverse('All')}
             className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
               selectedUniverse === 'All'
-                ? 'bg-primary text-primary-foreground'
-                : 'border border-border bg-muted/40 text-muted-foreground hover:text-foreground'
+                ? 'bg-foreground text-background'
+                : 'border border-border bg-muted/30 text-muted-foreground hover:text-foreground'
             }`}
           >
             All
@@ -560,78 +877,38 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               onClick={() => setSelectedUniverse(u)}
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                 selectedUniverse === u
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border bg-muted/40 text-muted-foreground hover:text-foreground'
+                  ? 'bg-foreground text-background'
+                  : 'border border-border bg-muted/30 text-muted-foreground hover:text-foreground'
               }`}
             >
               {u}
             </button>
           ))}
         </div>
-
-        {/* Row 3: Priority Filter Chips */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="text-xs font-mono font-semibold text-muted-foreground mr-1">
-            Priority:
-          </span>
-          {(['All', 'Essential', 'Recommended', 'Optional'] as const).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setSelectedPriority(p)}
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
-                selectedPriority === p
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-muted/40 text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-
-          {(selectedUniverse !== 'All' ||
-            selectedPriority !== 'All' ||
-            selectedStatus !== 'all' ||
-            searchQuery) && (
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedUniverse('All');
-                setSelectedPriority('All');
-                setSelectedStatus('all');
-                setSearchQuery('');
-              }}
-              className="text-xs text-primary hover:underline font-semibold ml-2 cursor-pointer"
-            >
-              Reset Filters
-            </button>
-          )}
-
-          <span className="text-xs font-mono text-muted-foreground ml-auto">
-            Showing {sortedItems.length} of {items.length} titles
-          </span>
-        </div>
       </div>
 
-      {/* 4. GROUPED LIST ACCORDIONS */}
+      {/* 6. GROUPED LIST ACCORDIONS */}
       {groupedList.length === 0 ? (
         <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
           <Film className="h-8 w-8 mx-auto text-primary/40 mb-2" />
           <p className="font-bold text-foreground">No Marvel titles match your filters.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Try adjusting your search query, priority, or universe filters.
+            Try adjusting your search query, track preset, or priority filters.
           </p>
         </Card>
       ) : (
         <div className="space-y-4">
           {groupedList.map(([groupKey, groupItems]) => {
             const isCollapsed = collapsedGroups[groupKey];
-            const groupWatched = groupItems.filter(
+            const releasedInGroup = groupItems.filter((i) => i.isReleased);
+            const groupWatched = releasedInGroup.filter(
               (i) => getStatus(i.id) === 'watched'
             ).length;
-            const groupPercent = groupItems.length
-              ? Math.round((groupWatched / groupItems.length) * 100)
+            const groupPercent = releasedInGroup.length
+              ? Math.round((groupWatched / releasedInGroup.length) * 100)
               : 0;
+            const isGroupFullyWatched =
+              releasedInGroup.length > 0 && groupWatched === releasedInGroup.length;
 
             return (
               <div
@@ -639,24 +916,43 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                 className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs transition-all"
               >
                 {/* Accordion Header */}
-                <button
-                  type="button"
-                  onClick={() => toggleGroupCollapse(groupKey)}
-                  className="w-full py-3.5 px-4 bg-muted/30 border-b border-border/80 flex items-center justify-between gap-4 text-left hover:bg-muted/50 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                <div className="py-3 px-4 bg-muted/30 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroupCollapse(groupKey)}
+                    className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-80 transition-opacity cursor-pointer flex-1"
+                  >
                     <h3 className="font-bold text-sm sm:text-base text-foreground tracking-tight truncate">
                       {groupKey}
                     </h3>
                     <Badge variant="outline" className="text-xs font-mono border-border shrink-0">
                       {groupItems.length} {groupItems.length === 1 ? 'title' : 'titles'}
                     </Badge>
-                  </div>
+                  </button>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
+                    {/* Batch Mark Phase Action */}
+                    {releasedInGroup.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleBatchMarkGroup(groupItems)}
+                        className={`h-7 px-2.5 rounded-lg text-xs font-mono font-semibold transition-all ${
+                          isGroupFullyWatched
+                            ? 'border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30'
+                            : 'border-border text-muted-foreground hover:text-foreground'
+                        }`}
+                        title="Mark entire phase watched or unwatched"
+                      >
+                        <Check className="h-3 w-3 mr-1" />
+                        {isGroupFullyWatched ? 'All Watched' : 'Mark Phase'}
+                      </Button>
+                    )}
+
                     <div className="text-right hidden sm:block">
                       <span className="text-xs font-mono font-bold text-foreground">
-                        {groupWatched}/{groupItems.length}
+                        {groupWatched}/{releasedInGroup.length}
                       </span>
                       <span className="text-[11px] text-muted-foreground ml-1">
                         ({groupPercent}%)
@@ -670,13 +966,19 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                       />
                     </div>
 
-                    {isCollapsed ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => toggleGroupCollapse(groupKey)}
+                      className="p-1 hover:bg-muted rounded-lg text-muted-foreground cursor-pointer"
+                    >
+                      {isCollapsed ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronUp className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
-                </button>
+                </div>
 
                 {/* Items List */}
                 {!isCollapsed && (
@@ -690,40 +992,42 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                       return (
                         <div
                           key={item.id}
-                          className={`p-3.5 sm:p-4 flex items-center justify-between gap-3.5 transition-colors ${
+                          className={`p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
                             isWatched
                               ? 'bg-muted/15'
                               : isWatching
-                              ? 'bg-amber-50/20 dark:bg-amber-950/10'
+                              ? 'bg-amber-50/25 dark:bg-amber-950/15'
                               : 'hover:bg-muted/20'
                           }`}
                         >
-                          {/* Left: Status Toggle Button & Details */}
-                          <div className="flex items-center gap-3.5 min-w-0">
-                            {/* 3-State Toggle Button */}
+                          {/* Left: Quick Cycle Circle & Title Info */}
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Fast Circle Button */}
                             <button
                               type="button"
-                              onClick={() => handleToggleStatus(item)}
+                              onClick={() => handleSetStatus(item, isWatched ? 'unwatched' : 'watched')}
                               disabled={isUnreleased || isPending}
                               title={
                                 isUnreleased
                                   ? 'Unreleased title'
-                                  : `Status: ${st}. Tap to cycle status.`
+                                  : isWatched
+                                  ? 'Watched (Click to mark unwatched)'
+                                  : 'Click to mark Watched'
                               }
-                              className={`h-8 w-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
+                              className={`h-7 w-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
                                 isUnreleased
                                   ? 'border-border bg-muted/40 cursor-not-allowed opacity-50'
                                   : isWatched
                                   ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
                                   : isWatching
                                   ? 'border-amber-500 bg-amber-500/20 text-amber-600'
-                                  : 'border-muted-foreground/40 hover:border-primary text-transparent'
+                                  : 'border-muted-foreground/40 hover:border-emerald-600 text-transparent'
                               }`}
                             >
                               {isWatched ? (
-                                <CheckCircle2 className="h-5 w-5 fill-current text-emerald-600 stroke-white" />
+                                <CheckCircle2 className="h-4 w-4 fill-current text-emerald-600 stroke-white" />
                               ) : isWatching ? (
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-3.5 w-3.5" />
                               ) : null}
                             </button>
 
@@ -763,34 +1067,65 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                             </div>
                           </div>
 
-                          {/* Right: Badges */}
-                          <div className="flex items-center gap-2 shrink-0">
+                          {/* Right: Dedicated 1-Click Action Segmented Pills & Priority Badge */}
+                          <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+                            {/* Priority Badge */}
                             <Badge
                               variant="outline"
-                              className={`text-xs font-semibold py-0.5 px-2 rounded-full hidden sm:inline-flex ${
+                              className={`text-xs font-semibold py-0.5 px-2 rounded-full hidden md:inline-flex ${
                                 item.priority === 'Essential'
                                   ? 'border-red-300 dark:border-red-900 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300'
                                   : item.priority === 'Recommended'
-                                  ? 'border-border text-foreground'
+                                  ? 'border-amber-300/80 dark:border-amber-800/60 bg-amber-50/40 text-amber-800 dark:text-amber-300'
                                   : 'border-border text-muted-foreground'
                               }`}
                             >
                               {item.priority}
                             </Badge>
 
-                            {isWatched ? (
-                              <Badge className="text-xs bg-emerald-600 text-white font-mono py-0.5 px-2">
-                                Watched
-                              </Badge>
-                            ) : isWatching ? (
-                              <Badge className="text-xs bg-amber-500 text-white font-mono py-0.5 px-2">
-                                Watching
-                              </Badge>
-                            ) : isUnreleased ? (
-                              <Badge variant="outline" className="text-xs border-border text-muted-foreground font-mono py-0.5 px-2">
+                            {/* Direct Action Segmented Group */}
+                            {!isUnreleased ? (
+                              <div className="inline-flex rounded-xl border border-border p-0.5 bg-background shadow-xs text-xs">
+                                {/* Watching Action Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetStatus(item, 'watching')}
+                                  disabled={isPending}
+                                  title="Mark Currently Watching"
+                                  className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                                    isWatching
+                                      ? 'bg-amber-500 text-white font-bold shadow-xs'
+                                      : 'text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30'
+                                  }`}
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                  <span>Watching</span>
+                                </button>
+
+                                {/* Watched Action Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetStatus(item, 'watched')}
+                                  disabled={isPending}
+                                  title="Mark Completed"
+                                  className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                                    isWatched
+                                      ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                                      : 'text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                                  }`}
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                  <span>Watched</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-xs border-border text-muted-foreground font-mono py-1 px-2.5"
+                              >
                                 Upcoming
                               </Badge>
-                            ) : null}
+                            )}
                           </div>
                         </div>
                       );
@@ -803,7 +1138,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         </div>
       )}
 
-      {/* 5. BACKUP & RESTORE DIALOG */}
+      {/* 7. BACKUP & RESTORE DIALOG */}
       <Dialog open={backupOpen} onOpenChange={setBackupOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -819,22 +1154,25 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
             <textarea
               value={backupJson}
               onChange={(e) => setBackupJson(e.target.value)}
-              className="w-full h-44 rounded-xl border border-border bg-muted/30 p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+              rows={8}
               placeholder="Paste backup JSON here..."
+              className="w-full text-xs font-mono p-3 rounded-xl border border-input bg-muted/40 focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
 
             {backupMsg && (
-              <p
-                className={`text-xs font-medium ${
-                  backupMsg.type === 'success' ? 'text-emerald-600' : 'text-rose-600'
+              <div
+                className={`p-2.5 rounded-xl text-xs font-medium ${
+                  backupMsg.type === 'success'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300'
+                    : 'bg-destructive/10 text-destructive'
                 }`}
               >
                 {backupMsg.text}
-              </p>
+              </div>
             )}
           </div>
 
-          <DialogFooter className="flex-row gap-2 justify-end sm:justify-end">
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
             <Button
               variant="outline"
               size="sm"
@@ -844,14 +1182,14 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               }}
               className="rounded-xl text-xs"
             >
-              Copy JSON
+              Copy to Clipboard
             </Button>
             <Button
               size="sm"
               onClick={handleRestoreJson}
-              className="rounded-xl text-xs font-semibold"
+              className="rounded-xl text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
-              Restore Progress
+              Restore JSON
             </Button>
           </DialogFooter>
         </DialogContent>

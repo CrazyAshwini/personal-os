@@ -30,6 +30,8 @@ export interface MarvelItem {
   continuity: string;
   priority: MarvelPriority;
   released: boolean;
+  isReleased?: boolean;
+  daysUntil?: number;
   note: string | null;
 }
 

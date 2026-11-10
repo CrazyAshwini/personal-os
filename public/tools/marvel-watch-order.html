@@ -1,69 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Marvel Watch Order Tracker & Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marvel Watch Order Tracker (124 Titles)</title>
+<meta name="description" content="Ultimate 124-title Marvel Watch Order Tracker with curated viewing paths, dual progress bars, 1-click status pills, and local persistence.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #FAF7F2;
-  --sf: #FFFFFF;
-  --sf-subtle: #F4EFEA;
-  --ink: #1E201D;
-  --mute: #6C726B;
-  --line: #E2DDD2;
-  --primary: #415842;
-  --primary-hover: #334634;
-  --primary-bg: #EAE5DC;
-  --red: #C8102E;
-  --gold: #D97706;
+  --bg: #0d0f12;
+  --sf: #161a1f;
+  --sf-subtle: #1e232a;
+  --line: #2b323c;
+  --ink: #f0f3f6;
+  --mute: #8b949e;
+  --red: #e62429;
+  --teal: #10b981;
+  --gold: #f59e0b;
+  --sky: #0ea5e9;
+  --purple: #a855f7;
+  --primary: #e62429;
+  --radius: 14px;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --sf: #ffffff;
+  --sf-subtle: #f1f5f9;
+  --line: #e2e8f0;
+  --ink: #0f172a;
+  --mute: #64748b;
+  --red: #dc2626;
   --teal: #059669;
-  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  box-sizing: border-box;
+  --gold: #d97706;
+  --sky: #0284c7;
+  --purple: #9333ea;
+  --primary: #dc2626;
 }
 
-:root[data-theme="dark"] {
-  --bg: #141714;
-  --sf: #1C201C;
-  --sf-subtle: #242924;
-  --ink: #EDEDEA;
-  --mute: #9CA39B;
-  --line: #2E352E;
-  --primary: #6B8B6D;
-  --primary-hover: #7E9E80;
-  --primary-bg: #222922;
-  --red: #EF4444;
-  --gold: #F59E0B;
-  --teal: #10B981;
-}
-
-*, *::before, *::after { box-sizing: inherit; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--ink);
-  font: 400 15px/1.5 var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
 }
 
 main {
+  width: 100%;
   max-width: 980px;
-  margin: 0 auto;
-  padding: 32px 16px 80px;
-}
-
-button, select, input, textarea {
-  font: inherit;
-  color: inherit;
-}
-
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Header */
@@ -72,7 +68,9 @@ button, select, input, textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .brand {
@@ -80,245 +78,301 @@ button, select, input, textarea {
   align-items: center;
   gap: 12px;
 }
-
 .brand-badge {
   background: var(--red);
   color: #fff;
-  font-family: var(--font-mono);
   font-weight: 800;
   font-size: 13px;
-  padding: 4px 8px;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
   border-radius: 6px;
-  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
 }
+h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
 
-h1 {
-  font-size: clamp(24px, 5vw, 36px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: var(--font-sans);
 }
+.btn:hover { opacity: 0.9; }
+.btn.alt {
+  background: var(--sf);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn.alt:hover { background: var(--sf-subtle); }
 
 .theme-btn {
   background: var(--sf);
   border: 1px solid var(--line);
-  padding: 8px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
-.theme-btn:hover { background: var(--sf-subtle); }
 
-/* Hero Cockpit */
+/* Cockpit & Progress */
 .cockpit {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gauges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .gauges-grid { grid-template-columns: 1fr; }
+}
+
+.gauge-box {
+  background: var(--sf-subtle);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gauge-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+.gauge-bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.gauge-bar {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
 }
-
 .stat-card {
-  padding: 12px 16px;
   background: var(--sf-subtle);
-  border-radius: 14px;
   border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
 }
+.stat-label { font-size: 11px; color: var(--mute); font-family: var(--font-mono); }
+.stat-val { font-size: 20px; font-weight: 800; margin-top: 2px; }
 
-.stat-label {
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--mute);
-  text-transform: uppercase;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.stat-val {
-  font-size: 26px;
-  font-weight: 800;
-  font-family: var(--font-mono);
-  margin-top: 4px;
-  color: var(--ink);
-}
-
-/* Progress bar */
-.bar-wrap {
-  height: 10px;
-  background: var(--line);
-  border-radius: 99px;
-  overflow: hidden;
-  display: flex;
-  margin-bottom: 12px;
-}
-
-.bar-w { background: var(--teal); height: 100%; transition: width 0.3s ease; }
-.bar-g { background: var(--gold); height: 100%; transition: width 0.3s ease; }
-
-/* Interactive Timeline Strip */
+/* Timeline Strip */
 .strip {
   display: flex;
   gap: 2px;
-  height: 20px;
-  border-radius: 6px;
+  height: 8px;
+  width: 100%;
+  background: var(--sf-subtle);
+  border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 16px;
-  background: var(--line);
 }
-
 .strip-dot {
   flex: 1;
-  border: none;
-  padding: 0;
   background: var(--line);
+  border: 0;
   cursor: pointer;
-  transition: transform 0.15s;
+  transition: opacity 0.15s;
 }
-.strip-dot:hover { transform: scaleY(1.4); }
 .strip-dot.w { background: var(--teal); }
 .strip-dot.g { background: var(--gold); }
-.strip-dot.u { background: repeating-linear-gradient(45deg, var(--line) 0 2px, transparent 2px 4px); }
+.strip-dot.u { background: var(--mute); opacity: 0.35; }
+.strip-dot:hover { opacity: 0.8; }
 
-/* Up Next & Upcoming Cards */
+/* Active Shelf: Currently Watching */
+.watching-shelf {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shelf-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.shelf-card {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.shelf-title {
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.shelf-sub {
+  font-size: 11px;
+  color: var(--mute);
+  font-family: var(--font-mono);
+}
+
+/* Up Next & Upcoming */
 .cards-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 640px) {
+  .cards-row { grid-template-columns: 1fr; }
 }
 
 .next-card {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-left: 6px solid var(--primary);
-  border-radius: 16px;
-  padding: 18px 20px;
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.next-card.upcoming { border-left: 4px solid var(--sky); }
+.tag-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: 0.5px;
+}
+.next-card h3 { font-size: 16px; font-weight: 700; margin: 4px 0 2px; }
+.next-card p { font-size: 12px; color: var(--mute); font-family: var(--font-mono); }
+
+/* Curated Tracks */
+.tracks-section {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 8px;
 }
-
-.next-card.upcoming {
-  border-left-color: var(--gold);
-}
-
-.tag-label {
-  font-family: var(--font-mono);
+.tracks-title {
   font-size: 11px;
-  font-weight: 700;
+  font-family: var(--font-mono);
   text-transform: uppercase;
-  color: var(--primary);
-  letter-spacing: 0.05em;
-}
-
-.next-card.upcoming .tag-label {
-  color: var(--gold);
-}
-
-.next-card h3 {
-  font-size: 18px;
   font-weight: 700;
-  margin: 6px 0 2px;
-}
-
-.next-card p {
   color: var(--mute);
-  font-size: 13px;
-  margin: 0 0 14px;
 }
-
-.btn {
-  background: var(--primary);
-  color: #fff;
-  border: 0;
-  border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.tracks-row {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  transition: background 0.15s;
 }
-.btn:hover { background: var(--primary-hover); }
-.btn.alt {
-  background: transparent;
-  color: var(--ink);
-  border: 1.5px solid var(--line);
+.track-pill {
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  background: var(--sf);
+  color: var(--mute);
+  cursor: pointer;
+  transition: all 0.15s;
 }
-.btn.alt:hover { background: var(--sf-subtle); }
+.track-pill:hover { color: var(--ink); background: var(--sf-subtle); }
+.track-pill.active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.track-pill.track-essential.active { background: var(--red); color: #fff; border-color: var(--red); }
+.track-pill.track-golden.active { background: var(--gold); color: #fff; border-color: var(--gold); }
+.track-pill.track-spider.active { background: var(--sky); color: #fff; border-color: var(--sky); }
+.track-pill.track-defenders.active { background: var(--purple); color: #fff; border-color: var(--purple); }
 
-/* Filters Bar */
+/* Filters & Controls */
 .controls {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: var(--radius);
   padding: 16px;
-  margin-bottom: 24px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
-
 .search-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 10px;
 }
-
-.search-input {
-  flex: 1 1 240px;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 13px;
+@media (max-width: 768px) {
+  .search-row { grid-template-columns: 1fr; }
 }
 
-.select-box {
+.search-input, .select-box {
   background: var(--bg);
   border: 1px solid var(--line);
+  color: var(--ink);
   border-radius: 10px;
   padding: 8px 12px;
   font-size: 13px;
-  cursor: pointer;
+  font-family: var(--font-sans);
+  outline: none;
 }
+.search-input:focus, .select-box:focus { border-color: var(--primary); }
 
 .chip-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
   align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
-
-.chip-label {
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--mute);
-  font-weight: 600;
-  margin-right: 4px;
-}
-
+.chip-label { font-size: 11px; font-family: var(--font-mono); color: var(--mute); margin-right: 4px; }
 .chip {
-  background: var(--sf-subtle);
-  border: 1px solid var(--line);
+  padding: 4px 10px;
   border-radius: 99px;
-  padding: 4px 12px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--mute);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -328,43 +382,37 @@ h1 {
   border-color: var(--ink);
 }
 
-/* Accordion Groups */
+/* Accordions */
 .grp {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: 16px;
-  margin-bottom: 16px;
+  border-radius: var(--radius);
   overflow: hidden;
+  margin-bottom: 14px;
 }
-
 .grp-header {
   width: 100%;
+  padding: 12px 18px;
   background: var(--sf-subtle);
   border: 0;
   border-bottom: 1px solid var(--line);
-  padding: 12px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  color: var(--ink);
   cursor: pointer;
   text-align: left;
 }
-
-.grp-header h2 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
-}
-
+.grp-header h2 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .grp-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-family: var(--font-mono);
+  gap: 10px;
   font-size: 12px;
+  font-family: var(--font-mono);
   color: var(--mute);
 }
-
 .grp-bar {
   width: 60px;
   height: 6px;
@@ -372,16 +420,27 @@ h1 {
   border-radius: 99px;
   overflow: hidden;
 }
-
 .grp-bar-fill {
   background: var(--teal);
   height: 100%;
 }
+.batch-btn {
+  background: var(--sf);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--mute);
+  cursor: pointer;
+  font-weight: 600;
+}
+.batch-btn:hover { color: var(--ink); border-color: var(--mute); }
 
-/* Row Item */
+/* Item Row */
 .item-row {
   display: grid;
-  grid-template-columns: 44px 1fr auto;
+  grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: 12px;
   padding: 10px 18px;
@@ -390,12 +449,13 @@ h1 {
 }
 .item-row:first-of-type { border-top: 0; }
 .item-row:hover { background: var(--sf-subtle); }
-.item-row.done { background: var(--bg); }
+.item-row.done { background: rgba(16, 185, 129, 0.04); }
 .item-row.done .item-title { text-decoration: line-through; color: var(--mute); }
+.item-row.watching-now { background: rgba(245, 158, 11, 0.05); }
 
 .toggle-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid var(--line);
   background: none;
@@ -403,7 +463,7 @@ h1 {
   display: grid;
   place-items: center;
   font-weight: bold;
-  font-size: 15px;
+  font-size: 13px;
   transition: all 0.15s;
 }
 .toggle-btn[data-status="watched"] {
@@ -413,7 +473,8 @@ h1 {
 }
 .toggle-btn[data-status="watching"] {
   border-color: var(--gold);
-  background: linear-gradient(90deg, var(--gold) 50%, transparent 50%);
+  background: var(--gold);
+  color: #000;
 }
 .toggle-btn:disabled {
   cursor: not-allowed;
@@ -421,12 +482,50 @@ h1 {
 }
 
 .item-info { min-width: 0; }
-.item-title { font-weight: 600; font-size: 15px; }
+.item-title { font-weight: 600; font-size: 14px; }
 .item-sub {
   font-size: 12px;
   color: var(--mute);
   font-family: var(--font-mono);
   margin-top: 2px;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seg-ctrl {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+.seg-btn {
+  border: 0;
+  background: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mute);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+}
+.seg-btn:hover { color: var(--ink); }
+.seg-btn.active-watch {
+  background: var(--gold);
+  color: #000;
+  font-weight: 700;
+}
+.seg-btn.active-done {
+  background: var(--teal);
+  color: #fff;
+  font-weight: 700;
 }
 
 .badge {
@@ -438,8 +537,8 @@ h1 {
   font-family: var(--font-mono);
   white-space: nowrap;
 }
-.badge.Essential { background: rgba(200, 16, 46, 0.1); border-color: var(--red); color: var(--red); }
-.badge.Recommended { border-color: var(--ink); color: var(--ink); }
+.badge.Essential { background: rgba(230, 36, 41, 0.1); border-color: var(--red); color: var(--red); }
+.badge.Recommended { border-color: var(--gold); color: var(--gold); }
 .badge.Optional { color: var(--mute); }
 
 /* Dialog */
@@ -467,9 +566,9 @@ dialog textarea {
 }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
 
-@media (max-width: 540px) {
-  .item-row { grid-template-columns: 36px 1fr; }
-  .badge { grid-column: 2; justify-self: start; margin-top: 4px; }
+@media (max-width: 600px) {
+  .item-row { grid-template-columns: 32px 1fr; }
+  .item-actions { grid-column: 2; margin-top: 6px; }
   .grp-bar { display: none; }
 }
 </style>
@@ -488,31 +587,43 @@ dialog textarea {
     </div>
   </header>
 
-  <!-- Cockpit Stats -->
+  <!-- Cockpit Stats & Dual Progress Bars -->
   <section class="cockpit">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Watched</div>
-        <div class="stat-val" id="statWatched">0</div>
+    <div class="gauges-grid">
+      <!-- Gauge 1: Essential Storyline -->
+      <div class="gauge-box">
+        <div class="gauge-hdr">
+          <span style="color:var(--red);">🎯 Essential Saga Progress</span>
+          <span id="gaugeEssentialText">0 / 0 (0%)</span>
+        </div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar" id="gaugeEssentialBar" style="width:0%;background:var(--red);"></div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Essentials Left</div>
-        <div class="stat-val" id="statEssentials">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Completion</div>
-        <div class="stat-val" id="statPercent">0%</div>
-      </div>
-    </div>
 
-    <!-- Overall Progress bar -->
-    <div class="bar-wrap">
-      <div class="bar-w" id="barWatched" style="width: 0%"></div>
-      <div class="bar-g" id="barWatching" style="width: 0%"></div>
+      <!-- Gauge 2: Overall Universe Completion -->
+      <div class="gauge-box">
+        <div class="gauge-hdr">
+          <span style="color:var(--teal);">🏆 Full Universe Completion</span>
+          <span id="gaugeTotalText">0 / 0 (0%)</span>
+        </div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar" id="gaugeTotalBar" style="width:0%;background:var(--teal);"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Timeline strip -->
     <div class="strip" id="timelineStrip" title="Chronological timeline strip"></div>
+  </section>
+
+  <!-- Currently Watching Shelf (Dynamic) -->
+  <section class="watching-shelf" id="watchingShelf" style="display:none;">
+    <div class="shelf-hdr">
+      <span>👁️ Currently Watching</span>
+      <span id="watchingShelfCount" style="font-family:var(--font-mono);">0 in progress</span>
+    </div>
+    <div class="shelf-grid" id="watchingShelfGrid"></div>
   </section>
 
   <!-- Up Next & Upcoming Row -->
@@ -523,32 +634,52 @@ dialog textarea {
         <h3 id="upNextTitle">Loading...</h3>
         <p id="upNextMeta">—</p>
       </div>
-      <div>
-        <button class="btn" id="upNextBtn">Mark Watched</button>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <button class="btn" id="upNextBtn">✓ Mark Watched</button>
+        <button class="btn alt" id="catchUpBtn" style="font-size:11px;padding:4px 8px;">⚡ Catch up prior</button>
       </div>
     </div>
 
     <div class="next-card upcoming" id="upcomingCard">
       <div>
-        <span class="tag-label">Next Marvel Premiere</span>
+        <span class="tag-label" style="color:var(--sky);">Next Marvel Premiere</span>
         <h3 id="upcomingTitle">—</h3>
         <p id="upcomingMeta">—</p>
       </div>
       <div>
-        <span class="tag-label" id="upcomingDays" style="font-size:14px;font-weight:800;">—</span>
+        <span class="tag-label" id="upcomingDays" style="font-size:14px;font-weight:800;color:var(--sky);">—</span>
       </div>
     </div>
   </div>
+
+  <!-- Curated Viewing Tracks -->
+  <section class="tracks-section">
+    <div class="tracks-title">Curated Viewing Tracks</div>
+    <div class="tracks-row" id="tracksRow">
+      <button class="track-pill active" data-track="all">🏆 Full (124)</button>
+      <button class="track-pill track-essential" data-track="essential">🎯 Essential Saga (~32)</button>
+      <button class="track-pill track-golden" data-track="golden">💎 Golden Path (Essential + Rec)</button>
+      <button class="track-pill track-spider" data-track="spider">🕸️ Spider-Verse</button>
+      <button class="track-pill track-defenders" data-track="defenders">🛡️ Defenders</button>
+    </div>
+  </section>
 
   <!-- Filters & Controls -->
   <section class="controls">
     <div class="search-row">
       <input type="search" id="searchInput" class="search-input" placeholder="Search title, phase, or hero...">
       <select id="statusSelect" class="select-box">
-        <option value="all">All Statuses</option>
+        <option value="all">All Watch Statuses</option>
         <option value="unwatched">Not Watched</option>
         <option value="watching">Currently Watching</option>
         <option value="watched">Watched</option>
+        <option value="unwatched_essentials">⭐ Unwatched Essentials Only</option>
+      </select>
+      <select id="mediaSelect" class="select-box">
+        <option value="all">All Media Types</option>
+        <option value="movie">🎬 Movies Only</option>
+        <option value="series">📺 Series Only</option>
+        <option value="special">✨ Specials Only</option>
       </select>
       <select id="sortSelect" class="select-box">
         <option value="order">Recommended Order</option>
@@ -561,7 +692,7 @@ dialog textarea {
     <div class="chip-row" id="priorityChips"></div>
     <div style="font-size:12px;color:var(--mute);font-family:var(--font-mono);display:flex;justify-content:space-between;margin-top:4px;">
       <span id="resultsCount">0 titles</span>
-      <span id="dataDate">Data accurate as of 2026-11-09</span>
+      <span id="dataDate">Data accurate as of 2026-11-10</span>
     </div>
   </section>
 
@@ -618,15 +749,16 @@ function getStatus(id) {
 
 const filters = {
   q: "",
+  track: "all",
   universe: "All",
   priority: "All",
   status: "all",
+  media: "all",
   sort: "order"
 };
 
 const collapsed = {};
 
-// Fetch or fallback data
 async function init() {
   try {
     const res = await fetch("./marvel_watchlist.json");
@@ -637,7 +769,6 @@ async function init() {
       throw new Error("Local fetch unavailable");
     }
   } catch(e) {
-    // If running as local file:// without server, alert friendly fallback
     console.info("Loaded via bundle or fallback");
   }
 
@@ -679,20 +810,49 @@ function renderChips() {
   ).join("");
 }
 
+function setDirectStatus(id, targetStatus) {
+  const cur = getStatus(id);
+  const next = cur === targetStatus ? "unwatched" : targetStatus;
+  if (next === "unwatched") delete progress[id];
+  else progress[id] = next;
+  saveProgress();
+}
+
 function render() {
   const released = items.filter(i => i.isReleased);
   const watchedCount = released.filter(i => getStatus(i.id) === "watched").length;
-  const watchingCount = released.filter(i => getStatus(i.id) === "watching").length;
   const essentials = released.filter(i => i.priority === "Essential");
-  const essentialsLeft = essentials.filter(i => getStatus(i.id) !== "watched").length;
-  const pct = released.length ? Math.round((watchedCount / released.length) * 100) : 0;
+  const essentialsWatched = essentials.filter(i => getStatus(i.id) === "watched").length;
+  const watchingItems = released.filter(i => getStatus(i.id) === "watching");
 
-  document.getElementById("statWatched").textContent = `${watchedCount} / ${released.length}`;
-  document.getElementById("statEssentials").textContent = essentialsLeft;
-  document.getElementById("statPercent").textContent = `${pct}%`;
+  const totalPct = released.length ? Math.round((watchedCount / released.length) * 100) : 0;
+  const essPct = essentials.length ? Math.round((essentialsWatched / essentials.length) * 100) : 0;
 
-  document.getElementById("barWatched").style.width = `${pct}%`;
-  document.getElementById("barWatching").style.width = `${(watchingCount / released.length) * 100}%`;
+  // Dual Gauges
+  document.getElementById("gaugeEssentialText").textContent = `${essentialsWatched} / ${essentials.length} (${essPct}%)`;
+  document.getElementById("gaugeEssentialBar").style.width = `${essPct}%`;
+
+  document.getElementById("gaugeTotalText").textContent = `${watchedCount} / ${released.length} (${totalPct}%)`;
+  document.getElementById("gaugeTotalBar").style.width = `${totalPct}%`;
+
+  // Currently Watching Shelf
+  const shelf = document.getElementById("watchingShelf");
+  const shelfGrid = document.getElementById("watchingShelfGrid");
+  if (watchingItems.length > 0) {
+    shelf.style.display = "flex";
+    document.getElementById("watchingShelfCount").textContent = `${watchingItems.length} active`;
+    shelfGrid.innerHTML = watchingItems.map(i => `
+      <div class="shelf-card">
+        <div style="min-width:0;">
+          <div class="shelf-title">${i.title}</div>
+          <div class="shelf-sub">#${i.order} • ${i.group}</div>
+        </div>
+        <button class="btn" style="padding:4px 8px;font-size:11px;" onclick="setDirectStatus('${i.id}', 'watched')">✓ Done</button>
+      </div>
+    `).join("");
+  } else {
+    shelf.style.display = "none";
+  }
 
   // Timeline strip
   const strip = document.getElementById("timelineStrip");
@@ -706,16 +866,23 @@ function render() {
   const upNext = essentials.find(i => getStatus(i.id) !== "watched");
   if (upNext) {
     document.getElementById("upNextTitle").textContent = upNext.title;
-    document.getElementById("upNextMeta").textContent = `${upNext.universe} • ${upNext.group} • ${upNext.releaseYear}`;
+    document.getElementById("upNextMeta").textContent = `#${upNext.order} • ${upNext.universe} • ${upNext.group} • ${upNext.releaseYear}`;
     document.getElementById("upNextBtn").style.display = "inline-flex";
+    document.getElementById("catchUpBtn").style.display = "inline-flex";
     document.getElementById("upNextBtn").onclick = () => {
-      progress[upNext.id] = "watched";
+      setDirectStatus(upNext.id, "watched");
+    };
+    document.getElementById("catchUpBtn").onclick = () => {
+      items.filter(i => i.isReleased && i.order <= upNext.order).forEach(i => {
+        progress[i.id] = "watched";
+      });
       saveProgress();
     };
   } else {
     document.getElementById("upNextTitle").textContent = "All Essentials Watched!";
     document.getElementById("upNextMeta").textContent = "Great job! Filter by Recommended or Optional.";
     document.getElementById("upNextBtn").style.display = "none";
+    document.getElementById("catchUpBtn").style.display = "none";
   }
 
   // Next Upcoming Card
@@ -728,12 +895,35 @@ function render() {
 
   // Filter items
   let filtered = items.filter(i => {
+    // Curated Track Presets
+    if (filters.track === "essential" && i.priority !== "Essential") return false;
+    if (filters.track === "golden" && i.priority !== "Essential" && i.priority !== "Recommended") return false;
+    if (filters.track === "spider") {
+      const isSp = i.universe === "Sony" || i.title.toLowerCase().includes("spider") || i.title.toLowerCase().includes("venom");
+      if (!isSp) return false;
+    }
+    if (filters.track === "defenders") {
+      const isDef = i.universe === "Netflix/Marvel TV" || i.title.toLowerCase().includes("daredevil") || i.title.toLowerCase().includes("punisher");
+      if (!isDef) return false;
+    }
+
+    // Media
+    if (filters.media === "movie" && !i.type.toLowerCase().includes("movie")) return false;
+    if (filters.media === "series" && !i.type.toLowerCase().includes("series")) return false;
+    if (filters.media === "special" && !i.type.toLowerCase().includes("special") && !i.type.toLowerCase().includes("one-shot")) return false;
+
+    // Universe & Priority
     if (filters.universe !== "All" && i.universe !== filters.universe) return false;
     if (filters.priority !== "All" && i.priority !== filters.priority) return false;
+
+    // Status
     const st = getStatus(i.id);
     if (filters.status === "watched" && st !== "watched") return false;
     if (filters.status === "watching" && st !== "watching") return false;
     if (filters.status === "unwatched" && st !== "unwatched") return false;
+    if (filters.status === "unwatched_essentials" && (i.priority !== "Essential" || st === "watched")) return false;
+
+    // Query
     if (filters.q) {
       const q = filters.q.toLowerCase();
       if (!i.title.toLowerCase().includes(q) && !i.group.toLowerCase().includes(q)) return false;
@@ -768,34 +958,49 @@ function render() {
 
   container.innerHTML = Array.from(groups.entries()).map(([grpName, grpItems]) => {
     const isClosed = collapsed[grpName];
-    const grpWatched = grpItems.filter(i => getStatus(i.id) === "watched").length;
-    const grpPct = Math.round((grpWatched / grpItems.length) * 100);
+    const grpReleased = grpItems.filter(i => i.isReleased);
+    const grpWatched = grpReleased.filter(i => getStatus(i.id) === "watched").length;
+    const grpPct = grpReleased.length ? Math.round((grpWatched / grpReleased.length) * 100) : 0;
+    const allDone = grpReleased.length > 0 && grpWatched === grpReleased.length;
 
     return `
       <section class="grp">
-        <button class="grp-header" data-group="${grpName}">
+        <div class="grp-header" data-group="${grpName}">
           <h2>${grpName}</h2>
           <div class="grp-meta">
-            <span>${grpWatched}/${grpItems.length} (${grpPct}%)</span>
+            ${grpReleased.length > 0 ? `
+              <button class="batch-btn" data-batch-phase="${grpName}">
+                ${allDone ? "✓ All Done" : "Mark Phase"}
+              </button>
+            ` : ""}
+            <span>${grpWatched}/${grpReleased.length}</span>
             <div class="grp-bar"><div class="grp-bar-fill" style="width:${grpPct}%"></div></div>
             <span>${isClosed ? "▼" : "▲"}</span>
           </div>
-        </button>
+        </div>
         ${isClosed ? "" : grpItems.map(i => {
           const st = getStatus(i.id);
           const isW = st === "watched";
           const isG = st === "watching";
           const label = i.releaseDate ? i.releaseDate : (i.releaseYearEnd ? `${i.releaseYear}–${i.releaseYearEnd}` : i.releaseYear);
           return `
-            <div class="item-row ${isW ? "done" : ""}" id="item-${i.id}">
+            <div class="item-row ${isW ? "done" : isG ? "watching-now" : ""}" id="item-${i.id}">
               <button class="toggle-btn" data-toggle="${i.id}" data-status="${st}" ${!i.isReleased ? "disabled" : ""} title="Tap to cycle status">
-                ${isW ? "✓" : isG ? "◑" : ""}
+                ${isW ? "✓" : isG ? "👁️" : ""}
               </button>
               <div class="item-info">
                 <div class="item-title">${i.title} ${i.seasons ? `<small style="color:var(--mute);font-weight:normal;">(${i.seasons} Seasons)</small>` : ""}</div>
                 <div class="item-sub">${label} • ${i.type} ${!i.isReleased ? `• <b style="color:var(--gold);">In ${i.daysUntil} days</b>` : ""}</div>
               </div>
-              <span class="badge ${i.priority}">${i.priority}</span>
+              <div class="item-actions">
+                <span class="badge ${i.priority}">${i.priority}</span>
+                ${i.isReleased ? `
+                  <div class="seg-ctrl">
+                    <button class="seg-btn ${isG ? "active-watch" : ""}" data-status-btn="watching" data-id="${i.id}">Watch</button>
+                    <button class="seg-btn ${isW ? "active-done" : ""}" data-status-btn="watched" data-id="${i.id}">Done</button>
+                  </div>
+                ` : `<span class="badge" style="color:var(--mute)">Upcoming</span>`}
+              </div>
             </div>
           `;
         }).join("")}
@@ -806,6 +1011,41 @@ function render() {
 
 function setupEvents() {
   document.addEventListener("click", e => {
+    // Curated Track Pill
+    const track = e.target.closest(".track-pill");
+    if (track) {
+      document.querySelectorAll(".track-pill").forEach(p => p.classList.remove("active"));
+      track.classList.add("active");
+      filters.track = track.dataset.track;
+      render();
+      return;
+    }
+
+    // Direct Status Button
+    const statusBtn = e.target.closest("[data-status-btn]");
+    if (statusBtn) {
+      const id = statusBtn.dataset.id;
+      const targetStatus = statusBtn.dataset.statusBtn;
+      setDirectStatus(id, targetStatus);
+      return;
+    }
+
+    // Batch Phase
+    const batch = e.target.closest("[data-batch-phase]");
+    if (batch) {
+      e.stopPropagation();
+      const grp = batch.dataset.batchPhase;
+      const targets = items.filter(i => `${i.universe} • ${i.group}` === grp && i.isReleased);
+      const allDone = targets.every(i => getStatus(i.id) === "watched");
+      targets.forEach(i => {
+        if (allDone) delete progress[i.id];
+        else progress[i.id] = "watched";
+      });
+      saveProgress();
+      return;
+    }
+
+    // Chips
     const chip = e.target.closest(".chip");
     if (chip) {
       const type = chip.dataset.type;
@@ -815,6 +1055,7 @@ function setupEvents() {
       return;
     }
 
+    // Toggle button (circle)
     const toggle = e.target.closest("[data-toggle]");
     if (toggle && !toggle.disabled) {
       const id = toggle.dataset.toggle;
@@ -826,6 +1067,7 @@ function setupEvents() {
       return;
     }
 
+    // Accordion toggle
     const grp = e.target.closest(".grp-header");
     if (grp) {
       const name = grp.dataset.group;
@@ -834,6 +1076,7 @@ function setupEvents() {
       return;
     }
 
+    // Timeline Dot Jump
     const stripDot = e.target.closest(".strip-dot");
     if (stripDot) {
       const id = stripDot.dataset.id;
@@ -853,6 +1096,11 @@ function setupEvents() {
 
   document.getElementById("statusSelect").onchange = e => {
     filters.status = e.target.value;
+    render();
+  };
+
+  document.getElementById("mediaSelect").onchange = e => {
+    filters.media = e.target.value;
     render();
   };
 
@@ -897,7 +1145,6 @@ function setupEvents() {
   };
 }
 
-// Fallback items array from external JSON if fetch succeeds or inline backup
 fetch("./marvel_watchlist.json")
   .then(r => r.json())
   .then(d => {
@@ -905,7 +1152,6 @@ fetch("./marvel_watchlist.json")
     init();
   })
   .catch(() => {
-    // If running offline without server, load items from parent data
     init();
   });
 </script>
