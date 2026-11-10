@@ -11,7 +11,6 @@ import {
   Award,
   ChevronDown,
   ChevronUp,
-  Eye,
   Check,
   Zap,
   RotateCcw,
@@ -47,7 +46,7 @@ interface MarvelTrackerProps {
 }
 
 export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps) {
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   // Initialize and merge localStorage with cloud progress safely on initial load
   const [progress, setProgress] = useState<MarvelProgressMap>(() => {
@@ -117,20 +116,16 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
 
   const getStatus = useCallback(
     (id: string): MarvelWatchStatus => {
-      return progress[id]?.status || 'unwatched';
+      return progress[id]?.status === 'watched' ? 'watched' : 'unwatched';
     },
     [progress]
   );
 
-  // 1-Click Status Setting (Direct Watched or Watching)
+  // 1-Click Status Setting (Watched vs Not Watched)
   const handleSetStatus = (item: MarvelItem, targetStatus: MarvelWatchStatus) => {
-    if (!item.isReleased && targetStatus !== 'unwatched') {
-      return; // Cannot mark unreleased titles as watched/watching
-    }
-
     const current = getStatus(item.id);
-    // If clicking the current status, toggle it back to unwatched
-    const nextStatus: MarvelWatchStatus = current === targetStatus ? 'unwatched' : targetStatus;
+    const nextStatus: MarvelWatchStatus =
+      current === targetStatus ? (targetStatus === 'watched' ? 'unwatched' : 'watched') : targetStatus;
 
     const nextProgress = { ...progress };
     if (nextStatus === 'unwatched') {
@@ -138,13 +133,14 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
     } else {
       nextProgress[item.id] = {
         ...nextProgress[item.id],
-        status: nextStatus,
-        watchedOn: nextStatus === 'watched' ? new Date().toISOString() : undefined,
+        status: 'watched',
+        watchedOn: new Date().toISOString(),
       };
     }
 
     saveProgress(nextProgress);
 
+    // Sync in background without blocking UI
     startTransition(async () => {
       await toggleMarvelItemAction(item, nextStatus);
     });
@@ -152,16 +148,15 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
 
   // Batch Mark Phase/Group as Watched
   const handleBatchMarkGroup = (groupItems: MarvelItem[]) => {
-    const releasedInGroup = groupItems.filter((i) => i.isReleased);
-    if (releasedInGroup.length === 0) return;
+    if (groupItems.length === 0) return;
 
-    const allWatched = releasedInGroup.every((i) => getStatus(i.id) === 'watched');
+    const allWatched = groupItems.every((i) => getStatus(i.id) === 'watched');
     const targetStatus: MarvelWatchStatus = allWatched ? 'unwatched' : 'watched';
 
     const nextProgress = { ...progress };
     const updates: { item: MarvelItem; status: MarvelWatchStatus }[] = [];
 
-    releasedInGroup.forEach((item) => {
+    groupItems.forEach((item) => {
       if (targetStatus === 'unwatched') {
         delete nextProgress[item.id];
       } else {
@@ -184,7 +179,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
   // Catch-Up: Mark All Prior Items as Watched
   const handleCatchUpPrior = (targetItem: MarvelItem) => {
     const priorItems = items.filter(
-      (i) => i.isReleased && i.order <= targetItem.order && getStatus(i.id) !== 'watched'
+      (i) => i.order <= targetItem.order && getStatus(i.id) !== 'watched'
     );
     if (priorItems.length === 0) return;
 
@@ -208,24 +203,15 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
   };
 
   // Statistics
-  const releasedItems = useMemo(() => items.filter((i) => i.isReleased), [items]);
   const totalWatched = useMemo(
-    () => releasedItems.filter((i) => getStatus(i.id) === 'watched').length,
-    [releasedItems, getStatus]
+    () => items.filter((i) => getStatus(i.id) === 'watched').length,
+    [items, getStatus]
   );
-  const totalWatching = useMemo(
-    () => releasedItems.filter((i) => getStatus(i.id) === 'watching').length,
-    [releasedItems, getStatus]
-  );
-
-  const currentlyWatchingItems = useMemo(
-    () => releasedItems.filter((i) => getStatus(i.id) === 'watching'),
-    [releasedItems, getStatus]
-  );
+  const totalNotWatched = items.length - totalWatched;
 
   const totalEssentials = useMemo(
-    () => releasedItems.filter((i) => i.priority === 'Essential'),
-    [releasedItems]
+    () => items.filter((i) => i.priority === 'Essential'),
+    [items]
   );
   const watchedEssentials = useMemo(
     () => totalEssentials.filter((i) => getStatus(i.id) === 'watched').length,
@@ -233,8 +219,8 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
   );
   const essentialsRemaining = totalEssentials.length - watchedEssentials;
 
-  const percentComplete = releasedItems.length
-    ? Math.round((totalWatched / releasedItems.length) * 100)
+  const percentComplete = items.length
+    ? Math.round((totalWatched / items.length) * 100)
     : 0;
 
   const percentEssentials = totalEssentials.length
@@ -243,37 +229,37 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
 
   // "Up Next" essential title
   const upNextItem = useMemo(() => {
-    return releasedItems
+    return items
       .filter((i) => i.priority === 'Essential' && getStatus(i.id) !== 'watched')
       .sort((a, b) => a.order - b.order)[0];
-  }, [releasedItems, getStatus]);
+  }, [items, getStatus]);
 
   // Next Upcoming release
   const nextUpcoming = useMemo(() => {
     return items
-      .filter((i) => !i.isReleased && i.daysUntil > 0)
-      .sort((a, b) => a.daysUntil - b.daysUntil)[0];
+      .filter((i) => !i.isReleased && (i.daysUntil || 0) > 0)
+      .sort((a, b) => (a.daysUntil || 0) - (b.daysUntil || 0))[0];
   }, [items]);
 
   // Milestone checks
   const isInfinitySagaComplete = useMemo(() => {
-    const saga = releasedItems.filter((i) =>
+    const saga = items.filter((i) =>
       ['Phase 1', 'Phase 2', 'Phase 3'].includes(i.group)
     );
     return saga.length > 0 && saga.every((i) => getStatus(i.id) === 'watched');
-  }, [releasedItems, getStatus]);
+  }, [items, getStatus]);
 
   const isDefendersComplete = useMemo(() => {
-    const def = releasedItems.filter((i) => i.universe === 'Netflix/Marvel TV');
+    const def = items.filter((i) => i.universe === 'Netflix/Marvel TV');
     return def.length > 0 && def.every((i) => getStatus(i.id) === 'watched');
-  }, [releasedItems, getStatus]);
+  }, [items, getStatus]);
 
   const isSpiderVerseComplete = useMemo(() => {
-    const spidey = releasedItems.filter(
+    const spidey = items.filter(
       (i) => i.universe === 'Sony' || i.title.toLowerCase().includes('spider-man')
     );
     return spidey.length > 0 && spidey.every((i) => getStatus(i.id) === 'watched');
-  }, [releasedItems, getStatus]);
+  }, [items, getStatus]);
 
   // Filter application with Curated Tracks
   const filteredItems = useMemo(() => {
@@ -326,10 +312,9 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         }
       }
 
-      // 5. Watch Status Filter
+      // 5. Watch Status Filter (Watched vs Not Watched)
       const st = getStatus(i.id);
-      if (selectedStatus === 'unwatched' && st !== 'unwatched') return false;
-      if (selectedStatus === 'watching' && st !== 'watching') return false;
+      if (selectedStatus === 'unwatched' && st === 'watched') return false;
       if (selectedStatus === 'watched' && st !== 'watched') return false;
       if (selectedStatus === 'unwatched_essentials') {
         if (i.priority !== 'Essential' || st === 'watched') return false;
@@ -490,7 +475,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                     Overall Universe Completion
                   </span>
                   <span className="font-bold text-foreground">
-                    {totalWatched} / {releasedItems.length} ({percentComplete}%)
+                    {totalWatched} / {items.length} ({percentComplete}%)
                   </span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -505,7 +490,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
             <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground pt-1">
               <span>{essentialsRemaining} essentials left</span>
               <span>&bull;</span>
-              <span>{totalWatching} currently watching</span>
+              <span>{totalNotWatched} not watched</span>
             </div>
           </div>
 
@@ -565,55 +550,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         </div>
       </div>
 
-      {/* 2. CURRENTLY WATCHING ACTIVE SHELF (Visible when watching items exist) */}
-      {currentlyWatchingItems.length > 0 && (
-        <div className="p-4 rounded-2xl border border-amber-300/70 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <h2 className="text-sm font-bold text-foreground">
-                Currently Watching ({currentlyWatchingItems.length})
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('watching')}
-              className="text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline cursor-pointer"
-            >
-              Filter in list
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            {currentlyWatchingItems.map((item) => (
-              <div
-                key={item.id}
-                className="p-3 rounded-xl border border-border bg-card flex items-center justify-between gap-2 shadow-xs"
-              >
-                <div className="min-w-0">
-                  <span className="font-bold text-xs sm:text-sm text-foreground truncate block">
-                    {item.title}
-                  </span>
-                  <span className="text-[11px] font-mono text-muted-foreground">
-                    #{item.order} &bull; {item.group}
-                  </span>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => handleSetStatus(item, 'watched')}
-                  disabled={isPending}
-                  className="h-7 px-2.5 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 font-medium"
-                >
-                  <Check className="h-3.5 w-3.5 mr-1" />
-                  Done
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 3. "UP NEXT" CARD & NEXT UPCOMING COUNTDOWN */}
+      {/* 2. "UP NEXT" CARD & NEXT UPCOMING COUNTDOWN */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {upNextItem && (
           <Card className="border-border bg-card rounded-2xl shadow-xs p-4 flex items-center justify-between gap-3">
@@ -634,7 +571,6 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               <Button
                 size="sm"
                 onClick={() => handleSetStatus(upNextItem, 'watched')}
-                disabled={isPending}
                 className="rounded-xl text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
               >
                 <Check className="h-3.5 w-3.5 mr-1" />
@@ -678,7 +614,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         )}
       </div>
 
-      {/* 4. CURATED VIEWING TRACK PRESETS */}
+      {/* 3. CURATED VIEWING TRACK PRESETS */}
       <div className="space-y-2">
         <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider block">
           Curated Viewing Tracks
@@ -693,7 +629,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                 : 'border border-border bg-card text-muted-foreground hover:text-foreground'
             }`}
           >
-            🏆 Full Universe (124)
+            🏆 Full Universe ({items.length})
           </button>
 
           <button
@@ -746,7 +682,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         </div>
       </div>
 
-      {/* 5. SEARCH & FILTER CONTROLS */}
+      {/* 4. SEARCH & FILTER CONTROLS */}
       <div className="space-y-3.5 bg-card border border-border p-4 rounded-2xl shadow-xs">
         {/* Row 1: Search & Dropdowns */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
@@ -767,9 +703,8 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
           >
             <option value="all">All Watch Statuses</option>
             <option value="unwatched">Not Watched</option>
-            <option value="watching">Currently Watching</option>
             <option value="watched">Watched</option>
-            <option value="unwatched_essentials">⭐ Unwatched Essentials Only</option>
+            <option value="unwatched_essentials">⭐ Not Watched Essentials Only</option>
           </select>
 
           <select
@@ -887,7 +822,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         </div>
       </div>
 
-      {/* 6. GROUPED LIST ACCORDIONS */}
+      {/* 5. GROUPED LIST ACCORDIONS */}
       {groupedList.length === 0 ? (
         <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
           <Film className="h-8 w-8 mx-auto text-primary/40 mb-2" />
@@ -900,15 +835,14 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         <div className="space-y-4">
           {groupedList.map(([groupKey, groupItems]) => {
             const isCollapsed = collapsedGroups[groupKey];
-            const releasedInGroup = groupItems.filter((i) => i.isReleased);
-            const groupWatched = releasedInGroup.filter(
+            const groupWatched = groupItems.filter(
               (i) => getStatus(i.id) === 'watched'
             ).length;
-            const groupPercent = releasedInGroup.length
-              ? Math.round((groupWatched / releasedInGroup.length) * 100)
+            const groupPercent = groupItems.length
+              ? Math.round((groupWatched / groupItems.length) * 100)
               : 0;
             const isGroupFullyWatched =
-              releasedInGroup.length > 0 && groupWatched === releasedInGroup.length;
+              groupItems.length > 0 && groupWatched === groupItems.length;
 
             return (
               <div
@@ -932,27 +866,24 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
 
                   <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
                     {/* Batch Mark Phase Action */}
-                    {releasedInGroup.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isPending}
-                        onClick={() => handleBatchMarkGroup(groupItems)}
-                        className={`h-7 px-2.5 rounded-lg text-xs font-mono font-semibold transition-all ${
-                          isGroupFullyWatched
-                            ? 'border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30'
-                            : 'border-border text-muted-foreground hover:text-foreground'
-                        }`}
-                        title="Mark entire phase watched or unwatched"
-                      >
-                        <Check className="h-3 w-3 mr-1" />
-                        {isGroupFullyWatched ? 'All Watched' : 'Mark Phase'}
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBatchMarkGroup(groupItems)}
+                      className={`h-7 px-2.5 rounded-lg text-xs font-mono font-semibold transition-all ${
+                        isGroupFullyWatched
+                          ? 'border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30'
+                          : 'border-border text-muted-foreground hover:text-foreground'
+                      }`}
+                      title="Mark entire phase watched or unwatched"
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      {isGroupFullyWatched ? 'All Watched' : 'Mark Phase'}
+                    </Button>
 
                     <div className="text-right hidden sm:block">
                       <span className="text-xs font-mono font-bold text-foreground">
-                        {groupWatched}/{releasedInGroup.length}
+                        {groupWatched}/{groupItems.length}
                       </span>
                       <span className="text-[11px] text-muted-foreground ml-1">
                         ({groupPercent}%)
@@ -986,18 +917,13 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                     {groupItems.map((item) => {
                       const st = getStatus(item.id);
                       const isWatched = st === 'watched';
-                      const isWatching = st === 'watching';
                       const isUnreleased = !item.isReleased;
 
                       return (
                         <div
                           key={item.id}
                           className={`p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
-                            isWatched
-                              ? 'bg-muted/15'
-                              : isWatching
-                              ? 'bg-amber-50/25 dark:bg-amber-950/15'
-                              : 'hover:bg-muted/20'
+                            isWatched ? 'bg-muted/15' : 'hover:bg-muted/20'
                           }`}
                         >
                           {/* Left: Quick Cycle Circle & Title Info */}
@@ -1006,28 +932,19 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                             <button
                               type="button"
                               onClick={() => handleSetStatus(item, isWatched ? 'unwatched' : 'watched')}
-                              disabled={isUnreleased || isPending}
                               title={
-                                isUnreleased
-                                  ? 'Unreleased title'
-                                  : isWatched
-                                  ? 'Watched (Click to mark unwatched)'
+                                isWatched
+                                  ? 'Watched (Click to mark Not Watched)'
                                   : 'Click to mark Watched'
                               }
                               className={`h-7 w-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
-                                isUnreleased
-                                  ? 'border-border bg-muted/40 cursor-not-allowed opacity-50'
-                                  : isWatched
+                                isWatched
                                   ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
-                                  : isWatching
-                                  ? 'border-amber-500 bg-amber-500/20 text-amber-600'
                                   : 'border-muted-foreground/40 hover:border-emerald-600 text-transparent'
                               }`}
                             >
                               {isWatched ? (
                                 <CheckCircle2 className="h-4 w-4 fill-current text-emerald-600 stroke-white" />
-                              ) : isWatching ? (
-                                <Eye className="h-3.5 w-3.5" />
                               ) : null}
                             </button>
 
@@ -1083,49 +1000,38 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                               {item.priority}
                             </Badge>
 
-                            {/* Direct Action Segmented Group */}
-                            {!isUnreleased ? (
-                              <div className="inline-flex rounded-xl border border-border p-0.5 bg-background shadow-xs text-xs">
-                                {/* Watching Action Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleSetStatus(item, 'watching')}
-                                  disabled={isPending}
-                                  title="Mark Currently Watching"
-                                  className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
-                                    isWatching
-                                      ? 'bg-amber-500 text-white font-bold shadow-xs'
-                                      : 'text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30'
-                                  }`}
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                  <span>Watching</span>
-                                </button>
-
-                                {/* Watched Action Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleSetStatus(item, 'watched')}
-                                  disabled={isPending}
-                                  title="Mark Completed"
-                                  className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
-                                    isWatched
-                                      ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                                      : 'text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
-                                  }`}
-                                >
-                                  <Check className="h-3.5 w-3.5" />
-                                  <span>Watched</span>
-                                </button>
-                              </div>
-                            ) : (
-                              <Badge
-                                variant="outline"
-                                className="text-xs border-border text-muted-foreground font-mono py-1 px-2.5"
+                            {/* Direct Action Segmented Group (Not Watched vs Watched) */}
+                            <div className="inline-flex rounded-xl border border-border p-0.5 bg-background shadow-xs text-xs">
+                              {/* Not Watched Action Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleSetStatus(item, 'unwatched')}
+                                title="Mark as Not Watched"
+                                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                                  !isWatched
+                                    ? 'bg-muted text-foreground font-bold shadow-xs'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                                }`}
                               >
-                                Upcoming
-                              </Badge>
-                            )}
+                                <RotateCcw className="h-3 w-3" />
+                                <span>Not Watched</span>
+                              </button>
+
+                              {/* Watched Action Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleSetStatus(item, 'watched')}
+                                title="Mark as Watched"
+                                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1 ${
+                                  isWatched
+                                    ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                                    : 'text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                                }`}
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                                <span>Watched</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -1138,7 +1044,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         </div>
       )}
 
-      {/* 7. BACKUP & RESTORE DIALOG */}
+      {/* 6. BACKUP & RESTORE DIALOG */}
       <Dialog open={backupOpen} onOpenChange={setBackupOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

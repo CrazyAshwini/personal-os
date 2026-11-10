@@ -1,7 +1,7 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { EntertainmentView } from '@/features/entertainment/entertainment-view';
-import type { MarvelProgressMap, MarvelWatchStatus } from '@/types/marvel';
+import type { MarvelProgressMap } from '@/types/marvel';
 
 export const instant = false;
 
@@ -23,11 +23,9 @@ export default async function EntertainmentPage() {
   (mediaItems || []).forEach((m) => {
     if (m.review?.startsWith('marvel:')) {
       const marvelId = m.review.replace('marvel:', '');
-      const st: MarvelWatchStatus =
-        m.status === 'completed' ? 'watched' : m.status === 'watching' ? 'watching' : 'unwatched';
-      if (st !== 'unwatched') {
+      if (m.status === 'completed') {
         initialMarvelProgress[marvelId] = {
-          status: st,
+          status: 'watched',
           rating: m.rating || null,
         };
       }

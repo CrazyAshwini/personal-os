@@ -1,78 +1,79 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marvel Watch Order Tracker (124 Titles)</title>
-<meta name="description" content="Ultimate 124-title Marvel Watch Order Tracker with curated viewing paths, dual progress bars, 1-click status pills, and local persistence.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marvel Watch Order Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0d0f12;
-  --sf: #161a1f;
-  --sf-subtle: #1e232a;
-  --line: #2b323c;
-  --ink: #f0f3f6;
-  --mute: #8b949e;
-  --red: #e62429;
-  --teal: #10b981;
-  --gold: #f59e0b;
-  --sky: #0ea5e9;
-  --purple: #a855f7;
-  --primary: #e62429;
-  --radius: 14px;
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: "Big Shoulders Display", -apple-system, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --bg: #F8FAFC;
+  --sf: #FFFFFF;
+  --sf-subtle: #F1F5F9;
+  --ink: #0F172A;
+  --mute: #64748B;
+  --line: #E2E8F0;
+
+  --red: #E62429;
+  --red-subtle: rgba(230, 36, 41, 0.08);
+  --teal: #10B981;
+  --teal-subtle: rgba(16, 185, 129, 0.1);
+  --gold: #F59E0B;
+  --gold-subtle: rgba(245, 158, 11, 0.1);
+  --sky: #0EA5E9;
+  --purple: #8B5CF6;
+
+  box-sizing: border-box;
 }
 
-[data-theme="light"] {
-  --bg: #f8fafc;
-  --sf: #ffffff;
-  --sf-subtle: #f1f5f9;
-  --line: #e2e8f0;
-  --ink: #0f172a;
-  --mute: #64748b;
-  --red: #dc2626;
-  --teal: #059669;
-  --gold: #d97706;
-  --sky: #0284c7;
-  --purple: #9333ea;
-  --primary: #dc2626;
+[data-theme="dark"] {
+  --bg: #0B0F19;
+  --sf: #111827;
+  --sf-subtle: #1F2937;
+  --ink: #F9FAFB;
+  --mute: #9CA3AF;
+  --line: #374151;
+
+  --red: #FF3B30;
+  --red-subtle: rgba(255, 59, 48, 0.15);
+  --teal: #34D399;
+  --teal-subtle: rgba(52, 211, 153, 0.15);
+  --gold: #FBBF24;
+  --gold-subtle: rgba(251, 191, 36, 0.15);
+  --sky: #38BDF8;
+  --purple: #A78BFA;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
 body {
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 14px;
   line-height: 1.5;
-  padding: 24px 16px;
-  display: flex;
-  justify-content: center;
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
-  width: 100%;
   max-width: 980px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
 }
 
 /* Header */
 .header-top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
 }
-
 .brand {
   display: flex;
   align-items: center;
@@ -81,87 +82,93 @@ main {
 .brand-badge {
   background: var(--red);
   color: #fff;
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 1.5px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  padding: 2px 10px;
+  letter-spacing: 1px;
+  border-radius: 4px;
 }
-h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: var(--primary);
-  color: #fff;
-  border: 0;
-  border-radius: 10px;
-  padding: 7px 14px;
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  font-family: var(--font-sans);
+h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(28px, 5vw, 42px);
+  letter-spacing: 0.5px;
+  line-height: 1;
 }
-.btn:hover { opacity: 0.9; }
-.btn.alt {
-  background: var(--sf);
-  color: var(--ink);
-  border: 1px solid var(--line);
-}
-.btn.alt:hover { background: var(--sf-subtle); }
 
 .theme-btn {
-  background: var(--sf);
+  background: none;
   border: 1px solid var(--line);
-  color: var(--ink);
-  border-radius: 10px;
   padding: 6px 12px;
-  font-size: 12px;
+  border-radius: 8px;
+  color: var(--mute);
+  font-size: 13px;
   cursor: pointer;
+  font-family: var(--font-mono);
 }
+.theme-btn:hover { color: var(--ink); border-color: var(--mute); }
 
-/* Cockpit & Progress */
+/* Buttons */
+.btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn.alt {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.btn.alt:hover { border-color: var(--ink); }
+
+/* Cockpit Card */
 .cockpit {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 20px;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .gauges-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
 }
-@media (max-width: 640px) {
-  .gauges-grid { grid-template-columns: 1fr; }
+@media (min-width: 640px) {
+  .gauges-grid { grid-template-columns: 1fr 1fr; }
 }
 
 .gauge-box {
   background: var(--sf-subtle);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  border-radius: 14px;
+  padding: 14px;
 }
 .gauge-hdr {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
 }
 .gauge-bar-wrap {
-  width: 100%;
   height: 8px;
   background: var(--line);
   border-radius: 99px;
@@ -173,259 +180,230 @@ h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
   transition: width 0.4s ease;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+.stats-subline {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mute);
+  display: flex;
   gap: 12px;
+  margin-top: 8px;
 }
-.stat-card {
-  background: var(--sf-subtle);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 14px;
-}
-.stat-label { font-size: 11px; color: var(--mute); font-family: var(--font-mono); }
-.stat-val { font-size: 20px; font-weight: 800; margin-top: 2px; }
 
-/* Timeline Strip */
+/* Timeline strip */
 .strip {
   display: flex;
   gap: 2px;
-  height: 8px;
-  width: 100%;
-  background: var(--sf-subtle);
+  height: 14px;
+  margin-top: 14px;
   border-radius: 4px;
   overflow: hidden;
 }
 .strip-dot {
   flex: 1;
+  min-width: 3px;
   background: var(--line);
   border: 0;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: all 0.1s;
 }
 .strip-dot.w { background: var(--teal); }
-.strip-dot.g { background: var(--gold); }
-.strip-dot.u { background: var(--mute); opacity: 0.35; }
-.strip-dot:hover { opacity: 0.8; }
+.strip-dot.u {
+  background: repeating-linear-gradient(45deg, var(--line) 0 2px, transparent 2px 4px);
+}
+.strip-dot:hover { opacity: 0.8; transform: scaleY(1.3); }
 
-/* Active Shelf: Currently Watching */
-.watching-shelf {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: var(--radius);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.shelf-hdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--gold);
-}
-.shelf-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
-}
-.shelf-card {
-  background: var(--sf);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.shelf-title {
-  font-weight: 700;
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.shelf-sub {
-  font-size: 11px;
-  color: var(--mute);
-  font-family: var(--font-mono);
-}
-
-/* Up Next & Upcoming */
+/* Up Next Card */
 .cards-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
+  margin-bottom: 20px;
 }
-@media (max-width: 640px) {
-  .cards-row { grid-template-columns: 1fr; }
+@media (min-width: 640px) {
+  .cards-row { grid-template-columns: 1fr 1fr; }
 }
-
 .next-card {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 16px;
   padding: 16px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  align-items: center;
+  gap: 12px;
 }
-.next-card.upcoming { border-left: 4px solid var(--sky); }
-.tag-label {
-  font-size: 11px;
-  text-transform: uppercase;
+.next-card.upcoming { border-color: rgba(14, 165, 233, 0.4); }
+.next-card h3 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 2px 0;
+}
+.next-card p {
+  font-size: 12px;
+  color: var(--mute);
   font-family: var(--font-mono);
-  font-weight: 700;
+}
+.tag-label {
+  font-size: 10px;
+  font-weight: 800;
+  font-family: var(--font-mono);
   color: var(--red);
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.next-card h3 { font-size: 16px; font-weight: 700; margin: 4px 0 2px; }
-.next-card p { font-size: 12px; color: var(--mute); font-family: var(--font-mono); }
 
-/* Curated Tracks */
-.tracks-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+/* Curated Track Pills */
+.tracks-section { margin-bottom: 20px; }
 .tracks-title {
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-weight: 800;
   text-transform: uppercase;
-  font-weight: 700;
   color: var(--mute);
+  font-family: var(--font-mono);
+  margin-bottom: 8px;
 }
 .tracks-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 .track-pill {
-  padding: 7px 12px;
-  border-radius: 10px;
+  background: var(--sf);
+  border: 1px solid var(--line);
+  color: var(--mute);
+  border-radius: 12px;
+  padding: 6px 14px;
   font-size: 12px;
   font-weight: 700;
-  border: 1px solid var(--line);
-  background: var(--sf);
-  color: var(--mute);
   cursor: pointer;
   transition: all 0.15s;
 }
-.track-pill:hover { color: var(--ink); background: var(--sf-subtle); }
+.track-pill:hover { color: var(--ink); border-color: var(--mute); }
 .track-pill.active {
   background: var(--ink);
   color: var(--bg);
   border-color: var(--ink);
 }
-.track-pill.track-essential.active { background: var(--red); color: #fff; border-color: var(--red); }
-.track-pill.track-golden.active { background: var(--gold); color: #fff; border-color: var(--gold); }
-.track-pill.track-spider.active { background: var(--sky); color: #fff; border-color: var(--sky); }
-.track-pill.track-defenders.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+.track-pill.track-essential.active { background: var(--red); border-color: var(--red); color: #fff; }
+.track-pill.track-golden.active { background: var(--gold); border-color: var(--gold); color: #000; }
+.track-pill.track-spider.active { background: var(--sky); border-color: var(--sky); color: #fff; }
+.track-pill.track-defenders.active { background: var(--purple); border-color: var(--purple); color: #fff; }
 
-/* Filters & Controls */
+/* Filter & Controls */
 .controls {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 16px;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 24px;
+  display: grid;
   gap: 12px;
 }
 .search-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
-@media (max-width: 768px) {
-  .search-row { grid-template-columns: 1fr; }
+@media (min-width: 680px) {
+  .search-row { grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr; }
 }
 
-.search-input, .select-box {
+.search-input {
   background: var(--bg);
   border: 1px solid var(--line);
-  color: var(--ink);
   border-radius: 10px;
   padding: 8px 12px;
   font-size: 13px;
-  font-family: var(--font-sans);
-  outline: none;
+  color: var(--ink);
 }
-.search-input:focus, .select-box:focus { border-color: var(--primary); }
+.search-input:focus { outline: 2px solid var(--red); border-color: transparent; }
+
+.select-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
 
 .chip-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
-.chip-label { font-size: 11px; font-family: var(--font-mono); color: var(--mute); margin-right: 4px; }
+.chip-label {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--mute);
+  margin-right: 4px;
+}
 .chip {
-  padding: 4px 10px;
-  border-radius: 99px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--mute);
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--mute);
+  padding: 3px 10px;
+  border-radius: 99px;
   cursor: pointer;
   transition: all 0.15s;
 }
+.chip:hover { color: var(--ink); }
 .chip[data-active="true"] {
   background: var(--ink);
   color: var(--bg);
   border-color: var(--ink);
 }
 
-/* Accordions */
-.grp {
+/* Groups and Accordions */
+.groups-container {
+  display: grid;
+  gap: 16px;
+}
+.grp-card {
   background: var(--sf);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 14px;
 }
 .grp-header {
-  width: 100%;
   padding: 12px 18px;
   background: var(--sf-subtle);
-  border: 0;
   border-bottom: 1px solid var(--line);
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  color: var(--ink);
+  align-items: center;
   cursor: pointer;
-  text-align: left;
+  user-select: none;
 }
-.grp-header h2 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.grp-meta {
+.grp-title-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+}
+.grp-title {
+  font-size: 15px;
+  font-weight: 800;
+}
+.grp-count {
+  font-size: 11px;
   font-family: var(--font-mono);
   color: var(--mute);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 6px;
 }
-.grp-bar {
-  width: 60px;
-  height: 6px;
-  background: var(--line);
-  border-radius: 99px;
-  overflow: hidden;
-}
-.grp-bar-fill {
-  background: var(--teal);
-  height: 100%;
+.grp-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .batch-btn {
-  background: var(--sf);
+  background: none;
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 3px 8px;
@@ -451,7 +429,6 @@ h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
 .item-row:hover { background: var(--sf-subtle); }
 .item-row.done { background: rgba(16, 185, 129, 0.04); }
 .item-row.done .item-title { text-decoration: line-through; color: var(--mute); }
-.item-row.watching-now { background: rgba(245, 158, 11, 0.05); }
 
 .toggle-btn {
   width: 28px;
@@ -466,19 +443,10 @@ h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
   font-size: 13px;
   transition: all 0.15s;
 }
-.toggle-btn[data-status="watched"] {
+.toggle-btn.done {
   background: var(--teal);
   border-color: var(--teal);
   color: #fff;
-}
-.toggle-btn[data-status="watching"] {
-  border-color: var(--gold);
-  background: var(--gold);
-  color: #000;
-}
-.toggle-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.35;
 }
 
 .item-info { min-width: 0; }
@@ -508,7 +476,7 @@ h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
   border: 0;
   background: none;
   border-radius: 6px;
-  padding: 3px 8px;
+  padding: 4px 10px;
   font-size: 11px;
   font-weight: 600;
   color: var(--mute);
@@ -517,9 +485,9 @@ h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
   transition: all 0.15s;
 }
 .seg-btn:hover { color: var(--ink); }
-.seg-btn.active-watch {
-  background: var(--gold);
-  color: #000;
+.seg-btn.active-not-watched {
+  background: var(--line);
+  color: var(--ink);
   font-weight: 700;
 }
 .seg-btn.active-done {
@@ -569,7 +537,6 @@ dialog textarea {
 @media (max-width: 600px) {
   .item-row { grid-template-columns: 32px 1fr; }
   .item-actions { grid-column: 2; margin-top: 6px; }
-  .grp-bar { display: none; }
 }
 </style>
 </head>
@@ -613,17 +580,14 @@ dialog textarea {
       </div>
     </div>
 
+    <div class="stats-subline">
+      <span id="essentialsLeftText">0 essentials left</span>
+      <span>&bull;</span>
+      <span id="notWatchedText">0 not watched</span>
+    </div>
+
     <!-- Timeline strip -->
     <div class="strip" id="timelineStrip" title="Chronological timeline strip"></div>
-  </section>
-
-  <!-- Currently Watching Shelf (Dynamic) -->
-  <section class="watching-shelf" id="watchingShelf" style="display:none;">
-    <div class="shelf-hdr">
-      <span>👁️ Currently Watching</span>
-      <span id="watchingShelfCount" style="font-family:var(--font-mono);">0 in progress</span>
-    </div>
-    <div class="shelf-grid" id="watchingShelfGrid"></div>
   </section>
 
   <!-- Up Next & Upcoming Row -->
@@ -671,9 +635,8 @@ dialog textarea {
       <select id="statusSelect" class="select-box">
         <option value="all">All Watch Statuses</option>
         <option value="unwatched">Not Watched</option>
-        <option value="watching">Currently Watching</option>
         <option value="watched">Watched</option>
-        <option value="unwatched_essentials">⭐ Unwatched Essentials Only</option>
+        <option value="unwatched_essentials">⭐ Not Watched Essentials Only</option>
       </select>
       <select id="mediaSelect" class="select-box">
         <option value="all">All Media Types</option>
@@ -697,7 +660,7 @@ dialog textarea {
   </section>
 
   <!-- Items Accordions Container -->
-  <div id="groupsContainer"></div>
+  <div id="groupsContainer" class="groups-container"></div>
 </main>
 
 <!-- Backup & Restore Dialog -->
@@ -716,13 +679,25 @@ dialog textarea {
 </dialog>
 
 <script>
+const EMBEDDED_DATA = {"schemaVersion":1,"dataAsOf":"2026-11-09","items":[{"id":"iron-man-2008","order":1,"universe":"MCU","group":"Phase 1","title":"Iron Man","type":"Movie","releaseDate":"2008-05-02","releaseYear":2008,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"the-incredible-hulk-2008","order":2,"universe":"MCU","group":"Phase 1","title":"The Incredible Hulk","type":"Movie","releaseDate":"2008-06-13","releaseYear":2008,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"iron-man-2-2010","order":3,"universe":"MCU","group":"Phase 1","title":"Iron Man 2","type":"Movie","releaseDate":"2010-05-07","releaseYear":2010,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"thor-2011","order":4,"universe":"MCU","group":"Phase 1","title":"Thor","type":"Movie","releaseDate":"2011-05-06","releaseYear":2011,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"captain-america-the-first-avenger-2011","order":5,"universe":"MCU","group":"Phase 1","title":"Captain America: The First Avenger","type":"Movie","releaseDate":"2011-07-22","releaseYear":2011,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"the-avengers-2012","order":6,"universe":"MCU","group":"Phase 1","title":"The Avengers","type":"Movie","releaseDate":"2012-05-04","releaseYear":2012,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"iron-man-3-2013","order":7,"universe":"MCU","group":"Phase 2","title":"Iron Man 3","type":"Movie","releaseDate":"2013-05-03","releaseYear":2013,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"thor-the-dark-world-2013","order":8,"universe":"MCU","group":"Phase 2","title":"Thor: The Dark World","type":"Movie","releaseDate":"2013-11-08","releaseYear":2013,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"captain-america-the-winter-soldier-2014","order":9,"universe":"MCU","group":"Phase 2","title":"Captain America: The Winter Soldier","type":"Movie","releaseDate":"2014-04-04","releaseYear":2014,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"guardians-of-the-galaxy-2014","order":10,"universe":"MCU","group":"Phase 2","title":"Guardians of the Galaxy","type":"Movie","releaseDate":"2014-08-01","releaseYear":2014,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"avengers-age-of-ultron-2015","order":11,"universe":"MCU","group":"Phase 2","title":"Avengers: Age of Ultron","type":"Movie","releaseDate":"2015-05-01","releaseYear":2015,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"ant-man-2015","order":12,"universe":"MCU","group":"Phase 2","title":"Ant-Man","type":"Movie","releaseDate":"2015-07-17","releaseYear":2015,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"captain-america-civil-war-2016","order":13,"universe":"MCU","group":"Phase 3","title":"Captain America: Civil War","type":"Movie","releaseDate":"2016-05-06","releaseYear":2016,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"doctor-strange-2016","order":14,"universe":"MCU","group":"Phase 3","title":"Doctor Strange","type":"Movie","releaseDate":"2016-11-04","releaseYear":2016,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"guardians-of-the-galaxy-vol-2-2017","order":15,"universe":"MCU","group":"Phase 3","title":"Guardians of the Galaxy Vol. 2","type":"Movie","releaseDate":"2017-05-05","releaseYear":2017,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"spider-man-homecoming-2017","order":16,"universe":"MCU","group":"Phase 3","title":"Spider-Man: Homecoming","type":"Movie","releaseDate":"2017-07-07","releaseYear":2017,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"thor-ragnarok-2017","order":17,"universe":"MCU","group":"Phase 3","title":"Thor: Ragnarok","type":"Movie","releaseDate":"2017-11-03","releaseYear":2017,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"black-panther-2018","order":18,"universe":"MCU","group":"Phase 3","title":"Black Panther","type":"Movie","releaseDate":"2018-02-16","releaseYear":2018,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"avengers-infinity-war-2018","order":19,"universe":"MCU","group":"Phase 3","title":"Avengers: Infinity War","type":"Movie","releaseDate":"2018-04-27","releaseYear":2018,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"ant-man-and-the-wasp-2018","order":20,"universe":"MCU","group":"Phase 3","title":"Ant-Man and the Wasp","type":"Movie","releaseDate":"2018-07-06","releaseYear":2018,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"captain-marvel-2019","order":21,"universe":"MCU","group":"Phase 3","title":"Captain Marvel","type":"Movie","releaseDate":"2019-03-08","releaseYear":2019,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"avengers-endgame-2019","order":22,"universe":"MCU","group":"Phase 3","title":"Avengers: Endgame","type":"Movie","releaseDate":"2019-04-26","releaseYear":2019,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"spider-man-far-from-home-2019","order":23,"universe":"MCU","group":"Phase 3","title":"Spider-Man: Far From Home","type":"Movie","releaseDate":"2019-07-02","releaseYear":2019,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"wandavision-2021","order":24,"universe":"MCU","group":"Phase 4","title":"WandaVision","type":"Series","releaseDate":"2021-01-15","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"the-falcon-and-the-winter-soldier-2021","order":25,"universe":"MCU","group":"Phase 4","title":"The Falcon and the Winter Soldier","type":"Series","releaseDate":"2021-03-19","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"loki-season-1-2021","order":26,"universe":"MCU","group":"Phase 4","title":"Loki Season 1","type":"Series","releaseDate":"2021-06-09","releaseYear":2021,"releaseYearEnd":null,"seasons":1,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"black-widow-2021","order":27,"universe":"MCU","group":"Phase 4","title":"Black Widow","type":"Movie","releaseDate":"2021-07-09","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"what-if-season-1-2021","order":28,"universe":"MCU","group":"Phase 4","title":"What If...? Season 1","type":"Animated Series","releaseDate":"2021-08-11","releaseYear":2021,"releaseYearEnd":null,"seasons":1,"continuity":"Multiverse/Animated","priority":"Recommended","released":true,"note":null},{"id":"shang-chi-and-the-legend-of-the-ten-rings-2021","order":29,"universe":"MCU","group":"Phase 4","title":"Shang-Chi and the Legend of the Ten Rings","type":"Movie","releaseDate":"2021-09-03","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"eternals-2021","order":30,"universe":"MCU","group":"Phase 4","title":"Eternals","type":"Movie","releaseDate":"2021-11-05","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"hawkeye-2021","order":31,"universe":"MCU","group":"Phase 4","title":"Hawkeye","type":"Series","releaseDate":"2021-11-24","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"spider-man-no-way-home-2021","order":32,"universe":"MCU","group":"Phase 4","title":"Spider-Man: No Way Home","type":"Movie","releaseDate":"2021-12-17","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"MCU + Multiverse","priority":"Essential","released":true,"note":"Sony co-production"},{"id":"moon-knight-2022","order":33,"universe":"MCU","group":"Phase 4","title":"Moon Knight","type":"Series","releaseDate":"2022-03-30","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"doctor-strange-in-the-multiverse-of-madness-2022","order":34,"universe":"MCU","group":"Phase 4","title":"Doctor Strange in the Multiverse of Madness","type":"Movie","releaseDate":"2022-05-06","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU + Multiverse","priority":"Essential","released":true,"note":null},{"id":"ms-marvel-2022","order":35,"universe":"MCU","group":"Phase 4","title":"Ms. Marvel","type":"Series","releaseDate":"2022-06-08","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"thor-love-and-thunder-2022","order":36,"universe":"MCU","group":"Phase 4","title":"Thor: Love and Thunder","type":"Movie","releaseDate":"2022-07-08","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"i-am-groot-season-1-2022","order":37,"universe":"MCU","group":"Phase 4","title":"I Am Groot Season 1","type":"Animated Shorts","releaseDate":"2022-08-10","releaseYear":2022,"releaseYearEnd":null,"seasons":1,"continuity":"Core MCU Adjacent","priority":"Optional","released":true,"note":null},{"id":"she-hulk-attorney-at-law-2022","order":38,"universe":"MCU","group":"Phase 4","title":"She-Hulk: Attorney at Law","type":"Series","releaseDate":"2022-08-18","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"werewolf-by-night-2022","order":39,"universe":"MCU","group":"Phase 4","title":"Werewolf by Night","type":"Special Presentation","releaseDate":"2022-10-07","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"black-panther-wakanda-forever-2022","order":40,"universe":"MCU","group":"Phase 4","title":"Black Panther: Wakanda Forever","type":"Movie","releaseDate":"2022-11-11","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"the-guardians-of-the-galaxy-holiday-special-2022","order":41,"universe":"MCU","group":"Phase 4","title":"The Guardians of the Galaxy Holiday Special","type":"Special Presentation","releaseDate":"2022-11-25","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"ant-man-and-the-wasp-quantumania-2023","order":42,"universe":"MCU","group":"Phase 5","title":"Ant-Man and the Wasp: Quantumania","type":"Movie","releaseDate":"2023-02-17","releaseYear":2023,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"guardians-of-the-galaxy-vol-3-2023","order":43,"universe":"MCU","group":"Phase 5","title":"Guardians of the Galaxy Vol. 3","type":"Movie","releaseDate":"2023-05-05","releaseYear":2023,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"secret-invasion-2023","order":44,"universe":"MCU","group":"Phase 5","title":"Secret Invasion","type":"Series","releaseDate":"2023-06-21","releaseYear":2023,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Optional","released":true,"note":null},{"id":"i-am-groot-season-2-2023","order":45,"universe":"MCU","group":"Phase 5","title":"I Am Groot Season 2","type":"Animated Shorts","releaseDate":"2023-09-06","releaseYear":2023,"releaseYearEnd":null,"seasons":2,"continuity":"Core MCU Adjacent","priority":"Optional","released":true,"note":null},{"id":"loki-season-2-2023","order":46,"universe":"MCU","group":"Phase 5","title":"Loki Season 2","type":"Series","releaseDate":"2023-10-05","releaseYear":2023,"releaseYearEnd":null,"seasons":2,"continuity":"Core MCU + Multiverse","priority":"Essential","released":true,"note":null},{"id":"the-marvels-2023","order":47,"universe":"MCU","group":"Phase 5","title":"The Marvels","type":"Movie","releaseDate":"2023-11-10","releaseYear":2023,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"what-if-season-2-2023","order":48,"universe":"MCU","group":"Phase 5","title":"What If...? Season 2","type":"Animated Series","releaseDate":"2023-12-22","releaseYear":2023,"releaseYearEnd":null,"seasons":2,"continuity":"Multiverse/Animated","priority":"Recommended","released":true,"note":null},{"id":"echo-2024","order":49,"universe":"MCU","group":"Phase 5","title":"Echo","type":"Series","releaseDate":"2024-01-09","releaseYear":2024,"releaseYearEnd":null,"seasons":null,"continuity":"MCU-connected","priority":"Recommended","released":true,"note":null},{"id":"x-men-97-season-1-2024","order":50,"universe":"MCU","group":"Phase 5","title":"X-Men '97 Season 1","type":"Animated Series","releaseDate":"2024-03-20","releaseYear":2024,"releaseYearEnd":null,"seasons":1,"continuity":"Multiverse/Animated","priority":"Recommended","released":true,"note":null},{"id":"deadpool-wolverine-2024","order":51,"universe":"MCU","group":"Phase 5","title":"Deadpool & Wolverine","type":"Movie","releaseDate":"2024-07-26","releaseYear":2024,"releaseYearEnd":null,"seasons":null,"continuity":"MCU + Fox Multiverse","priority":"Essential","released":true,"note":"Features Fox-universe characters"},{"id":"agatha-all-along-2024","order":52,"universe":"MCU","group":"Phase 5","title":"Agatha All Along","type":"Series","releaseDate":"2024-09-18","releaseYear":2024,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"what-if-season-3-2024","order":53,"universe":"MCU","group":"Phase 5","title":"What If...? Season 3","type":"Animated Series","releaseDate":"2024-12-22","releaseYear":2024,"releaseYearEnd":null,"seasons":3,"continuity":"Multiverse/Animated","priority":"Recommended","released":true,"note":null},{"id":"your-friendly-neighborhood-spider-man-season-1-2025","order":54,"universe":"MCU","group":"Phase 5","title":"Your Friendly Neighborhood Spider-Man Season 1","type":"Animated Series","releaseDate":"2025-01-29","releaseYear":2025,"releaseYearEnd":null,"seasons":1,"continuity":"Alternate Universe","priority":"Optional","released":true,"note":null},{"id":"captain-america-brave-new-world-2025","order":55,"universe":"MCU","group":"Phase 5","title":"Captain America: Brave New World","type":"Movie","releaseDate":"2025-02-14","releaseYear":2025,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"daredevil-born-again-season-1-2025","order":56,"universe":"MCU","group":"Phase 5","title":"Daredevil: Born Again Season 1","type":"Series","releaseDate":"2025-03-04","releaseYear":2025,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected","priority":"Essential","released":true,"note":null},{"id":"thunderbolts-2025","order":57,"universe":"MCU","group":"Phase 5","title":"Thunderbolts*","type":"Movie","releaseDate":"2025-05-02","releaseYear":2025,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"ironheart-2025","order":58,"universe":"MCU","group":"Phase 5","title":"Ironheart","type":"Series","releaseDate":"2025-06-24","releaseYear":2025,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"the-fantastic-four-first-steps-2025","order":59,"universe":"MCU","group":"Phase 6","title":"The Fantastic Four: First Steps","type":"Movie","releaseDate":"2025-07-25","releaseYear":2025,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"eyes-of-wakanda-2025","order":60,"universe":"MCU","group":"Phase 6","title":"Eyes of Wakanda","type":"Animated Series","releaseDate":"2025-08-06","releaseYear":2025,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"marvel-zombies-2025","order":61,"universe":"MCU","group":"Phase 6","title":"Marvel Zombies","type":"Animated Series","releaseDate":"2025-09-24","releaseYear":2025,"releaseYearEnd":null,"seasons":null,"continuity":"Multiverse/Animated","priority":"Recommended","released":true,"note":null},{"id":"wonder-man-season-1-2026","order":62,"universe":"MCU","group":"Phase 6","title":"Wonder Man Season 1","type":"Series","releaseDate":"2026-01-27","releaseYear":2026,"releaseYearEnd":null,"seasons":1,"continuity":"Core MCU","priority":"Recommended","released":true,"note":null},{"id":"daredevil-born-again-season-2-2026","order":63,"universe":"MCU","group":"Phase 6","title":"Daredevil: Born Again Season 2","type":"Series","releaseDate":"2026-03-24","releaseYear":2026,"releaseYearEnd":null,"seasons":2,"continuity":"MCU-connected","priority":"Essential","released":true,"note":null},{"id":"spider-man-brand-new-day-2026","order":64,"universe":"MCU","group":"Phase 6","title":"Spider-Man: Brand New Day","type":"Movie","releaseDate":"2026-07-31","releaseYear":2026,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"visionquest-2026","order":65,"universe":"MCU","group":"Phase 6","title":"VisionQuest","type":"Series","releaseDate":"2026-10-14","releaseYear":2026,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":true,"note":null},{"id":"avengers-doomsday-2026","order":66,"universe":"MCU","group":"Phase 6","title":"Avengers: Doomsday","type":"Movie","releaseDate":"2026-12-18","releaseYear":2026,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":false,"note":null},{"id":"avengers-secret-wars-2027","order":67,"universe":"MCU","group":"Phase 6","title":"Avengers: Secret Wars","type":"Movie","releaseDate":"2027-12-17","releaseYear":2027,"releaseYearEnd":null,"seasons":null,"continuity":"Core MCU","priority":"Essential","released":false,"note":null},{"id":"daredevil-season-1-2015","order":68,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Daredevil Season 1","type":"Series","releaseDate":"2015-04-10","releaseYear":2015,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected / legacy Marvel TV","priority":"Essential","released":true,"note":null},{"id":"jessica-jones-season-1-2015","order":69,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Jessica Jones Season 1","type":"Series","releaseDate":"2015-11-20","releaseYear":2015,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected / legacy Marvel TV","priority":"Recommended","released":true,"note":null},{"id":"daredevil-season-2-2016","order":70,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Daredevil Season 2","type":"Series","releaseDate":"2016-03-18","releaseYear":2016,"releaseYearEnd":null,"seasons":2,"continuity":"MCU-connected / legacy Marvel TV","priority":"Essential","released":true,"note":null},{"id":"luke-cage-season-1-2016","order":71,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Luke Cage Season 1","type":"Series","releaseDate":"2016-09-30","releaseYear":2016,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected / legacy Marvel TV","priority":"Recommended","released":true,"note":null},{"id":"iron-fist-season-1-2017","order":72,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Iron Fist Season 1","type":"Series","releaseDate":"2017-03-17","releaseYear":2017,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected / legacy Marvel TV","priority":"Optional","released":true,"note":null},{"id":"the-defenders-season-1-2017","order":73,"universe":"Netflix/Marvel TV","group":"Legacy","title":"The Defenders Season 1","type":"Series","releaseDate":"2017-08-18","releaseYear":2017,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected / legacy Marvel TV","priority":"Essential","released":true,"note":null},{"id":"the-punisher-season-1-2017","order":74,"universe":"Netflix/Marvel TV","group":"Legacy","title":"The Punisher Season 1","type":"Series","releaseDate":"2017-11-17","releaseYear":2017,"releaseYearEnd":null,"seasons":1,"continuity":"MCU-connected / legacy Marvel TV","priority":"Essential","released":true,"note":null},{"id":"jessica-jones-season-2-2018","order":75,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Jessica Jones Season 2","type":"Series","releaseDate":"2018-03-08","releaseYear":2018,"releaseYearEnd":null,"seasons":2,"continuity":"MCU-connected / legacy Marvel TV","priority":"Recommended","released":true,"note":null},{"id":"luke-cage-season-2-2018","order":76,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Luke Cage Season 2","type":"Series","releaseDate":"2018-06-22","releaseYear":2018,"releaseYearEnd":null,"seasons":2,"continuity":"MCU-connected / legacy Marvel TV","priority":"Recommended","released":true,"note":null},{"id":"iron-fist-season-2-2018","order":77,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Iron Fist Season 2","type":"Series","releaseDate":"2018-09-07","releaseYear":2018,"releaseYearEnd":null,"seasons":2,"continuity":"MCU-connected / legacy Marvel TV","priority":"Optional","released":true,"note":null},{"id":"daredevil-season-3-2018","order":78,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Daredevil Season 3","type":"Series","releaseDate":"2018-10-19","releaseYear":2018,"releaseYearEnd":null,"seasons":3,"continuity":"MCU-connected / legacy Marvel TV","priority":"Essential","released":true,"note":null},{"id":"the-punisher-season-2-2019","order":79,"universe":"Netflix/Marvel TV","group":"Legacy","title":"The Punisher Season 2","type":"Series","releaseDate":"2019-01-18","releaseYear":2019,"releaseYearEnd":null,"seasons":2,"continuity":"MCU-connected / legacy Marvel TV","priority":"Recommended","released":true,"note":null},{"id":"jessica-jones-season-3-2019","order":80,"universe":"Netflix/Marvel TV","group":"Legacy","title":"Jessica Jones Season 3","type":"Series","releaseDate":"2019-06-14","releaseYear":2019,"releaseYearEnd":null,"seasons":3,"continuity":"MCU-connected / legacy Marvel TV","priority":"Optional","released":true,"note":null},{"id":"agents-of-s-h-i-e-l-d-seasons-1-7-2013","order":81,"universe":"Marvel TV","group":"Legacy","title":"Agents of S.H.I.E.L.D. Seasons 1-7","type":"Series","releaseDate":null,"releaseYear":2013,"releaseYearEnd":2020,"seasons":7,"continuity":"Marvel Television / continuity debated","priority":"Optional","released":true,"note":null},{"id":"agent-carter-seasons-1-2-2015","order":82,"universe":"Marvel TV","group":"Legacy","title":"Agent Carter Seasons 1-2","type":"Series","releaseDate":null,"releaseYear":2015,"releaseYearEnd":2016,"seasons":2,"continuity":"Marvel Television","priority":"Recommended","released":true,"note":null},{"id":"inhumans-season-1-2017","order":83,"universe":"Marvel TV","group":"Legacy","title":"Inhumans Season 1","type":"Series","releaseDate":null,"releaseYear":2017,"releaseYearEnd":null,"seasons":1,"continuity":"Marvel Television","priority":"Optional","released":true,"note":null},{"id":"runaways-seasons-1-3-2017","order":84,"universe":"Marvel TV","group":"Legacy","title":"Runaways Seasons 1-3","type":"Series","releaseDate":null,"releaseYear":2017,"releaseYearEnd":2019,"seasons":3,"continuity":"Marvel Television","priority":"Optional","released":true,"note":null},{"id":"cloak-dagger-seasons-1-2-2018","order":85,"universe":"Marvel TV","group":"Legacy","title":"Cloak & Dagger Seasons 1-2","type":"Series","releaseDate":null,"releaseYear":2018,"releaseYearEnd":2019,"seasons":2,"continuity":"Marvel Television","priority":"Optional","released":true,"note":null},{"id":"helstrom-season-1-2020","order":86,"universe":"Marvel TV","group":"Legacy","title":"Helstrom Season 1","type":"Series","releaseDate":null,"releaseYear":2020,"releaseYearEnd":null,"seasons":1,"continuity":"Marvel Television","priority":"Optional","released":true,"note":null},{"id":"x-men-2000","order":87,"universe":"Fox","group":"X-Men","title":"X-Men","type":"Movie","releaseDate":"2000-07-14","releaseYear":2000,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"x2-x-men-united-2003","order":88,"universe":"Fox","group":"X-Men","title":"X2: X-Men United","type":"Movie","releaseDate":"2003-05-02","releaseYear":2003,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"x-men-the-last-stand-2006","order":89,"universe":"Fox","group":"X-Men","title":"X-Men: The Last Stand","type":"Movie","releaseDate":"2006-05-26","releaseYear":2006,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Recommended","released":true,"note":null},{"id":"x-men-origins-wolverine-2009","order":90,"universe":"Fox","group":"X-Men","title":"X-Men Origins: Wolverine","type":"Movie","releaseDate":"2009-05-01","releaseYear":2009,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Optional","released":true,"note":null},{"id":"x-men-first-class-2011","order":91,"universe":"Fox","group":"X-Men","title":"X-Men: First Class","type":"Movie","releaseDate":"2011-06-03","releaseYear":2011,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"the-wolverine-2013","order":92,"universe":"Fox","group":"X-Men","title":"The Wolverine","type":"Movie","releaseDate":"2013-07-26","releaseYear":2013,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Recommended","released":true,"note":null},{"id":"x-men-days-of-future-past-2014","order":93,"universe":"Fox","group":"X-Men","title":"X-Men: Days of Future Past","type":"Movie","releaseDate":"2014-05-23","releaseYear":2014,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"x-men-apocalypse-2016","order":94,"universe":"Fox","group":"X-Men","title":"X-Men: Apocalypse","type":"Movie","releaseDate":"2016-05-27","releaseYear":2016,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Recommended","released":true,"note":null},{"id":"logan-2017","order":95,"universe":"Fox","group":"X-Men","title":"Logan","type":"Movie","releaseDate":"2017-03-03","releaseYear":2017,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"dark-phoenix-2019","order":96,"universe":"Fox","group":"X-Men","title":"Dark Phoenix","type":"Movie","releaseDate":"2019-06-07","releaseYear":2019,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Optional","released":true,"note":null},{"id":"deadpool-2016","order":97,"universe":"Fox","group":"Deadpool","title":"Deadpool","type":"Movie","releaseDate":"2016-02-12","releaseYear":2016,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"deadpool-2-2018","order":98,"universe":"Fox","group":"Deadpool","title":"Deadpool 2","type":"Movie","releaseDate":"2018-05-18","releaseYear":2018,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Essential","released":true,"note":null},{"id":"fantastic-four-2005","order":99,"universe":"Fox","group":"Fantastic Four","title":"Fantastic Four","type":"Movie","releaseDate":"2005-07-08","releaseYear":2005,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Optional","released":true,"note":null},{"id":"fantastic-four-rise-of-the-silver-surfer-2007","order":100,"universe":"Fox","group":"Fantastic Four","title":"Fantastic Four: Rise of the Silver Surfer","type":"Movie","releaseDate":"2007-06-15","releaseYear":2007,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Optional","released":true,"note":null},{"id":"fantastic-four-2015","order":101,"universe":"Fox","group":"Fantastic Four","title":"Fantastic Four","type":"Movie","releaseDate":"2015-08-07","releaseYear":2015,"releaseYearEnd":null,"seasons":null,"continuity":"Fox Universe","priority":"Optional","released":true,"note":null},{"id":"spider-man-2002","order":102,"universe":"Sony","group":"Spider-Man","title":"Spider-Man","type":"Movie","releaseDate":"2002-05-03","releaseYear":2002,"releaseYearEnd":null,"seasons":null,"continuity":"Sony Universe","priority":"Essential","released":true,"note":null},{"id":"spider-man-2-2004","order":103,"universe":"Sony","group":"Spider-Man","title":"Spider-Man 2","type":"Movie","releaseDate":"2004-06-30","releaseYear":2004,"releaseYearEnd":null,"seasons":null,"continuity":"Sony Universe","priority":"Essential","released":true,"note":null},{"id":"spider-man-3-2007","order":104,"universe":"Sony","group":"Spider-Man","title":"Spider-Man 3","type":"Movie","releaseDate":"2007-05-04","releaseYear":2007,"releaseYearEnd":null,"seasons":null,"continuity":"Sony Universe","priority":"Recommended","released":true,"note":null},{"id":"the-amazing-spider-man-2012","order":105,"universe":"Sony","group":"Spider-Man","title":"The Amazing Spider-Man","type":"Movie","releaseDate":"2012-07-03","releaseYear":2012,"releaseYearEnd":null,"seasons":null,"continuity":"Sony Universe","priority":"Recommended","released":true,"note":null},{"id":"the-amazing-spider-man-2-2014","order":106,"universe":"Sony","group":"Spider-Man","title":"The Amazing Spider-Man 2","type":"Movie","releaseDate":"2014-05-02","releaseYear":2014,"releaseYearEnd":null,"seasons":null,"continuity":"Sony Universe","priority":"Recommended","released":true,"note":null},{"id":"venom-2018","order":107,"universe":"Sony","group":"SSU","title":"Venom","type":"Movie","releaseDate":"2018-10-05","releaseYear":2018,"releaseYearEnd":null,"seasons":null,"continuity":"Sony's Spider-Man Universe","priority":"Recommended","released":true,"note":null},{"id":"venom-let-there-be-carnage-2021","order":108,"universe":"Sony","group":"SSU","title":"Venom: Let There Be Carnage","type":"Movie","releaseDate":"2021-10-01","releaseYear":2021,"releaseYearEnd":null,"seasons":null,"continuity":"Sony's Spider-Man Universe","priority":"Recommended","released":true,"note":null},{"id":"morbius-2022","order":109,"universe":"Sony","group":"SSU","title":"Morbius","type":"Movie","releaseDate":"2022-04-01","releaseYear":2022,"releaseYearEnd":null,"seasons":null,"continuity":"Sony's Spider-Man Universe","priority":"Optional","released":true,"note":null},{"id":"madame-web-2024","order":110,"universe":"Sony","group":"SSU","title":"Madame Web","type":"Movie","releaseDate":"2024-02-14","releaseYear":2024,"releaseYearEnd":null,"seasons":null,"continuity":"Sony's Spider-Man Universe","priority":"Optional","released":true,"note":null},{"id":"venom-the-last-dance-2024","order":111,"universe":"Sony","group":"SSU","title":"Venom: The Last Dance","type":"Movie","releaseDate":"2024-10-25","releaseYear":2024,"releaseYearEnd":null,"seasons":null,"continuity":"Sony's Spider-Man Universe","priority":"Recommended","released":true,"note":null},{"id":"kraven-the-hunter-2024","order":112,"universe":"Sony","group":"SSU","title":"Kraven the Hunter","type":"Movie","releaseDate":"2024-12-13","releaseYear":2024,"releaseYearEnd":null,"seasons":null,"continuity":"Sony's Spider-Man Universe","priority":"Optional","released":true,"note":null},{"id":"spider-man-into-the-spider-verse-2018","order":113,"universe":"Sony","group":"Spider-Verse","title":"Spider-Man: Into the Spider-Verse","type":"Animated Movie","releaseDate":"2018-12-14","releaseYear":2018,"releaseYearEnd":null,"seasons":null,"continuity":"Spider-Verse","priority":"Essential","released":true,"note":null},{"id":"spider-man-across-the-spider-verse-2023","order":114,"universe":"Sony","group":"Spider-Verse","title":"Spider-Man: Across the Spider-Verse","type":"Animated Movie","releaseDate":"2023-06-02","releaseYear":2023,"releaseYearEnd":null,"seasons":null,"continuity":"Spider-Verse","priority":"Essential","released":true,"note":null},{"id":"blade-1998","order":115,"universe":"Legacy","group":"Blade","title":"Blade","type":"Movie","releaseDate":"1998-08-21","releaseYear":1998,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Recommended","released":true,"note":null},{"id":"blade-ii-2002","order":116,"universe":"Legacy","group":"Blade","title":"Blade II","type":"Movie","releaseDate":"2002-03-22","releaseYear":2002,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Recommended","released":true,"note":null},{"id":"blade-trinity-2004","order":117,"universe":"Legacy","group":"Blade","title":"Blade: Trinity","type":"Movie","releaseDate":"2004-12-08","releaseYear":2004,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Optional","released":true,"note":null},{"id":"daredevil-2003","order":118,"universe":"Legacy","group":"Daredevil","title":"Daredevil","type":"Movie","releaseDate":"2003-02-14","releaseYear":2003,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Optional","released":true,"note":null},{"id":"elektra-2005","order":119,"universe":"Legacy","group":"Daredevil","title":"Elektra","type":"Movie","releaseDate":"2005-01-14","releaseYear":2005,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Optional","released":true,"note":null},{"id":"the-punisher-2004","order":120,"universe":"Legacy","group":"Punisher","title":"The Punisher","type":"Movie","releaseDate":"2004-04-16","releaseYear":2004,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Recommended","released":true,"note":null},{"id":"punisher-war-zone-2008","order":121,"universe":"Legacy","group":"Punisher","title":"Punisher: War Zone","type":"Movie","releaseDate":"2008-12-05","releaseYear":2008,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Optional","released":true,"note":null},{"id":"ghost-rider-2007","order":122,"universe":"Legacy","group":"Ghost Rider","title":"Ghost Rider","type":"Movie","releaseDate":"2007-02-16","releaseYear":2007,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Recommended","released":true,"note":null},{"id":"ghost-rider-spirit-of-vengeance-2011","order":123,"universe":"Legacy","group":"Ghost Rider","title":"Ghost Rider: Spirit of Vengeance","type":"Movie","releaseDate":"2011-02-17","releaseYear":2011,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Optional","released":true,"note":null},{"id":"hulk-2003","order":124,"universe":"Legacy","group":"Hulk","title":"Hulk","type":"Movie","releaseDate":"2003-06-20","releaseYear":2003,"releaseYearEnd":null,"seasons":null,"continuity":"Legacy Marvel","priority":"Optional","released":true,"note":null}]};
+
 const STORAGE_KEY = "marvelWatchlist.progress.v1";
-let items = [];
+let items = EMBEDDED_DATA.items || [];
 let progress = {};
 
 // Load progress safely
 try {
-  progress = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") || {};
+  const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  if (stored && typeof stored === "object") {
+    // Normalize format
+    for (const k in stored) {
+      if (typeof stored[k] === "string") {
+        if (stored[k] === "watched") progress[k] = "watched";
+      } else if (stored[k] && stored[k].status === "watched") {
+        progress[k] = "watched";
+      }
+    }
+  }
 } catch(e) {
   progress = {};
 }
@@ -744,7 +719,7 @@ function parseDate(dStr) {
 }
 
 function getStatus(id) {
-  return progress[id] || "unwatched";
+  return progress[id] === "watched" ? "watched" : "unwatched";
 }
 
 const filters = {
@@ -759,19 +734,7 @@ const filters = {
 
 const collapsed = {};
 
-async function init() {
-  try {
-    const res = await fetch("./marvel_watchlist.json");
-    if (res.ok) {
-      const data = await res.json();
-      items = data.items;
-    } else {
-      throw new Error("Local fetch unavailable");
-    }
-  } catch(e) {
-    console.info("Loaded via bundle or fallback");
-  }
-
+function init() {
   // Runtime compute release flags
   items.forEach(i => {
     const d = parseDate(i.releaseDate);
@@ -812,181 +775,163 @@ function renderChips() {
 
 function setDirectStatus(id, targetStatus) {
   const cur = getStatus(id);
-  const next = cur === targetStatus ? "unwatched" : targetStatus;
-  if (next === "unwatched") delete progress[id];
-  else progress[id] = next;
+  const next = cur === targetStatus ? (targetStatus === "watched" ? "unwatched" : "watched") : targetStatus;
+  if (next === "unwatched") {
+    delete progress[id];
+  } else {
+    progress[id] = "watched";
+  }
   saveProgress();
 }
 
 function render() {
-  const released = items.filter(i => i.isReleased);
-  const watchedCount = released.filter(i => getStatus(i.id) === "watched").length;
-  const essentials = released.filter(i => i.priority === "Essential");
+  const watchedCount = items.filter(i => getStatus(i.id) === "watched").length;
+  const essentials = items.filter(i => i.priority === "Essential");
   const essentialsWatched = essentials.filter(i => getStatus(i.id) === "watched").length;
-  const watchingItems = released.filter(i => getStatus(i.id) === "watching");
+  const essentialsLeft = essentials.length - essentialsWatched;
+  const notWatchedCount = items.length - watchedCount;
 
-  const totalPct = released.length ? Math.round((watchedCount / released.length) * 100) : 0;
+  const totalPct = items.length ? Math.round((watchedCount / items.length) * 100) : 0;
   const essPct = essentials.length ? Math.round((essentialsWatched / essentials.length) * 100) : 0;
 
   // Dual Gauges
   document.getElementById("gaugeEssentialText").textContent = `${essentialsWatched} / ${essentials.length} (${essPct}%)`;
   document.getElementById("gaugeEssentialBar").style.width = `${essPct}%`;
 
-  document.getElementById("gaugeTotalText").textContent = `${watchedCount} / ${released.length} (${totalPct}%)`;
+  document.getElementById("gaugeTotalText").textContent = `${watchedCount} / ${items.length} (${totalPct}%)`;
   document.getElementById("gaugeTotalBar").style.width = `${totalPct}%`;
 
-  // Currently Watching Shelf
-  const shelf = document.getElementById("watchingShelf");
-  const shelfGrid = document.getElementById("watchingShelfGrid");
-  if (watchingItems.length > 0) {
-    shelf.style.display = "flex";
-    document.getElementById("watchingShelfCount").textContent = `${watchingItems.length} active`;
-    shelfGrid.innerHTML = watchingItems.map(i => `
-      <div class="shelf-card">
-        <div style="min-width:0;">
-          <div class="shelf-title">${i.title}</div>
-          <div class="shelf-sub">#${i.order} • ${i.group}</div>
-        </div>
-        <button class="btn" style="padding:4px 8px;font-size:11px;" onclick="setDirectStatus('${i.id}', 'watched')">✓ Done</button>
-      </div>
-    `).join("");
-  } else {
-    shelf.style.display = "none";
-  }
+  document.getElementById("essentialsLeftText").textContent = `${essentialsLeft} essentials left`;
+  document.getElementById("notWatchedText").textContent = `${notWatchedCount} not watched`;
 
   // Timeline strip
   const strip = document.getElementById("timelineStrip");
   strip.innerHTML = items.map(i => {
     const st = getStatus(i.id);
-    const cls = !i.isReleased ? "u" : st === "watched" ? "w" : st === "watching" ? "g" : "";
+    const cls = !i.isReleased ? "u" : st === "watched" ? "w" : "";
     return `<button class="strip-dot ${cls}" data-id="${i.id}" title="${i.title} (${st})"></button>`;
   }).join("");
 
   // Up Next Card
-  const upNext = essentials.find(i => getStatus(i.id) !== "watched");
+  const upNext = items.filter(i => i.priority === "Essential" && getStatus(i.id) !== "watched").sort((a,b) => a.order - b.order)[0];
+  const upNextCard = document.getElementById("upNextCard");
   if (upNext) {
+    upNextCard.style.display = "flex";
     document.getElementById("upNextTitle").textContent = upNext.title;
-    document.getElementById("upNextMeta").textContent = `#${upNext.order} • ${upNext.universe} • ${upNext.group} • ${upNext.releaseYear}`;
-    document.getElementById("upNextBtn").style.display = "inline-flex";
-    document.getElementById("catchUpBtn").style.display = "inline-flex";
-    document.getElementById("upNextBtn").onclick = () => {
-      setDirectStatus(upNext.id, "watched");
-    };
+    document.getElementById("upNextMeta").textContent = `#${upNext.order} • ${upNext.group} • ${upNext.releaseDate || upNext.releaseYear}`;
+    document.getElementById("upNextBtn").onclick = () => setDirectStatus(upNext.id, "watched");
     document.getElementById("catchUpBtn").onclick = () => {
-      items.filter(i => i.isReleased && i.order <= upNext.order).forEach(i => {
-        progress[i.id] = "watched";
-      });
+      items.filter(i => i.order <= upNext.order).forEach(i => progress[i.id] = "watched");
       saveProgress();
     };
   } else {
-    document.getElementById("upNextTitle").textContent = "All Essentials Watched!";
-    document.getElementById("upNextMeta").textContent = "Great job! Filter by Recommended or Optional.";
-    document.getElementById("upNextBtn").style.display = "none";
-    document.getElementById("catchUpBtn").style.display = "none";
+    upNextCard.style.display = "none";
   }
 
   // Next Upcoming Card
   const upcoming = items.filter(i => !i.isReleased && i.daysUntil > 0).sort((a,b) => a.daysUntil - b.daysUntil)[0];
+  const upcomingCard = document.getElementById("upcomingCard");
   if (upcoming) {
+    upcomingCard.style.display = "flex";
     document.getElementById("upcomingTitle").textContent = upcoming.title;
-    document.getElementById("upcomingMeta").textContent = `Releases ${upcoming.releaseDate || upcoming.releaseYear}`;
-    document.getElementById("upcomingDays").textContent = `In ${upcoming.daysUntil} Days`;
+    document.getElementById("upcomingMeta").textContent = `${upcoming.group} • ${upcoming.releaseDate || upcoming.releaseYear}`;
+    document.getElementById("upcomingDays").textContent = `In ${upcoming.daysUntil} days`;
+  } else {
+    upcomingCard.style.display = "none";
   }
 
-  // Filter items
+  // Filter Items
   let filtered = items.filter(i => {
-    // Curated Track Presets
+    // 1. Curated Tracks
     if (filters.track === "essential" && i.priority !== "Essential") return false;
-    if (filters.track === "golden" && i.priority !== "Essential" && i.priority !== "Recommended") return false;
+    if (filters.track === "golden" && (i.priority !== "Essential" && i.priority !== "Recommended")) return false;
     if (filters.track === "spider") {
-      const isSp = i.universe === "Sony" || i.title.toLowerCase().includes("spider") || i.title.toLowerCase().includes("venom");
-      if (!isSp) return false;
+      const isS = i.universe === "Sony" || i.title.toLowerCase().includes("spider") || i.title.toLowerCase().includes("venom");
+      if (!isS) return false;
     }
     if (filters.track === "defenders") {
-      const isDef = i.universe === "Netflix/Marvel TV" || i.title.toLowerCase().includes("daredevil") || i.title.toLowerCase().includes("punisher");
-      if (!isDef) return false;
+      const isD = i.universe === "Netflix/Marvel TV" || i.title.toLowerCase().includes("daredevil") || i.title.toLowerCase().includes("punisher");
+      if (!isD) return false;
     }
 
-    // Media
-    if (filters.media === "movie" && !i.type.toLowerCase().includes("movie")) return false;
-    if (filters.media === "series" && !i.type.toLowerCase().includes("series")) return false;
-    if (filters.media === "special" && !i.type.toLowerCase().includes("special") && !i.type.toLowerCase().includes("one-shot")) return false;
-
-    // Universe & Priority
+    // 2. Universe
     if (filters.universe !== "All" && i.universe !== filters.universe) return false;
+
+    // 3. Priority
     if (filters.priority !== "All" && i.priority !== filters.priority) return false;
 
-    // Status
+    // 4. Status (Not Watched vs Watched)
     const st = getStatus(i.id);
     if (filters.status === "watched" && st !== "watched") return false;
-    if (filters.status === "watching" && st !== "watching") return false;
-    if (filters.status === "unwatched" && st !== "unwatched") return false;
+    if (filters.status === "unwatched" && st === "watched") return false;
     if (filters.status === "unwatched_essentials" && (i.priority !== "Essential" || st === "watched")) return false;
 
-    // Query
+    // 5. Media
+    if (filters.media === "movie" && !i.type.toLowerCase().includes("movie")) return false;
+    if (filters.media === "series" && !i.type.toLowerCase().includes("series")) return false;
+    if (filters.media === "special" && !i.type.toLowerCase().includes("special")) return false;
+
+    // 6. Search
     if (filters.q) {
       const q = filters.q.toLowerCase();
       if (!i.title.toLowerCase().includes(q) && !i.group.toLowerCase().includes(q)) return false;
     }
+
     return true;
   });
 
-  document.getElementById("resultsCount").textContent = `${filtered.length} of ${items.length} titles`;
-
   // Sort
-  if (filters.sort === "title") {
-    filtered.sort((a,b) => a.title.localeCompare(b.title));
-  } else if (filters.sort === "date") {
-    filtered.sort((a,b) => (parseDate(a.releaseDate) || new Date(a.releaseYear, 0, 1)) - (parseDate(b.releaseDate) || new Date(b.releaseYear, 0, 1)));
+  if (filters.sort === "title") filtered.sort((a,b) => a.title.localeCompare(b.title));
+  else if (filters.sort === "date") {
+    filtered.sort((a,b) => (parseDate(a.releaseDate) || new Date(a.releaseYear,0,1)) - (parseDate(b.releaseDate) || new Date(b.releaseYear,0,1)));
   } else {
     filtered.sort((a,b) => a.order - b.order);
   }
 
-  // Group by Universe • Group
-  const groups = new Map();
+  document.getElementById("resultsCount").textContent = `Showing ${filtered.length} of ${items.length} titles`;
+
+  // Render Accordions
+  const grps = new Map();
   filtered.forEach(i => {
     const k = `${i.universe} • ${i.group}`;
-    if (!groups.has(k)) groups.set(k, []);
-    groups.get(k).push(i);
+    if (!grps.has(k)) grps.set(k, []);
+    grps.get(k).push(i);
   });
 
   const container = document.getElementById("groupsContainer");
-  if (!filtered.length) {
-    container.innerHTML = `<div style="text-align:center;padding:48px 16px;color:var(--mute);">No Marvel titles match your current filters.</div>`;
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mute);background:var(--sf);border-radius:16px;border:1px solid var(--line);">No Marvel titles match your filters.</div>';
     return;
   }
 
-  container.innerHTML = Array.from(groups.entries()).map(([grpName, grpItems]) => {
+  container.innerHTML = Array.from(grps.entries()).map(([grpName, grpItems]) => {
     const isClosed = collapsed[grpName];
-    const grpReleased = grpItems.filter(i => i.isReleased);
-    const grpWatched = grpReleased.filter(i => getStatus(i.id) === "watched").length;
-    const grpPct = grpReleased.length ? Math.round((grpWatched / grpReleased.length) * 100) : 0;
-    const allDone = grpReleased.length > 0 && grpWatched === grpReleased.length;
+    const watchedInGrp = grpItems.filter(i => getStatus(i.id) === "watched").length;
+    const allWatched = grpItems.length > 0 && watchedInGrp === grpItems.length;
 
     return `
-      <section class="grp">
+      <section class="grp-card">
         <div class="grp-header" data-group="${grpName}">
-          <h2>${grpName}</h2>
-          <div class="grp-meta">
-            ${grpReleased.length > 0 ? `
-              <button class="batch-btn" data-batch-phase="${grpName}">
-                ${allDone ? "✓ All Done" : "Mark Phase"}
-              </button>
-            ` : ""}
-            <span>${grpWatched}/${grpReleased.length}</span>
-            <div class="grp-bar"><div class="grp-bar-fill" style="width:${grpPct}%"></div></div>
-            <span>${isClosed ? "▼" : "▲"}</span>
+          <div class="grp-title-wrap">
+            <span class="grp-title">${grpName}</span>
+            <span class="grp-count">${grpItems.length}</span>
+          </div>
+          <div class="grp-actions">
+            <button class="batch-btn" data-batch-phase="${grpName}" title="Mark phase watched/unwatched">
+              ${allWatched ? "✓ All Watched" : "Mark Phase"}
+            </button>
+            <span style="font-size:12px;font-family:var(--font-mono);color:var(--mute);">${watchedInGrp}/${grpItems.length}</span>
+            <span style="font-size:12px;color:var(--mute);">${isClosed ? "▼" : "▲"}</span>
           </div>
         </div>
         ${isClosed ? "" : grpItems.map(i => {
           const st = getStatus(i.id);
           const isW = st === "watched";
-          const isG = st === "watching";
           const label = i.releaseDate ? i.releaseDate : (i.releaseYearEnd ? `${i.releaseYear}–${i.releaseYearEnd}` : i.releaseYear);
           return `
-            <div class="item-row ${isW ? "done" : isG ? "watching-now" : ""}" id="item-${i.id}">
-              <button class="toggle-btn" data-toggle="${i.id}" data-status="${st}" ${!i.isReleased ? "disabled" : ""} title="Tap to cycle status">
-                ${isW ? "✓" : isG ? "👁️" : ""}
+            <div class="item-row ${isW ? "done" : ""}" id="item-${i.id}">
+              <button class="toggle-btn ${isW ? "done" : ""}" data-toggle="${i.id}" data-status="${st}" title="Click to toggle status">
+                ${isW ? "✓" : ""}
               </button>
               <div class="item-info">
                 <div class="item-title">${i.title} ${i.seasons ? `<small style="color:var(--mute);font-weight:normal;">(${i.seasons} Seasons)</small>` : ""}</div>
@@ -994,12 +939,10 @@ function render() {
               </div>
               <div class="item-actions">
                 <span class="badge ${i.priority}">${i.priority}</span>
-                ${i.isReleased ? `
-                  <div class="seg-ctrl">
-                    <button class="seg-btn ${isG ? "active-watch" : ""}" data-status-btn="watching" data-id="${i.id}">Watch</button>
-                    <button class="seg-btn ${isW ? "active-done" : ""}" data-status-btn="watched" data-id="${i.id}">Done</button>
-                  </div>
-                ` : `<span class="badge" style="color:var(--mute)">Upcoming</span>`}
+                <div class="seg-ctrl">
+                  <button class="seg-btn ${!isW ? "active-not-watched" : ""}" data-status-btn="unwatched" data-id="${i.id}">Not Watched</button>
+                  <button class="seg-btn ${isW ? "active-done" : ""}" data-status-btn="watched" data-id="${i.id}">Watched</button>
+                </div>
               </div>
             </div>
           `;
@@ -1021,7 +964,7 @@ function setupEvents() {
       return;
     }
 
-    // Direct Status Button
+    // Direct Status Button (Not Watched vs Watched)
     const statusBtn = e.target.closest("[data-status-btn]");
     if (statusBtn) {
       const id = statusBtn.dataset.id;
@@ -1035,7 +978,7 @@ function setupEvents() {
     if (batch) {
       e.stopPropagation();
       const grp = batch.dataset.batchPhase;
-      const targets = items.filter(i => `${i.universe} • ${i.group}` === grp && i.isReleased);
+      const targets = items.filter(i => `${i.universe} • ${i.group}` === grp);
       const allDone = targets.every(i => getStatus(i.id) === "watched");
       targets.forEach(i => {
         if (allDone) delete progress[i.id];
@@ -1057,12 +1000,12 @@ function setupEvents() {
 
     // Toggle button (circle)
     const toggle = e.target.closest("[data-toggle]");
-    if (toggle && !toggle.disabled) {
+    if (toggle) {
       const id = toggle.dataset.toggle;
       const cur = getStatus(id);
-      const next = cur === "unwatched" ? "watching" : cur === "watching" ? "watched" : "unwatched";
+      const next = cur === "watched" ? "unwatched" : "watched";
       if (next === "unwatched") delete progress[id];
-      else progress[id] = next;
+      else progress[id] = "watched";
       saveProgress();
       return;
     }
@@ -1083,12 +1026,12 @@ function setupEvents() {
       const el = document.getElementById("item-" + id);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.style.outline = "2px solid var(--primary)";
-        setTimeout(() => el.style.outline = "", 1500);
       }
+      return;
     }
   });
 
+  // Search input
   document.getElementById("searchInput").oninput = e => {
     filters.q = e.target.value.trim();
     render();
@@ -1134,10 +1077,15 @@ function setupEvents() {
       const parsed = JSON.parse(ta.value);
       const incoming = parsed.progress || parsed;
       if (!incoming || typeof incoming !== "object") throw new Error();
-      progress = incoming;
+      progress = {};
+      for (const k in incoming) {
+        if (incoming[k] === "watched" || (incoming[k] && incoming[k].status === "watched")) {
+          progress[k] = "watched";
+        }
+      }
       saveProgress();
       msg.style.color = "var(--teal)";
-      msg.textContent = `Successfully loaded ${Object.keys(incoming).length} titles!`;
+      msg.textContent = `Successfully loaded ${Object.keys(progress).length} titles!`;
     } catch(e) {
       msg.style.color = "var(--red)";
       msg.textContent = "Invalid progress JSON format.";
@@ -1145,15 +1093,8 @@ function setupEvents() {
   };
 }
 
-fetch("./marvel_watchlist.json")
-  .then(r => r.json())
-  .then(d => {
-    items = d.items;
-    init();
-  })
-  .catch(() => {
-    init();
-  });
+// Initialize immediately with embedded data
+init();
 </script>
 </body>
 </html>
