@@ -30,11 +30,12 @@ describe('PWA Manifest & Assets', () => {
     expect(content).toContain('offline');
   });
 
-  it('verifies service worker file exists and caches offline fallback', () => {
+  it('verifies service worker file exists and caches offline fallback and standalone tools', () => {
     const swPath = path.resolve(import.meta.dirname, '../../public/sw.js');
     expect(fs.existsSync(swPath)).toBe(true);
     const content = fs.readFileSync(swPath, 'utf8');
     expect(content).toContain('/offline.html');
+    expect(content).toContain('/tools/marvel-watch-order.html');
     expect(content).toContain('addEventListener');
   });
 

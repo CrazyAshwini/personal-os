@@ -1,6 +1,7 @@
 import React from 'react';
 import { DesktopSidebar } from '@/components/navigation/desktop-sidebar';
 import { MobileNav } from '@/components/navigation/mobile-nav';
+import { OfflineBanner } from '@/components/layout/offline-banner';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -32,6 +33,9 @@ export function AppShell({
           userName={userName}
           avatarUrl={avatarUrl}
         />
+
+        {/* Dynamic network connectivity banner */}
+        <OfflineBanner />
 
         {/* Content area with bottom padding on mobile for the fixed bottom nav */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 max-w-7xl w-full mx-auto">

@@ -1,9 +1,11 @@
-const CACHE_NAME = 'personal-os-v1';
+const CACHE_NAME = 'personal-os-v2';
 const PRECACHE_ASSETS = [
   '/offline.html',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/favicon.ico',
+  '/tools/marvel-watch-order.html',
+  '/tools/marvel_watchlist.json',
 ];
 
 self.addEventListener('install', (event) => {
