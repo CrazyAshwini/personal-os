@@ -509,6 +509,35 @@ h1 {
 .badge.Recommended { border-color: var(--gold); color: var(--gold); }
 .badge.Optional { color: var(--mute); }
 
+.star-rating {
+  display: inline-flex;
+  gap: 1px;
+  align-items: center;
+  padding: 2px 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.star-btn {
+  background: none;
+  border: 0;
+  font-size: 13px;
+  color: var(--mute);
+  opacity: 0.35;
+  cursor: pointer;
+  padding: 0 1px;
+  transition: transform 0.1s, color 0.1s, opacity 0.1s;
+}
+.star-btn.filled {
+  color: var(--gold);
+  opacity: 1;
+}
+.star-btn:hover {
+  transform: scale(1.25);
+  color: var(--gold);
+  opacity: 0.95;
+}
+
 /* Dialog */
 dialog {
   max-width: 500px;
@@ -584,6 +613,8 @@ dialog textarea {
       <span id="essentialsLeftText">0 essentials left</span>
       <span>&bull;</span>
       <span id="notWatchedText">0 not watched</span>
+      <span>&bull;</span>
+      <span id="bingeClockText" style="color:var(--ink);font-weight:700;">⏱️ ~0h / ~0h binge time</span>
     </div>
 
     <!-- Timeline strip -->
@@ -646,6 +677,7 @@ dialog textarea {
       </select>
       <select id="sortSelect" class="select-box">
         <option value="order">Recommended Order</option>
+        <option value="rating">★ My Rating (Highest First)</option>
         <option value="date">Release Date</option>
         <option value="title">Title A–Z</option>
       </select>
@@ -719,7 +751,16 @@ function parseDate(dStr) {
 }
 
 function getStatus(id) {
-  return progress[id] === "watched" ? "watched" : "unwatched";
+  const item = progress[id];
+  if (!item) return "unwatched";
+  if (typeof item === "string") return item === "watched" ? "watched" : "unwatched";
+  return item.status === "watched" ? "watched" : "unwatched";
+}
+
+function getRating(id) {
+  const item = progress[id];
+  if (!item || typeof item !== "object") return 0;
+  return item.rating || 0;
 }
 
 const filters = {
@@ -779,7 +820,8 @@ function setDirectStatus(id, targetStatus) {
   if (next === "unwatched") {
     delete progress[id];
   } else {
-    progress[id] = "watched";
+    const existing = typeof progress[id] === "object" ? progress[id] : {};
+    progress[id] = { ...existing, status: "watched" };
   }
   saveProgress();
 }
@@ -803,6 +845,21 @@ function render() {
 
   document.getElementById("essentialsLeftText").textContent = `${essentialsLeft} essentials left`;
   document.getElementById("notWatchedText").textContent = `${notWatchedCount} not watched`;
+
+  // Binge Clock
+  const getItemMins = i => {
+    const t = (i.type || "").toLowerCase();
+    if (t.includes("movie")) return 125;
+    if (t.includes("short")) return 15;
+    if (t.includes("special") || t.includes("presentation")) return 50;
+    return (i.seasons || 1) * 360;
+  };
+  const totalMins = items.reduce((s, i) => s + getItemMins(i), 0);
+  const watchedMins = items.filter(i => getStatus(i.id) === "watched").reduce((s, i) => s + getItemMins(i), 0);
+  const totalHrs = Math.round(totalMins / 60);
+  const watchedHrs = Math.round(watchedMins / 60);
+  const clockEl = document.getElementById("bingeClockText");
+  if (clockEl) clockEl.textContent = `⏱️ ~${watchedHrs}h / ~${totalHrs}h binge time`;
 
   // Timeline strip
   const strip = document.getElementById("timelineStrip");
@@ -884,6 +941,8 @@ function render() {
   if (filters.sort === "title") filtered.sort((a,b) => a.title.localeCompare(b.title));
   else if (filters.sort === "date") {
     filtered.sort((a,b) => (parseDate(a.releaseDate) || new Date(a.releaseYear,0,1)) - (parseDate(b.releaseDate) || new Date(b.releaseYear,0,1)));
+  } else if (filters.sort === "rating") {
+    filtered.sort((a,b) => (getRating(b.id) - getRating(a.id)) || (a.order - b.order));
   } else {
     filtered.sort((a,b) => a.order - b.order);
   }
@@ -943,6 +1002,13 @@ function render() {
                   <button class="seg-btn ${!isW ? "active-not-watched" : ""}" data-status-btn="unwatched" data-id="${i.id}">Not Watched</button>
                   <button class="seg-btn ${isW ? "active-done" : ""}" data-status-btn="watched" data-id="${i.id}">Watched</button>
                 </div>
+                ${isW ? `
+                  <div class="star-rating" title="Rate (1-5 stars)">
+                    ${[1, 2, 3, 4, 5].map(st => `
+                      <button class="star-btn ${getRating(i.id) >= st ? 'filled' : ''}" data-rate-id="${i.id}" data-star="${st}">★</button>
+                    `).join("")}
+                  </div>
+                ` : ""}
               </div>
             </div>
           `;
@@ -970,6 +1036,19 @@ function setupEvents() {
       const id = statusBtn.dataset.id;
       const targetStatus = statusBtn.dataset.statusBtn;
       setDirectStatus(id, targetStatus);
+      return;
+    }
+
+    // Star Rating
+    const starBtn = e.target.closest("[data-rate-id]");
+    if (starBtn) {
+      const id = starBtn.dataset.rateId;
+      const star = Number(starBtn.dataset.star);
+      if (typeof progress[id] !== "object") {
+        progress[id] = { status: "watched", rating: null };
+      }
+      progress[id].rating = progress[id].rating === star ? null : star;
+      saveProgress();
       return;
     }
 

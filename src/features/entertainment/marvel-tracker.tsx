@@ -14,6 +14,9 @@ import {
   Check,
   Zap,
   RotateCcw,
+  Star,
+  Clock,
+  CalendarPlus,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +31,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import rawData from '@/data/marvel-watchlist.json';
-import { toggleMarvelItemAction, batchSetMarvelItemsAction } from './marvel-actions';
+import {
+  toggleMarvelItemAction,
+  batchSetMarvelItemsAction,
+  setMarvelItemRatingAction,
+  addPremiereToCalendarAction,
+} from './marvel-actions';
 import type {
   MarvelItem,
   MarvelWatchStatus,
@@ -74,11 +82,12 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
   const [selectedPriority, setSelectedPriority] = useState<string>('All');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedMediaType, setSelectedMediaType] = useState<MediaTypeFilter>('all');
-  const [sortBy, setSortBy] = useState<'order' | 'date' | 'title'>('order');
+  const [sortBy, setSortBy] = useState<'order' | 'date' | 'title' | 'rating'>('order');
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [backupOpen, setBackupOpen] = useState(false);
   const [backupJson, setBackupJson] = useState('');
   const [backupMsg, setBackupMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [calendarSyncStatus, setCalendarSyncStatus] = useState<Record<string, string>>({});
 
   const saveProgress = (newMap: MarvelProgressMap) => {
     setProgress(newMap);
@@ -144,6 +153,45 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
     startTransition(async () => {
       await toggleMarvelItemAction(item, nextStatus);
     });
+  };
+
+  // 1-Click 5-Star Rating (Toggle or Update)
+  const handleSetRating = (item: MarvelItem, star: number) => {
+    const currentRating = progress[item.id]?.rating || 0;
+    const nextRating = currentRating === star ? null : star;
+
+    const nextProgress = {
+      ...progress,
+      [item.id]: {
+        ...progress[item.id],
+        status: 'watched' as MarvelWatchStatus,
+        rating: nextRating,
+      },
+    };
+
+    saveProgress(nextProgress);
+
+    startTransition(async () => {
+      await setMarvelItemRatingAction(item, nextRating);
+    });
+  };
+
+  // Sync Upcoming Premiere to Calendar
+  const handleAddPremiereToCalendar = async (item: MarvelItem) => {
+    setCalendarSyncStatus((prev) => ({ ...prev, [item.id]: 'Adding...' }));
+    const res = await addPremiereToCalendarAction(item);
+    if (res.error) {
+      setCalendarSyncStatus((prev) => ({ ...prev, [item.id]: 'Failed' }));
+    } else {
+      setCalendarSyncStatus((prev) => ({ ...prev, [item.id]: 'Added! 📅' }));
+      setTimeout(() => {
+        setCalendarSyncStatus((prev) => {
+          const next = { ...prev };
+          delete next[item.id];
+          return next;
+        });
+      }, 3500);
+    }
   };
 
   // Batch Mark Phase/Group as Watched
@@ -226,6 +274,29 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
   const percentEssentials = totalEssentials.length
     ? Math.round((watchedEssentials / totalEssentials.length) * 100)
     : 0;
+
+  // Estimated binge hours clock
+  const getItemMinutes = (item: MarvelItem): number => {
+    const t = item.type.toLowerCase();
+    if (t.includes('movie')) return 125;
+    if (t.includes('short')) return 15;
+    if (t.includes('special') || t.includes('presentation')) return 50;
+    const seasons = item.seasons || 1;
+    return seasons * 8 * 45;
+  };
+
+  const totalUniverseMinutes = useMemo(() => {
+    return items.reduce((sum, item) => sum + getItemMinutes(item), 0);
+  }, [items]);
+
+  const watchedMinutes = useMemo(() => {
+    return items
+      .filter((i) => getStatus(i.id) === 'watched')
+      .reduce((sum, item) => sum + getItemMinutes(item), 0);
+  }, [items, getStatus]);
+
+  const totalUniverseHours = Math.round(totalUniverseMinutes / 60);
+  const watchedHours = Math.round(watchedMinutes / 60);
 
   // "Up Next" essential title
   const upNextItem = useMemo(() => {
@@ -353,11 +424,18 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         if (!b.releaseDate) return -1;
         return a.releaseDate.localeCompare(b.releaseDate);
       });
+    } else if (sortBy === 'rating') {
+      list.sort((a, b) => {
+        const rA = progress[a.id]?.rating || 0;
+        const rB = progress[b.id]?.rating || 0;
+        if (rB !== rA) return rB - rA;
+        return a.order - b.order;
+      });
     } else {
       list.sort((a, b) => a.order - b.order);
     }
     return list;
-  }, [filteredItems, sortBy]);
+  }, [filteredItems, sortBy, progress]);
 
   // Group by Universe + Group
   const groupedList = useMemo(() => {
@@ -487,10 +565,15 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               </div>
             </div>
 
-            <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground pt-1">
+            <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground pt-1">
               <span>{essentialsRemaining} essentials left</span>
               <span>&bull;</span>
               <span>{totalNotWatched} not watched</span>
+              <span>&bull;</span>
+              <span className="text-foreground font-semibold inline-flex items-center gap-1">
+                <Clock className="h-3 w-3 text-primary inline" />
+                ~{watchedHours}h / ~{totalUniverseHours}h binge time
+              </span>
             </div>
           </div>
 
@@ -604,12 +687,24 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               </p>
             </div>
 
-            <Badge
-              variant="outline"
-              className="text-xs font-mono font-bold border-primary/30 text-primary bg-primary/10 px-2.5 py-1 shrink-0"
-            >
-              In {nextUpcoming.daysUntil} days
-            </Badge>
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <Badge
+                variant="outline"
+                className="text-xs font-mono font-bold border-primary/30 text-primary bg-primary/10 px-2.5 py-1 shrink-0"
+              >
+                In {nextUpcoming.daysUntil} days
+              </Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleAddPremiereToCalendar(nextUpcoming)}
+                disabled={Boolean(calendarSyncStatus[nextUpcoming.id])}
+                className="h-7 text-xs rounded-lg px-2 border-border gap-1 hover:border-primary cursor-pointer font-medium"
+              >
+                <CalendarPlus className="h-3.5 w-3.5 text-primary" />
+                <span>{calendarSyncStatus[nextUpcoming.id] || 'Add to Calendar'}</span>
+              </Button>
+            </div>
           </Card>
         )}
       </div>
@@ -721,10 +816,11 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
 
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'order' | 'date' | 'title')}
+            onChange={(e) => setSortBy(e.target.value as 'order' | 'date' | 'title' | 'rating')}
             className="h-9 rounded-xl border border-border bg-background px-3 text-xs sm:text-sm font-medium text-foreground cursor-pointer"
           >
             <option value="order">Recommended Viewing Order</option>
+            <option value="rating">★ My Rating (Highest First)</option>
             <option value="date">Release Date</option>
             <option value="title">Title A–Z</option>
           </select>
@@ -1032,6 +1128,36 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                                 <span>Watched</span>
                               </button>
                             </div>
+
+                            {/* 5-Star Rating Widget (shown when watched) */}
+                            {isWatched && (
+                              <div
+                                className="flex items-center gap-0.5 px-2 py-1 rounded-xl bg-muted/40 border border-border/70"
+                                title="Personal Rating (Click star to rate, click same star to remove)"
+                              >
+                                {[1, 2, 3, 4, 5].map((star) => {
+                                  const currentRating = progress[item.id]?.rating || 0;
+                                  const isFilled = currentRating >= star;
+                                  return (
+                                    <button
+                                      key={star}
+                                      type="button"
+                                      onClick={() => handleSetRating(item, star)}
+                                      className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
+                                      title={`Rate ${star} star${star === 1 ? '' : 's'}`}
+                                    >
+                                      <Star
+                                        className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${
+                                          isFilled
+                                            ? 'text-amber-500 fill-amber-500'
+                                            : 'text-muted-foreground/30 hover:text-amber-400'
+                                        }`}
+                                      />
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

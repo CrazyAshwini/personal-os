@@ -186,3 +186,111 @@ export async function fetchUserMarvelProgressAction(): Promise<MarvelActionResul
     return { success: true, data: {} };
   }
 }
+
+export async function setMarvelItemRatingAction(
+  item: MarvelItem,
+  rating: number | null
+): Promise<MarvelActionResult<{ rating: number | null }>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return { success: true, data: { rating } };
+
+    const marvelTag = `marvel:${item.id}`;
+
+    const { data: existingList } = await supabase
+      .from('media_items')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('review', marvelTag);
+
+    const existing = existingList?.[0];
+
+    if (existing) {
+      await supabase
+        .from('media_items')
+        .update({
+          rating,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .eq('user_id', user.id);
+    } else {
+      const isSeries = item.type.includes('Series');
+      const totalEp = item.seasons ? item.seasons : 1;
+
+      await supabase.from('media_items').insert({
+        user_id: user.id,
+        title: item.title,
+        type: isSeries ? 'series' : 'movie',
+        status: 'completed',
+        total_episodes: totalEp,
+        watched_episodes: totalEp,
+        release_year: item.releaseYear,
+        review: marvelTag,
+        rating,
+      });
+    }
+
+    return { success: true, data: { rating } };
+  } catch (err) {
+    console.warn('Failed to update marvel rating:', err);
+    return { success: true, data: { rating } };
+  }
+}
+
+export async function addPremiereToCalendarAction(
+  item: MarvelItem
+): Promise<MarvelActionResult<{ eventId: string }>> {
+  try {
+    if (!item.releaseDate) return { error: 'No confirmed release date for this premiere.' };
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return { error: 'Authentication required to save to calendar.' };
+
+    const title = `Marvel Premiere: ${item.title}`;
+    const startTime = `${item.releaseDate}T09:00:00Z`;
+    const endTime = `${item.releaseDate}T12:00:00Z`;
+
+    // Check if already in calendar
+    const { data: existing } = await supabase
+      .from('calendar_events')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('title', title)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return { success: true, data: { eventId: existing[0].id } };
+    }
+
+    const { data: inserted, error } = await supabase
+      .from('calendar_events')
+      .insert({
+        user_id: user.id,
+        title,
+        description: `Premiere release of ${item.title} (${item.universe} • ${item.group}) in the Marvel Universe Watchlist.`,
+        event_type: 'personal',
+        start_time: startTime,
+        end_time: endTime,
+        is_all_day: true,
+        color: '#E62429',
+      })
+      .select('id')
+      .single();
+
+    if (error) return { error: error.message };
+
+    return { success: true, data: { eventId: inserted.id } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to add premiere to calendar.';
+    return { error: message };
+  }
+}
