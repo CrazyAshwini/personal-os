@@ -27,13 +27,21 @@ export default async function PomodoroPage() {
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
 
-  // Fetch recent pomodoro sessions with joined task title
+  // Fetch active academic subjects for course-linked study sessions
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('id, name, code, color')
+    .eq('user_id', user?.id || '')
+    .order('name', { ascending: true });
+
+  // Fetch recent pomodoro sessions with joined task title and session notes
   const { data: sessions } = await supabase
     .from('pomodoro_sessions')
     .select(`
       id,
       duration_minutes,
       type,
+      notes,
       started_at,
       task:tasks (
         id,
@@ -42,12 +50,13 @@ export default async function PomodoroPage() {
     `)
     .eq('user_id', user?.id || '')
     .order('started_at', { ascending: false })
-    .limit(30);
+    .limit(50);
 
   const formattedSessions: PomodoroSessionRecord[] = (sessions || []).map((s) => ({
     id: s.id,
     duration_minutes: s.duration_minutes,
     type: s.type,
+    notes: s.notes,
     started_at: s.started_at,
     task: Array.isArray(s.task) ? s.task[0] : s.task,
   }));
@@ -60,18 +69,19 @@ export default async function PomodoroPage() {
           Study Sessions & Focus Timer
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Timestamp-derived focus timer with background drift resistance
+          Timestamp-derived focus timer with academic course tracking and drift resistance
         </p>
       </div>
 
       <PomodoroTimer
         tasks={tasks || []}
+        subjects={subjects || []}
         focusDurationMinutes={preferences?.pomodoro_work_duration ?? 25}
         shortBreakMinutes={preferences?.pomodoro_short_break ?? 5}
         longBreakMinutes={preferences?.pomodoro_long_break ?? 15}
       />
 
-      <PomodoroAnalytics sessions={formattedSessions} />
+      <PomodoroAnalytics sessions={formattedSessions} subjects={subjects || []} />
     </div>
   );
 }
