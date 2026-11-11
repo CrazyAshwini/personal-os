@@ -355,13 +355,13 @@ export function TodayScheduleList({
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-2.5 pt-3.5 mt-3.5 border-t border-border">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-3.5 mt-3.5 border-t border-border">
                     {/* 1. Attended Button */}
                     <button
                       type="button"
                       onClick={() => handleToggle(slot, 'present')}
                       disabled={isPending}
-                      className={`h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`h-10 sm:h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation ${
                         currentStatus === 'present'
                           ? 'bg-emerald-600 text-white shadow-xs font-bold'
                           : 'border border-border bg-background text-muted-foreground hover:text-emerald-700 hover:border-emerald-300 dark:hover:text-emerald-300 dark:hover:border-emerald-800'
@@ -376,7 +376,7 @@ export function TodayScheduleList({
                       type="button"
                       onClick={() => handleToggle(slot, 'absent')}
                       disabled={isPending}
-                      className={`h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`h-10 sm:h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation ${
                         currentStatus === 'absent'
                           ? 'bg-rose-600 text-white shadow-xs font-bold'
                           : 'border border-border bg-background text-muted-foreground hover:text-rose-700 hover:border-rose-300 dark:hover:text-rose-300 dark:hover:border-rose-800'
@@ -391,7 +391,7 @@ export function TodayScheduleList({
                       type="button"
                       onClick={() => handleToggle(slot, 'cancelled')}
                       disabled={isPending}
-                      className={`h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`h-10 sm:h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 inline-flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation ${
                         currentStatus === 'cancelled'
                           ? 'bg-amber-600 text-white shadow-xs font-bold'
                           : 'border border-border bg-background text-muted-foreground hover:text-amber-700 hover:border-amber-300 dark:hover:text-amber-300 dark:hover:border-amber-800'

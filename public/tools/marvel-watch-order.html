@@ -264,9 +264,14 @@ h1 {
 }
 .tracks-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 8px;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.tracks-row::-webkit-scrollbar { display: none; }
 .track-pill {
   background: var(--sf);
   border: 1px solid var(--line);
@@ -277,6 +282,8 @@ h1 {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  flex-shrink: 0;
+  touch-action: manipulation;
 }
 .track-pill:hover { color: var(--ink); border-color: var(--mute); }
 .track-pill.active {

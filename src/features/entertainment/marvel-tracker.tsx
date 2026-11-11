@@ -714,11 +714,11 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider block">
           Curated Viewing Tracks
         </span>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none flex-nowrap sm:flex-wrap">
           <button
             type="button"
             onClick={() => setActiveTrack('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 touch-manipulation ${
               activeTrack === 'all'
                 ? 'bg-foreground text-background shadow-xs'
                 : 'border border-border bg-card text-muted-foreground hover:text-foreground'
@@ -730,7 +730,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
           <button
             type="button"
             onClick={() => setActiveTrack('essential')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 touch-manipulation ${
               activeTrack === 'essential'
                 ? 'bg-red-600 text-white shadow-xs'
                 : 'border border-red-300 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 text-red-700 dark:text-red-300 hover:bg-red-100'
@@ -742,7 +742,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
           <button
             type="button"
             onClick={() => setActiveTrack('golden')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 touch-manipulation ${
               activeTrack === 'golden'
                 ? 'bg-amber-600 text-white shadow-xs'
                 : 'border border-amber-300 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 hover:bg-amber-100'
@@ -754,7 +754,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
           <button
             type="button"
             onClick={() => setActiveTrack('spider')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 touch-manipulation ${
               activeTrack === 'spider'
                 ? 'bg-sky-600 text-white shadow-xs'
                 : 'border border-sky-300 dark:border-sky-900/60 bg-sky-50/50 dark:bg-sky-950/20 text-sky-800 dark:text-sky-300 hover:bg-sky-100'
@@ -766,7 +766,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
           <button
             type="button"
             onClick={() => setActiveTrack('defenders')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 touch-manipulation ${
               activeTrack === 'defenders'
                 ? 'bg-purple-600 text-white shadow-xs'
                 : 'border border-purple-300 dark:border-purple-900/60 bg-purple-50/50 dark:bg-purple-950/20 text-purple-800 dark:text-purple-300 hover:bg-purple-100'
@@ -1143,11 +1143,11 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
                                       key={star}
                                       type="button"
                                       onClick={() => handleSetRating(item, star)}
-                                      className="p-0.5 hover:scale-125 transition-transform cursor-pointer"
+                                      className="p-1 sm:p-0.5 hover:scale-125 active:scale-125 transition-transform cursor-pointer touch-manipulation"
                                       title={`Rate ${star} star${star === 1 ? '' : 's'}`}
                                     >
                                       <Star
-                                        className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${
+                                        className={`h-3.5 w-3.5 transition-colors ${
                                           isFilled
                                             ? 'text-amber-500 fill-amber-500'
                                             : 'text-muted-foreground/30 hover:text-amber-400'

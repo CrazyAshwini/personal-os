@@ -40,7 +40,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
   return (
     <>
       {/* Mobile Top Header */}
-      <header className="md:hidden sticky top-0 z-30 h-14 border-b border-border bg-sidebar/95 backdrop-blur-md px-4 flex items-center justify-between">
+      <header className="md:hidden sticky top-0 z-30 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] border-b border-border bg-sidebar/95 backdrop-blur-md px-4 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-xs">
             OS
@@ -68,7 +68,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
                 <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 p-0 flex flex-col bg-card border-border">
+            <SheetContent side="right" className="w-[85vw] max-w-xs p-0 flex flex-col bg-card border-border">
               <SheetHeader className="p-4 border-b border-border text-left">
                 <SheetTitle className="text-sm font-semibold text-foreground">Personal OS Menu</SheetTitle>
                 <div className="flex items-center gap-2.5 pt-2">
@@ -135,7 +135,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 h-16 border-t border-border bg-card/95 backdrop-blur-xl px-2 flex items-center justify-around select-none shadow-[0_-4px_16px_rgba(0,0,0,0.03)] pb-[env(safe-area-inset-bottom)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-card/95 backdrop-blur-xl px-2 flex items-center justify-around select-none shadow-[0_-4px_16px_rgba(0,0,0,0.04)] h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] pt-1">
         {mobilePrimaryNav.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -146,7 +146,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-xs font-semibold ${
+              className={`flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-95 text-[11px] font-semibold touch-manipulation ${
                 isActive
                   ? 'text-primary font-bold bg-primary/10 dark:bg-primary/15'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/40 font-medium'
@@ -160,7 +160,7 @@ export function MobileNav({ userEmail, userName, avatarUrl }: MobileNavProps) {
 
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-90 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 h-12 rounded-xl transition-all active:scale-95 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer touch-manipulation"
           aria-label="Open full menu"
         >
           <Menu className="h-5 w-5 mb-0.5 stroke-[1.75px]" />

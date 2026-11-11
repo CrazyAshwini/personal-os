@@ -185,42 +185,45 @@ export function PomodoroTimer({
     <Card className="border-border bg-card rounded-xl shadow-xs">
       <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center">
         {/* Mode Selector Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted border border-border mb-8">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-muted border border-border mb-8 w-full sm:w-auto justify-center">
           <button
             type="button"
             onClick={() => switchMode('focus')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer touch-manipulation flex-1 sm:flex-initial ${
               mode === 'focus'
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
-            <Brain className="h-3.5 w-3.5" />
-            <span>Focus ({focusDurationMinutes}m)</span>
+            <Brain className="h-3.5 w-3.5 shrink-0" />
+            <span>Focus</span>
+            <span className="hidden sm:inline">({focusDurationMinutes}m)</span>
           </button>
           <button
             type="button"
             onClick={() => switchMode('short_break')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer touch-manipulation flex-1 sm:flex-initial ${
               mode === 'short_break'
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
-            <Coffee className="h-3.5 w-3.5" />
-            <span>Short Break ({shortBreakMinutes}m)</span>
+            <Coffee className="h-3.5 w-3.5 shrink-0" />
+            <span>Short Break</span>
+            <span className="hidden sm:inline">({shortBreakMinutes}m)</span>
           </button>
           <button
             type="button"
             onClick={() => switchMode('long_break')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer touch-manipulation flex-1 sm:flex-initial ${
               mode === 'long_break'
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             }`}
           >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Long Break ({longBreakMinutes}m)</span>
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span>Long Break</span>
+            <span className="hidden sm:inline">({longBreakMinutes}m)</span>
           </button>
         </div>
 

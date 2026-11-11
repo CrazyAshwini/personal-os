@@ -275,11 +275,11 @@ export function SafeBunkCalculatorDialog({
                     size="sm"
                     onClick={() => setAdditionalMissed((m) => Math.max(0, m - 1))}
                     disabled={additionalMissed === 0}
-                    className="h-7 w-7 p-0 rounded-lg"
+                    className="h-8 w-8 sm:h-7 sm:w-7 p-0 rounded-lg touch-manipulation active:scale-95 cursor-pointer"
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
-                  <span className="font-mono font-bold text-sm w-5 text-center text-foreground">
+                  <span className="font-mono font-bold text-sm w-6 text-center text-foreground">
                     {additionalMissed}
                   </span>
                   <Button
@@ -287,9 +287,9 @@ export function SafeBunkCalculatorDialog({
                     variant="outline"
                     size="sm"
                     onClick={() => setAdditionalMissed((m) => m + 1)}
-                    className="h-7 w-7 p-0 rounded-lg hover:border-rose-400 hover:text-rose-600"
+                    className="h-8 w-8 sm:h-7 sm:w-7 p-0 rounded-lg hover:border-rose-400 hover:text-rose-600 touch-manipulation active:scale-95 cursor-pointer"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               </div>
@@ -307,11 +307,11 @@ export function SafeBunkCalculatorDialog({
                     size="sm"
                     onClick={() => setAdditionalAttended((a) => Math.max(0, a - 1))}
                     disabled={additionalAttended === 0}
-                    className="h-7 w-7 p-0 rounded-lg"
+                    className="h-8 w-8 sm:h-7 sm:w-7 p-0 rounded-lg touch-manipulation active:scale-95 cursor-pointer"
                   >
-                    <Minus className="h-3 w-3" />
+                    <Minus className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
-                  <span className="font-mono font-bold text-sm w-5 text-center text-foreground">
+                  <span className="font-mono font-bold text-sm w-6 text-center text-foreground">
                     {additionalAttended}
                   </span>
                   <Button
@@ -319,9 +319,9 @@ export function SafeBunkCalculatorDialog({
                     variant="outline"
                     size="sm"
                     onClick={() => setAdditionalAttended((a) => a + 1)}
-                    className="h-7 w-7 p-0 rounded-lg hover:border-emerald-400 hover:text-emerald-600"
+                    className="h-8 w-8 sm:h-7 sm:w-7 p-0 rounded-lg hover:border-emerald-400 hover:text-emerald-600 touch-manipulation active:scale-95 cursor-pointer"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               </div>

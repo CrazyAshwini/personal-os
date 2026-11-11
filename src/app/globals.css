@@ -120,14 +120,28 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground font-sans text-[15px] sm:text-[16px];
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-tap-highlight-color: transparent;
   }
   html {
     @apply font-sans;
     font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS Safari from auto-zooming inputs on focus */
+  @media (max-width: 639px) {
+    input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+      font-size: 16px !important;
+    }
   }
 
   /* Prevent duplicate calendar icons in WebKit browsers (Brave / Chrome / Edge) */

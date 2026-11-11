@@ -154,6 +154,69 @@ function DayTimetableTable({
     accentText: 'text-primary',
   };
 
+  const renderSlotMobileCard = (slot: TimetableRow) => {
+    const sub = slot.subject;
+    return (
+      <div
+        key={slot.id}
+        className="p-3.5 border-b border-border/50 last:border-b-0 space-y-2 hover:bg-muted/20 transition-colors"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="h-3 w-3 rounded-full shrink-0 mt-0.5"
+              style={{ backgroundColor: sub?.color || '#526653' }}
+            />
+            <div className="min-w-0">
+              <span className="font-bold text-sm text-foreground block truncate">
+                {sub?.name || 'Class Session'}
+              </span>
+              {sub?.code && (
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-border bg-muted/60 text-muted-foreground font-semibold inline-block mt-0.5">
+                  {sub.code}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onDelete(slot.id)}
+            disabled={disabled}
+            className="p-1.5 text-muted-foreground hover:text-rose-600 rounded-lg cursor-pointer shrink-0 active:scale-95"
+            title="Delete class"
+            aria-label="Delete class"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 font-mono font-bold text-foreground">
+            <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>
+              {formatTimeSlot(slot.start_time)} – {formatTimeSlot(slot.end_time)}
+            </span>
+          </div>
+
+          {slot.classroom && (
+            <div className="flex items-center gap-1 font-mono">
+              <span className="px-1.5 py-0.5 rounded bg-muted/80 font-bold text-foreground text-[11px]">
+                Room {slot.classroom}
+              </span>
+            </div>
+          )}
+
+          {sub?.instructor && (
+            <span className="italic text-muted-foreground truncate">
+              Prof. {sub.instructor}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderSlotRow = (slot: TimetableRow) => {
     const sub = slot.subject;
     return (
@@ -212,7 +275,7 @@ function DayTimetableTable({
             type="button"
             onClick={() => onDelete(slot.id)}
             disabled={disabled}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-rose-600 rounded-lg cursor-pointer"
+            className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-rose-600 rounded-lg cursor-pointer"
             title="Delete class"
           >
             <Trash2 className="h-4 w-4" />
@@ -272,8 +335,20 @@ function DayTimetableTable({
         </div>
       )}
 
-      {/* Responsive Table */}
-      <div className="overflow-x-auto scrollbar-none">
+      {/* Mobile Card Feed View */}
+      <div className="sm:hidden divide-y divide-border/50">
+        {morningSlots.map(renderSlotMobileCard)}
+
+        {/* Lunch Break Row */}
+        <div className="bg-muted/30 border-y border-dashed border-border/80 py-2.5 px-4 text-center text-xs font-bold tracking-wider uppercase text-muted-foreground">
+          ☕ Lunch Break &bull; 1:00 – 2:30 PM
+        </div>
+
+        {afternoonSlots.map(renderSlotMobileCard)}
+      </div>
+
+      {/* Desktop Spreadsheet Table */}
+      <div className="hidden sm:block overflow-x-auto scrollbar-none">
         <table className="w-full text-left text-sm border-collapse">
           <thead>
             <tr className={`border-b ${theme.th} text-xs uppercase font-mono font-bold tracking-wider`}>
@@ -514,17 +589,20 @@ export function AcademicOverview({
       {/* 3-Pillar Tabbed Interface */}
       <Tabs defaultValue="schedule" className="space-y-6">
         <TabsList className="bg-card border border-border p-1.5 rounded-2xl shadow-xs w-full sm:w-auto grid grid-cols-3 sm:inline-flex gap-1">
-          <TabsTrigger value="schedule" className="text-sm gap-2 rounded-xl font-semibold cursor-pointer py-2 px-3.5">
-            <Clock className="h-4 w-4" />
-            <span>Class Schedule</span>
+          <TabsTrigger value="schedule" className="text-xs sm:text-sm gap-1 sm:gap-2 rounded-xl font-semibold cursor-pointer py-2 px-1.5 sm:px-3.5">
+            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="hidden sm:inline">Class </span>
+            <span>Schedule</span>
           </TabsTrigger>
-          <TabsTrigger value="attendance" className="text-sm gap-2 rounded-xl font-semibold cursor-pointer py-2 px-3.5">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>Attendance ({overallStats.percentage}%)</span>
+          <TabsTrigger value="attendance" className="text-xs sm:text-sm gap-1 sm:gap-2 rounded-xl font-semibold cursor-pointer py-2 px-1.5 sm:px-3.5">
+            <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span>Attendance</span>
+            <span className="text-[10px] sm:text-xs font-mono font-bold">({overallStats.percentage}%)</span>
           </TabsTrigger>
-          <TabsTrigger value="syllabus" className="text-sm gap-2 rounded-xl font-semibold cursor-pointer py-2 px-3.5">
-            <BookOpen className="h-4 w-4" />
-            <span>Syllabus ({syllabusTopics.length})</span>
+          <TabsTrigger value="syllabus" className="text-xs sm:text-sm gap-1 sm:gap-2 rounded-xl font-semibold cursor-pointer py-2 px-1.5 sm:px-3.5">
+            <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span>Syllabus</span>
+            <span className="hidden sm:inline text-xs font-mono font-bold">({syllabusTopics.length})</span>
           </TabsTrigger>
         </TabsList>
 
@@ -847,30 +925,30 @@ export function AcademicOverview({
                           {/* 2. Middle Section: Attendance Stats Chips & Progress */}
                           <div className="flex-1 min-w-0 space-y-2.5">
                             {/* Breakdown Chips */}
-                            <div className="grid grid-cols-4 gap-2 text-center">
-                              <div className="py-1.5 px-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
+                            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
+                              <div className="py-1.5 px-1 sm:px-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40">
                                 <span className="text-sm sm:text-base font-bold text-emerald-700 dark:text-emerald-300 block font-mono">
                                   {presentCount}
                                 </span>
-                                <span className="text-xs font-semibold text-muted-foreground">Attended</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground truncate block">Attended</span>
                               </div>
-                              <div className="py-1.5 px-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
+                              <div className="py-1.5 px-1 sm:px-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40">
                                 <span className="text-sm sm:text-base font-bold text-rose-700 dark:text-rose-300 block font-mono">
                                   {absentCount}
                                 </span>
-                                <span className="text-xs font-semibold text-muted-foreground">Missed</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground truncate block">Missed</span>
                               </div>
-                              <div className="py-1.5 px-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
+                              <div className="py-1.5 px-1 sm:px-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40">
                                 <span className="text-sm sm:text-base font-bold text-amber-700 dark:text-amber-300 block font-mono">
                                   {cancelledCount}
                                 </span>
-                                <span className="text-xs font-semibold text-muted-foreground">Cancelled</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground truncate block">Cancelled</span>
                               </div>
-                              <div className="py-1.5 px-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
+                              <div className="py-1.5 px-1 sm:px-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-900/40">
                                 <span className="text-sm sm:text-base font-bold text-sky-700 dark:text-sky-300 block font-mono">
                                   {holidayCount}
                                 </span>
-                                <span className="text-xs font-semibold text-muted-foreground">Holidays</span>
+                                <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground truncate block">Holidays</span>
                               </div>
                             </div>
 

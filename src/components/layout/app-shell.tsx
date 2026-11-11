@@ -37,8 +37,8 @@ export function AppShell({
         {/* Dynamic network connectivity banner */}
         <OfflineBanner />
 
-        {/* Content area with bottom padding on mobile for the fixed bottom nav */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 md:pb-8 max-w-7xl w-full mx-auto">
+        {/* Content area with safe bottom padding on mobile for the fixed bottom nav */}
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] md:pb-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

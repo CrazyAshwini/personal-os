@@ -87,7 +87,7 @@ export function TodayTaskList({ tasks }: TodayTaskListProps) {
               <div
                 key={task.id}
                 onClick={() => handleToggle(task)}
-                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 cursor-pointer select-none ${
+                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 cursor-pointer select-none min-h-[48px] touch-manipulation ${
                   isDone
                     ? 'border-border/60 bg-muted/20 opacity-60'
                     : 'border-border bg-card shadow-xs hover:border-primary/40 active:scale-[0.99]'
@@ -100,7 +100,7 @@ export function TodayTaskList({ tasks }: TodayTaskListProps) {
                     onChange={() => {}}
                     disabled={isPending}
                     aria-label={`Mark ${task.title} as ${isDone ? 'pending' : 'completed'}`}
-                    className="h-4 w-4 rounded border-border text-primary cursor-pointer accent-primary shrink-0"
+                    className="h-4.5 w-4.5 sm:h-4 sm:w-4 rounded border-border text-primary cursor-pointer accent-primary shrink-0 touch-manipulation"
                   />
                   <div className="min-w-0 flex-1">
                     <p

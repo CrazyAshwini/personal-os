@@ -430,7 +430,7 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'present')}
                             disabled={isPending}
                             title="Mark Attended"
-                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                            className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all touch-manipulation active:scale-95 cursor-pointer flex items-center justify-center ${
                               isPresent
                                 ? 'bg-emerald-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -443,7 +443,7 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'absent')}
                             disabled={isPending}
                             title="Mark Missed"
-                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                            className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all touch-manipulation active:scale-95 cursor-pointer flex items-center justify-center ${
                               isAbsent
                                 ? 'bg-rose-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -456,7 +456,7 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'cancelled')}
                             disabled={isPending}
                             title="Mark Cancelled"
-                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                            className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all touch-manipulation active:scale-95 cursor-pointer flex items-center justify-center ${
                               isCancelled
                                 ? 'bg-amber-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -469,7 +469,7 @@ export function SubjectAttendanceDialog({
                             onClick={() => handleUpdateStatus(session.id, 'no_class')}
                             disabled={isPending}
                             title="Mark Holiday"
-                            className={`px-2 py-0.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                            className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all touch-manipulation active:scale-95 cursor-pointer flex items-center justify-center ${
                               isHoliday
                                 ? 'bg-sky-600 text-white shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
