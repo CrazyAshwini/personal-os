@@ -13,12 +13,14 @@ import {
   X,
   MinusCircle,
   Sun,
+  Calculator,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   calculateAttendance,
+  calculateSafeBunkMargin,
   type ClassSessionRecord,
 } from '@/features/attendance/attendance-calculator';
 import {
@@ -32,6 +34,7 @@ import { CreateTimetableEntryDialog } from '@/features/academics/create-timetabl
 import { SubjectAttendanceDialog } from '@/features/academics/subject-attendance-dialog';
 import { LogHolidayDialog } from '@/features/academics/log-holiday-dialog';
 import { EditSubjectDialog } from '@/features/academics/edit-subject-dialog';
+import { SafeBunkCalculatorDialog } from '@/features/academics/safe-bunk-calculator-dialog';
 import type { Database } from '@/types/database';
 
 type SubjectRow = Database['public']['Tables']['subjects']['Row'];
@@ -422,21 +425,14 @@ export function AcademicOverview({
       else if (s.status === 'no_class') holidayCount++;
     }
 
-    // Margin calculation for 75% target
-    let marginText = 'No conducted classes';
-    if (stats.conductedSessions > 0) {
-      if (stats.percentage >= 75) {
-        const canMiss = Math.floor((stats.presentSessions - 0.75 * stats.conductedSessions) / 0.75);
-        marginText = canMiss > 0 ? `Can miss ${canMiss} class${canMiss === 1 ? '' : 'es'}` : 'On threshold';
-      } else {
-        const needToAttend = Math.ceil((0.75 * stats.conductedSessions - stats.presentSessions) / 0.25);
-        marginText = `Need ${needToAttend} class${needToAttend === 1 ? '' : 'es'} for 75%`;
-      }
-    }
+    // Margin calculation for 75% target using calculateSafeBunkMargin
+    const bunkAnalysis = calculateSafeBunkMargin(stats.presentSessions, stats.conductedSessions, 75);
+    const marginText = bunkAnalysis.statusMessage;
 
     return {
       subject: sub,
       stats,
+      bunkAnalysis,
       presentCount,
       absentCount,
       cancelledCount,
@@ -749,7 +745,8 @@ export function AcademicOverview({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5 self-start sm:self-auto">
+              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                <SafeBunkCalculatorDialog subjects={subjects} sessions={sessions} />
                 <LogHolidayDialog subjects={subjects} sessions={sessions} />
                 <LogSessionDialog subjects={subjects} />
               </div>
@@ -817,17 +814,33 @@ export function AcademicOverview({
                                   </span>
                                 )}
                               </div>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenSubjectDialog(subject);
-                                }}
-                                className="text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer inline-flex items-center gap-1.5 mt-2"
-                              >
-                                <CalendarDays className="h-3.5 w-3.5" />
-                                <span>View Dates & History</span>
-                              </button>
+                              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenSubjectDialog(subject);
+                                  }}
+                                  className="text-xs sm:text-sm font-semibold text-primary hover:underline cursor-pointer inline-flex items-center gap-1.5"
+                                >
+                                  <CalendarDays className="h-3.5 w-3.5" />
+                                  <span>View Dates</span>
+                                </button>
+                                <span className="text-muted-foreground text-xs">&bull;</span>
+                                <div onClick={(e) => e.stopPropagation()}>
+                                  <SafeBunkCalculatorDialog
+                                    subjects={subjects}
+                                    sessions={sessions}
+                                    initialSubjectId={subject.id}
+                                    trigger={
+                                      <span className="text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline cursor-pointer inline-flex items-center gap-1">
+                                        <Calculator className="h-3.5 w-3.5 text-primary" />
+                                        <span>Bunk Calc</span>
+                                      </span>
+                                    }
+                                  />
+                                </div>
+                              </div>
                             </div>
                           </div>
 

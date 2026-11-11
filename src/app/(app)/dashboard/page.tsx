@@ -4,7 +4,13 @@ import { format } from 'date-fns';
 import { createClient } from '@/lib/supabase/server';
 import { TodayTaskList, type TodayTaskItem } from '@/features/tasks/today-task-list';
 import { TodayScheduleList, type TodayTimetableSlot } from '@/features/academics/today-schedule-list';
-import { Timer, Play, Sun } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  calculateAttendance,
+  calculateSafeBunkMargin,
+  type ClassSessionRecord,
+} from '@/features/attendance/attendance-calculator';
+import { Timer, Play, Sun, GraduationCap, ChevronRight } from 'lucide-react';
 
 export const instant = false;
 
@@ -62,12 +68,93 @@ export default async function DashboardPage() {
     });
   }
 
-  // 4. Fetch any class sessions logged for today (to display attendance ground truth and holidays)
-  const { data: todaySessions } = await supabase
+  // 4. Fetch All Class Sessions for Attendance Health & Holidays
+  const { data: allSessions } = await supabase
     .from('class_sessions')
-    .select('id, timetable_entry_id, subject_id, status, notes')
-    .eq('user_id', userId)
-    .eq('session_date', todayDateStr);
+    .select('id, timetable_entry_id, subject_id, status, session_date, notes')
+    .eq('user_id', userId);
+
+  const { data: allSubjects } = await supabase
+    .from('subjects')
+    .select('id, name')
+    .eq('user_id', userId);
+
+  // Overall attendance calculation
+  const overallAttendance = calculateAttendance(
+    (allSessions || []).map((s) => ({
+      id: s.id,
+      status: s.status as ClassSessionRecord['status'],
+    }))
+  );
+
+  const overallSafeBunk = calculateSafeBunkMargin(
+    overallAttendance.presentSessions,
+    overallAttendance.conductedSessions,
+    75
+  );
+
+  // Subject at-risk count (below 75%)
+  let atRiskCount = 0;
+  (allSubjects || []).forEach((sub) => {
+    const subSessions = (allSessions || []).filter((s) => s.subject_id === sub.id);
+    const subAtt = calculateAttendance(
+      subSessions.map((s) => ({
+        id: s.id,
+        status: s.status as ClassSessionRecord['status'],
+      }))
+    );
+    if (subAtt.conductedSessions > 0 && subAtt.percentage < 75) {
+      atRiskCount++;
+    }
+  });
+
+  // Upcoming holidays in the next 30 days
+  const futureHolidaySessions = (allSessions || [])
+    .filter((s) => s.status === 'no_class' && s.session_date > todayDateStr)
+    .sort((a, b) => a.session_date.localeCompare(b.session_date));
+
+  interface UpcomingHolidayGroup {
+    startDate: string;
+    endDate: string;
+    notes: string;
+    daysCount: number;
+    daysUntil: number;
+  }
+
+  let nextHolidayGroup: UpcomingHolidayGroup | null = null;
+  if (futureHolidaySessions.length > 0) {
+    const uniqueDates = Array.from(new Set(futureHolidaySessions.map((s) => s.session_date))).sort();
+    const firstDate = uniqueDates[0];
+    const firstNote = futureHolidaySessions.find((s) => s.session_date === firstDate)?.notes || 'Academic Holiday';
+
+    let lastDate = firstDate;
+    let daysCount = 1;
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prev = new Date(uniqueDates[i - 1]);
+      const curr = new Date(uniqueDates[i]);
+      const diffDays = Math.round((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays === 1) {
+        lastDate = uniqueDates[i];
+        daysCount++;
+      } else {
+        break;
+      }
+    }
+
+    const firstDateObj = new Date(firstDate);
+    const daysUntil = Math.max(0, Math.ceil((firstDateObj.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    nextHolidayGroup = {
+      startDate: firstDate,
+      endDate: lastDate,
+      notes: firstNote.startsWith('Holiday: ') ? firstNote.replace('Holiday: ', '') : firstNote,
+      daysCount,
+      daysUntil,
+    };
+  }
+
+  // Today sessions
+  const todaySessions = (allSessions || []).filter((s) => s.session_date === todayDateStr);
 
   const initialStatuses: Record<string, 'present' | 'absent' | 'cancelled' | 'no_class'> = {};
   const holidayNotes: Record<string, string> = {};
@@ -122,7 +209,7 @@ export default async function DashboardPage() {
     subject: t.subject,
   }));
 
-  // 5. Fetch Today's To-Do List (Pending tasks first, then tasks due today)
+  // 5. Fetch Today's To-Do List
   const { data: tasksData } = await supabase
     .from('tasks')
     .select('id, title, priority, status, due_date')
@@ -191,6 +278,92 @@ export default async function DashboardPage() {
           <span>Start 25m Focus Session</span>
           <Play className="h-3 w-3 fill-current ml-0.5" />
         </Link>
+      </div>
+
+      {/* Upcoming Holiday Banner (if upcoming within 30 days) */}
+      {nextHolidayGroup && (
+        <div className="p-3.5 rounded-2xl border border-amber-300/70 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="p-1.5 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-400 shrink-0">
+              <Sun className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <span className="text-xs sm:text-sm font-bold text-foreground block truncate">
+                Upcoming Academic Break: {nextHolidayGroup.notes}
+              </span>
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {nextHolidayGroup.startDate === nextHolidayGroup.endDate
+                  ? format(new Date(nextHolidayGroup.startDate), 'MMMM d, yyyy')
+                  : `${format(new Date(nextHolidayGroup.startDate), 'MMM d')} – ${format(new Date(nextHolidayGroup.endDate), 'MMM d, yyyy')}`}{' '}
+                &bull; {nextHolidayGroup.daysCount} {nextHolidayGroup.daysCount === 1 ? 'day off' : 'days off'}
+              </span>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            className="text-xs font-mono font-bold border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 bg-amber-500/10 shrink-0 self-start sm:self-auto"
+          >
+            {nextHolidayGroup.daysUntil === 0
+              ? 'Starts tomorrow'
+              : `Starts in ${nextHolidayGroup.daysUntil} days`}
+          </Badge>
+        </div>
+      )}
+
+      {/* Real-time Semester Attendance Health Bar */}
+      <div className="p-4 rounded-2xl border border-border bg-card shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded-md bg-primary/10 text-primary">
+              <GraduationCap className="h-4 w-4" />
+            </span>
+            <span className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-wider">
+              Semester Attendance Health
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span
+              className={`text-2xl sm:text-3xl font-black font-mono leading-none ${
+                overallSafeBunk.isSafe
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : 'text-rose-700 dark:text-rose-400'
+              }`}
+            >
+              {overallAttendance.conductedSessions > 0 ? `${overallAttendance.percentage}%` : '—'}
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">
+              ({overallAttendance.presentSessions}/{overallAttendance.conductedSessions} lectures attended) &bull; Target: 75%
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="text-left sm:text-right">
+            <Badge
+              variant="outline"
+              className={`text-xs font-mono font-bold py-1 px-2.5 rounded-xl ${
+                overallSafeBunk.isSafe
+                  ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
+                  : 'border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300'
+              }`}
+            >
+              {overallSafeBunk.statusMessage}
+            </Badge>
+            {atRiskCount > 0 && (
+              <span className="text-[11px] text-rose-600 dark:text-rose-400 font-semibold block mt-0.5">
+                ⚠️ {atRiskCount} course{atRiskCount === 1 ? '' : 's'} below 75%
+              </span>
+            )}
+          </div>
+
+          <Link
+            href="/academics"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-border bg-muted/40 hover:bg-muted text-xs font-semibold text-foreground transition-colors shrink-0"
+          >
+            <span>Calculator</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* Main Grid: Mobile Single Column -> PC Two Column Cockpit */}
