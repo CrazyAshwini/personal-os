@@ -152,7 +152,7 @@ export function TodayScheduleList({
           </h3>
 
           <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
-            All classes for today are suspended. Academic holidays are excluded from conducted lecture counts, keeping your 75% attendance criteria intact.
+            Classes suspended today (excluded from attendance counts).
           </p>
 
           {slots.length > 0 && (

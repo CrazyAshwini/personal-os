@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -49,15 +48,10 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <FolderArchive className="h-5 w-5 text-primary" />
-            Document Storage Vault
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Encrypted private file repository for academic certificates, travel passes, and records.
-          </p>
-        </div>
+        <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <FolderArchive className="h-5 w-5 text-primary" />
+          Documents
+        </h2>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
@@ -66,10 +60,7 @@ export function DocumentsView({ documents }: DocumentsViewProps) {
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-base">Secure Document Upload</DialogTitle>
-              <DialogDescription className="text-xs">
-                Files are isolated in your private Supabase Storage bucket with strict RLS permissions.
-              </DialogDescription>
+              <DialogTitle className="text-base">Upload Document</DialogTitle>
             </DialogHeader>
 
             <form

@@ -13,6 +13,12 @@ export default async function FinancePage() {
     bills: [],
     fixedDeposits: [],
     loans: [],
+    snapshots: [],
+    budgets: {},
+    personalLoans: [],
+    expenseGroups: [],
+    emiAgreements: [],
+    orders: [],
   };
 
   return (

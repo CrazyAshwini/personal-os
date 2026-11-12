@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -65,10 +64,7 @@ export function CreateSubjectDialog({ semesterId, onSuccess }: CreateSubjectDial
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base">Add Academic Subject</DialogTitle>
-          <DialogDescription className="text-xs">
-            Create a course subject for your attendance, timetable, and assignments.
-          </DialogDescription>
+          <DialogTitle className="text-base">Add Subject</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">

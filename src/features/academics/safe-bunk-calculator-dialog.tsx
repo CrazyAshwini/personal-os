@@ -13,7 +13,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -117,12 +116,9 @@ export function SafeBunkCalculatorDialog({
               <Calculator className="h-4 w-4" />
             </span>
             <DialogTitle className="text-base sm:text-lg font-bold">
-              Attendance Safe-Bunk Calculator
+              Safe-Bunk Calculator
             </DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Calculate your safe class bunk allowance or attendance recovery needed to maintain your target.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
@@ -256,10 +252,6 @@ export function SafeBunkCalculatorDialog({
                 </button>
               )}
             </div>
-
-            <p className="text-xs text-muted-foreground">
-              Simulate taking upcoming days off or attending consecutive classes to test your projected percentage:
-            </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               {/* Stepper 1: Bunk/Miss Classes */}

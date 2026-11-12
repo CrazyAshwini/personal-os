@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -129,15 +128,10 @@ export function EntertainmentView({
         <TabsContent value="watchlist" className="space-y-6">
           {/* Header */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Film className="h-5 w-5 text-primary" />
-                Movies & Series Tracker
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Log movies, web series, and anime with episode progress and personal scores.
-              </p>
-            </div>
+            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <Film className="h-5 w-5 text-primary" />
+              Movies & Series Tracker
+            </h2>
 
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
@@ -147,9 +141,6 @@ export function EntertainmentView({
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-base">Add Show or Movie</DialogTitle>
-              <DialogDescription className="text-xs">
-                Track your watchlist and episode progress.
-              </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleCreateMedia} className="space-y-4 pt-2">

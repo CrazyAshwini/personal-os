@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -124,15 +123,10 @@ export function TravelView({ journeys }: TravelViewProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Compass className="h-5 w-5 text-primary" />
-            Travel Manager & Tickets
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Train, flight, and bus itineraries, PNR references, and synced journey calendars.
-          </p>
-        </div>
+        <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Compass className="h-5 w-5 text-primary" />
+          Travel &amp; Tickets
+        </h2>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
@@ -141,10 +135,7 @@ export function TravelView({ journeys }: TravelViewProps) {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle className="text-base">Record Travel Itinerary</DialogTitle>
-              <DialogDescription className="text-xs">
-                Log upcoming journey details. Automatically synchronizes with your personal calendar.
-              </DialogDescription>
+              <DialogTitle className="text-base">Add Travel Itinerary</DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleCreateJourney} className="space-y-4 pt-2">

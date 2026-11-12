@@ -5,7 +5,6 @@ import { Pencil } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -100,9 +99,6 @@ export function EditSubjectDialog({ subject, trigger, onSuccess }: EditSubjectDi
             />
             <DialogTitle className="text-base font-bold">Edit Subject & Faculty</DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Update subject details, official course code, credits, and faculty instructor.
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 pt-2">

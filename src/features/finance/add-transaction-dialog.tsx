@@ -7,10 +7,11 @@ import {
   createFinanceTransactionSchema,
   type CreateFinanceTransactionInput,
 } from '@/lib/validation/finance';
+import { createTransactionAction } from '@/features/finance/native-actions';
 import {
-  createTransactionAction,
+  MONEY_NEST_CATEGORIES,
   type FinanceAccountRow,
-} from '@/features/finance/native-actions';
+} from '@/features/finance/finance-types';
 import {
   Dialog,
   DialogContent,
@@ -23,28 +24,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Loader2 } from 'lucide-react';
 
-const CATEGORIES = [
-  'Food',
-  'Groceries',
-  'Housing',
-  'Utilities',
-  'Transport',
-  'Education',
-  'Health',
-  'Shopping',
-  'Subscriptions',
-  'Entertainment',
-  'Travel',
-  'Salary',
-  'Investments',
-  'Personal Care',
-  'Other',
-];
-
 interface AddTransactionDialogProps {
   accounts: FinanceAccountRow[];
   onTransactionCreated?: () => void;
 }
+
+const TX_KINDS = [
+  { id: 'expense', label: 'Expense' },
+  { id: 'income', label: 'Income' },
+  { id: 'transfer', label: 'Transfer' },
+  { id: 'bill_payment', label: 'Bill Pay' },
+  { id: 'refund', label: 'Refund' },
+] as const;
 
 export function AddTransactionDialog({
   accounts,
@@ -72,6 +63,8 @@ export function AddTransactionDialog({
       merchant: '',
       occurredOn: today,
       accountId: accounts[0]?.id || undefined,
+      toAccountId: undefined,
+      notes: '',
     },
   });
 
@@ -79,7 +72,11 @@ export function AddTransactionDialog({
 
   const onSubmit = async (values: CreateFinanceTransactionInput) => {
     setServerError(null);
-    const res = await createTransactionAction(values);
+    const res = await createTransactionAction({
+      ...values,
+      accountId: values.accountId || null,
+      toAccountId: values.toAccountId || null,
+    });
     if (res.error) {
       setServerError(res.error);
     } else {
@@ -91,13 +88,13 @@ export function AddTransactionDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="inline-flex items-center justify-center rounded-lg border border-transparent bg-primary text-primary-foreground hover:bg-primary/80 h-8 px-2.5 text-xs gap-1.5 font-medium cursor-pointer">
+      <DialogTrigger className="inline-flex items-center justify-center rounded-lg border border-transparent bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 text-xs gap-1.5 font-medium cursor-pointer touch-manipulation">
         <PlusCircle className="h-3.5 w-3.5" />
         Log Transaction
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[450px]">
+      <DialogContent className="sm:max-w-[480px] max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
+          <DialogTitle>Log Transaction</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 pt-2">
           {serverError && (
@@ -106,32 +103,32 @@ export function AddTransactionDialog({
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-2">
-            {(['expense', 'income', 'transfer'] as const).map((kind) => (
+          <div className="grid grid-cols-5 gap-1.5">
+            {TX_KINDS.map((item) => (
               <label
-                key={kind}
-                className={`flex items-center justify-center py-1.5 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
-                  selectedKind === kind
+                key={item.id}
+                className={`flex items-center justify-center py-2 px-1 rounded-md border text-[11px] font-medium cursor-pointer transition-colors touch-manipulation ${
+                  selectedKind === item.id
                     ? 'bg-primary text-primary-foreground border-primary font-semibold'
                     : 'border-input hover:bg-muted text-muted-foreground'
                 }`}
               >
                 <input
                   type="radio"
-                  value={kind}
+                  value={item.id}
                   className="sr-only"
                   {...register('kind')}
                 />
-                <span className="capitalize">{kind}</span>
+                <span>{item.label}</span>
               </label>
             ))}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <Label htmlFor="amount" className="text-xs">Amount (₹)</Label>
+              <Label htmlFor="tx-amount" className="text-xs">Amount (₹)</Label>
               <Input
-                id="amount"
+                id="tx-amount"
                 type="number"
                 step="0.01"
                 placeholder="0.00"
@@ -141,13 +138,13 @@ export function AddTransactionDialog({
               {errors.amount && <p className="text-[10px] text-red-500">{errors.amount.message}</p>}
             </div>
             <div className="space-y-1">
-              <Label htmlFor="category" className="text-xs">Category</Label>
+              <Label htmlFor="tx-category" className="text-xs">Category</Label>
               <select
-                id="category"
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs"
+                id="tx-category"
+                className="w-full h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs"
                 {...register('category')}
               >
-                {CATEGORIES.map((cat) => (
+                {MONEY_NEST_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
@@ -157,10 +154,10 @@ export function AddTransactionDialog({
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="description" className="text-xs">Description</Label>
+            <Label htmlFor="tx-description" className="text-xs">Description</Label>
             <Input
-              id="description"
-              placeholder="e.g. Swiggy delivery, Metro recharge"
+              id="tx-description"
+              placeholder="e.g. Swiggy dinner, Credit card payment, Refund"
               {...register('description')}
             />
             {errors.description && (
@@ -168,18 +165,22 @@ export function AddTransactionDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="space-y-1">
-              <Label htmlFor="account" className="text-xs">
-                {selectedKind === 'transfer' ? 'From Account' : 'Account / Payment Source'}
+              <Label htmlFor="tx-account" className="text-xs">
+                {selectedKind === 'transfer' || selectedKind === 'bill_payment'
+                  ? 'From Account'
+                  : selectedKind === 'income' || selectedKind === 'refund'
+                    ? 'Credited To Account'
+                    : 'Paid From Account'}
               </Label>
               <select
-                id="account"
-                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs"
+                id="tx-account"
+                className="w-full h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs"
                 {...register('accountId')}
               >
                 <option value="">No account (Cash / Direct)</option>
-                {accounts.map((acc) => (
+                {accounts.filter((a) => a.active).map((acc) => (
                   <option key={acc.id} value={acc.id}>
                     {acc.name} (•••• {acc.masked_suffix})
                   </option>
@@ -187,16 +188,18 @@ export function AddTransactionDialog({
               </select>
             </div>
 
-            {selectedKind === 'transfer' ? (
+            {selectedKind === 'transfer' || selectedKind === 'bill_payment' ? (
               <div className="space-y-1">
-                <Label htmlFor="toAccount" className="text-xs">To Account</Label>
+                <Label htmlFor="tx-toAccount" className="text-xs">
+                  {selectedKind === 'bill_payment' ? 'Card / Pay Later Cleared (optional)' : 'To Account'}
+                </Label>
                 <select
-                  id="toAccount"
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs"
+                  id="tx-toAccount"
+                  className="w-full h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs"
                   {...register('toAccountId')}
                 >
                   <option value="">Select destination</option>
-                  {accounts.map((acc) => (
+                  {accounts.filter((a) => a.active).map((acc) => (
                     <option key={acc.id} value={acc.id}>
                       {acc.name} (•••• {acc.masked_suffix})
                     </option>
@@ -205,15 +208,29 @@ export function AddTransactionDialog({
               </div>
             ) : (
               <div className="space-y-1">
-                <Label htmlFor="merchant" className="text-xs">Merchant / Payee</Label>
-                <Input id="merchant" placeholder="e.g. Starbucks, Amazon" {...register('merchant')} />
+                <Label htmlFor="tx-merchant" className="text-xs">Merchant / Platform</Label>
+                <Input
+                  id="tx-merchant"
+                  placeholder="e.g. Swiggy, Amazon, Starbucks"
+                  {...register('merchant')}
+                />
               </div>
             )}
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="occurredOn" className="text-xs">Date</Label>
-            <Input id="occurredOn" type="date" {...register('occurredOn')} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="tx-occurredOn" className="text-xs">Date</Label>
+              <Input id="tx-occurredOn" type="date" {...register('occurredOn')} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="tx-notes" className="text-xs">UTR / Ref / Notes (optional)</Label>
+              <Input
+                id="tx-notes"
+                placeholder="Optional note"
+                {...register('notes')}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-3">

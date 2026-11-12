@@ -96,9 +96,9 @@ export default function HomePage() {
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
             <Wallet className="h-6 w-6 text-neutral-800 dark:text-neutral-200 mb-3" />
-            <h3 className="font-semibold text-base">Expense Manager Integration</h3>
+            <h3 className="font-semibold text-base">Personal Finance</h3>
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-              Secure, read-only financial overviews linked to your existing Expense Manager.
+              Accounts, credit cards, transactions, bills, EMIs, fixed deposits, and budgets.
             </p>
           </div>
 

@@ -127,7 +127,7 @@ export function LogHolidayDialog({
                 Log Academic Holiday / No Class
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Holidays are excluded from conducted lecture counts, preserving your attendance percentage.
+                Excluded from attendance calculations.
               </DialogDescription>
             </div>
           </div>

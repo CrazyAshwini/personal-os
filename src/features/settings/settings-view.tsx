@@ -15,7 +15,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -127,12 +127,8 @@ export function SettingsView({
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold text-foreground">Account & Privacy</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Profile</CardTitle>
           </div>
-          <CardDescription className="text-xs text-muted-foreground">
-            Personal OS is your isolated private vault. Row Level Security enforces
-            strict data ownership.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -153,11 +149,8 @@ export function SettingsView({
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold text-foreground">Notification Preferences</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Notifications</CardTitle>
           </div>
-          <CardDescription className="text-xs text-muted-foreground">
-            Configure alert rules for tasks, study timers, and upcoming schedules.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
           <div className="space-y-3">
@@ -220,11 +213,8 @@ export function SettingsView({
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold text-foreground">Study & Pomodoro Durations</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Pomodoro Durations</CardTitle>
           </div>
-          <CardDescription className="text-xs text-muted-foreground">
-            Set default minutes for focus intervals and break periods.
-          </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -285,11 +275,8 @@ export function SettingsView({
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold text-foreground">Timezone & Regional Formats</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">Timezone &amp; Format</CardTitle>
           </div>
-          <CardDescription className="text-xs text-muted-foreground">
-            Manage your local display preferences for calendar and timetable times.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -339,20 +326,12 @@ export function SettingsView({
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
             <Shield className="h-4 w-4 text-primary" />
-            Account & Session
+            Session
           </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">
-            Manage your session and access to Personal OS
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 rounded-xl border border-border bg-muted/40">
-            <div className="space-y-0.5">
-              <p className="text-xs font-medium text-foreground font-mono">{userEmail}</p>
-              <p className="text-[11px] text-muted-foreground">
-                Signed in securely with Supabase Auth
-              </p>
-            </div>
+            <p className="text-xs font-medium text-foreground font-mono">{userEmail}</p>
             <form action={signOutAction}>
               <Button
                 type="submit"

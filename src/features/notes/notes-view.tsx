@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -101,15 +100,10 @@ export function NotesView({ notes }: NotesViewProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            Notes & Knowledge Vault
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Private markdown notes, study thoughts, and quick personal memos.
-          </p>
-        </div>
+        <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <FileText className="h-5 w-5 text-primary" />
+          Notes
+        </h2>
 
         <Button
           onClick={handleOpenCreate}
@@ -124,11 +118,8 @@ export function NotesView({ notes }: NotesViewProps) {
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="text-base">
-                {editNote ? 'Edit Note' : 'Create New Note'}
+                {editNote ? 'Edit Note' : 'New Note'}
               </DialogTitle>
-              <DialogDescription className="text-xs">
-                Your private thoughts are encrypted and isolated with Row Level Security.
-              </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleSaveNote} className="space-y-4 pt-2">

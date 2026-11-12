@@ -565,15 +565,10 @@ export function AcademicOverview({
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Action Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
-            <GraduationCap className="h-7 w-7 text-primary" />
-            Academic Hub
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Your daily class timetable, 75% attendance engine, and curriculum syllabus.
-          </p>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
+          <GraduationCap className="h-7 w-7 text-primary" />
+          Academics
+        </h1>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <CreateSubjectDialog />
@@ -612,19 +607,14 @@ export function AcademicOverview({
         <TabsContent value="schedule" className="space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-card p-4 rounded-2xl border border-border shadow-xs">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <Clock className="h-5 w-5 text-primary" />
-                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-                  M.Tech (SO) I Semester Time Table
-                </h2>
-                <Badge variant="outline" className="text-xs font-mono font-semibold border-primary/30 text-primary bg-primary/10 px-2 py-0.5">
-                  {timetable.length} Lectures
-                </Badge>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Weekly schedule tables with Time, Subject, Class No. (Room), and Faculty.
-              </p>
+            <div className="flex items-center gap-2.5">
+              <Clock className="h-5 w-5 text-primary" />
+              <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+                M.Tech (SO) I Semester Time Table
+              </h2>
+              <Badge variant="outline" className="text-xs font-mono font-semibold border-primary/30 text-primary bg-primary/10 px-2 py-0.5">
+                {timetable.length} Lectures
+              </Badge>
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -770,7 +760,7 @@ export function AcademicOverview({
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1.5 font-medium">
-                  Derived from {overallStats.conductedSessions} conducted lectures
+                  {overallStats.conductedSessions} conducted lectures
                 </p>
               </CardContent>
             </Card>
@@ -1108,10 +1098,7 @@ export function AcademicOverview({
           {syllabusTopics.length === 0 ? (
             <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
               <BookOpen className="h-10 w-10 mx-auto text-primary/40 mb-3" />
-              <p className="font-bold text-base text-foreground">No syllabus topics entered yet.</p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Organize your course modules, lecture notes, and exam topics step-by-step.
-              </p>
+              <p className="font-bold text-base text-foreground">No syllabus topics yet.</p>
             </Card>
           ) : (
             <div className="space-y-4">

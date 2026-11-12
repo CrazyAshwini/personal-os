@@ -8,7 +8,6 @@ import { createEventAction } from '@/features/calendar/actions';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -122,9 +121,6 @@ export function CreateEventDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create Calendar Event</DialogTitle>
-          <DialogDescription>
-            Schedule academic deadlines, exams, personal activities, or travel
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">

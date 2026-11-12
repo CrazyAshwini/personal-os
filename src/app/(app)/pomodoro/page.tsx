@@ -66,11 +66,8 @@ export default async function PomodoroPage() {
       <div className="border-b border-border pb-4">
         <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <Timer className="h-6 w-6 text-primary" />
-          Study Sessions & Focus Timer
+          Focus Timer
         </h1>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Timestamp-derived focus timer with academic course tracking and drift resistance
-        </p>
       </div>
 
       <PomodoroTimer

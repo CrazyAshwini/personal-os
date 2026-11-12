@@ -8,7 +8,6 @@ import { createTaskAction } from '@/features/tasks/actions';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -112,9 +111,6 @@ export function CreateTaskDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
-          <DialogDescription>
-            Add a task with priority, category, and checklist subtasks
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">

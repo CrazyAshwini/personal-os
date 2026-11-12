@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -82,11 +81,7 @@ export function LogSessionDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base">Record Class Session</DialogTitle>
-          <DialogDescription className="text-xs">
-            Individual sessions form the immutable ground truth for attendance
-            derivation.
-          </DialogDescription>
+          <DialogTitle className="text-base">Log Class Session</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">

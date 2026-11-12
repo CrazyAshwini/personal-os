@@ -96,7 +96,6 @@ export function PomodoroAnalytics({ sessions, subjects = [] }: PomodoroAnalytics
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono tracking-tight text-foreground">100%</div>
-            <p className="text-xs text-muted-foreground mt-1">Timestamp-verified consistency</p>
           </CardContent>
         </Card>
       </div>

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -83,10 +82,7 @@ export function CreateTimetableEntryDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base">Add Weekly Timetable Slot</DialogTitle>
-          <DialogDescription className="text-xs">
-            Set recurring lecture or lab slots for your weekly schedule.
-          </DialogDescription>
+          <DialogTitle className="text-base">Add Timetable Slot</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">

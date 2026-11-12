@@ -53,15 +53,10 @@ export function TaskListView({ initialTasks, categories }: TaskListViewProps) {
     <div className="space-y-6">
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <CheckSquare className="h-6 w-6 text-primary" />
-            Tasks & Productivity
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Organize tasks, checklist subtasks, priorities, and deadlines
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <CheckSquare className="h-6 w-6 text-primary" />
+          Tasks
+        </h1>
 
         <CreateTaskDialog categories={categories} />
       </div>
@@ -129,8 +124,8 @@ export function TaskListView({ initialTasks, categories }: TaskListViewProps) {
           }
           description={
             searchQuery
-              ? `No tasks matched your search query "${searchQuery}".`
-              : 'Create a new task to organize your academic assignments and daily priorities.'
+              ? `No tasks matching "${searchQuery}".`
+              : 'Add a task to get started.'
           }
         />
       ) : (

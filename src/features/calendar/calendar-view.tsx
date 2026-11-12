@@ -112,15 +112,10 @@ export function CalendarView({
     <div className="space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <CalendarIcon className="h-6 w-6 text-primary" />
-            Calendar & Schedule
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Track classes, exams, assignment deadlines, and personal milestones
-          </p>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <CalendarIcon className="h-6 w-6 text-primary" />
+          Calendar & Schedule
+        </h1>
 
         <div className="flex items-center gap-2">
           <CreateEventDialog defaultDate={format(selectedDate, 'yyyy-MM-dd')} />

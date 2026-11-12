@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -145,15 +144,10 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
       {/* 1. HABITS SECTION */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              Daily Habit Tracker
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Build positive momentum with 7-day streak consistency tracking.
-            </p>
-          </div>
+          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" />
+            Habits
+          </h2>
 
           <Dialog open={habitOpen} onOpenChange={setHabitOpen}>
             <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
@@ -162,10 +156,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-base">Create Daily Habit</DialogTitle>
-                <DialogDescription className="text-xs">
-                  Define a recurring behavior you want to track consistently.
-                </DialogDescription>
+                <DialogTitle className="text-base">Add Habit</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateHabit} className="space-y-4 pt-2">
                 <div className="space-y-1.5">
@@ -369,15 +360,10 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
       {/* 2. GOALS SECTION */}
       <div className="space-y-4 pt-4 border-t border-border">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              Strategic Goals & Milestones
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Long-term personal, academic, and health objectives.
-            </p>
-          </div>
+          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Goals
+          </h2>
 
           <Dialog open={goalOpen} onOpenChange={setGoalOpen}>
             <DialogTrigger className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3 text-xs font-medium gap-1.5 cursor-pointer shadow-xs transition-colors">
@@ -386,10 +372,7 @@ export function HabitsView({ habits, habitLogs, goals }: HabitsViewProps) {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-base">Create Strategic Goal</DialogTitle>
-                <DialogDescription className="text-xs">
-                  Set target milestones and track completion percentage.
-                </DialogDescription>
+                <DialogTitle className="text-base">Add Goal</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateGoal} className="space-y-4 pt-2">
                 <div className="space-y-1.5">

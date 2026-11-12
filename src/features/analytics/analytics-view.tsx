@@ -25,7 +25,6 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface SubjectAttendanceStat {
   name: string;
@@ -76,19 +75,10 @@ export function AnalyticsView({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            Global Performance Analytics
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Cross-module telemetry: academic attendance, study velocity, habits, and financial trends.
-          </p>
-        </div>
-
-        <Badge variant="outline" className="text-xs font-mono border-border">
-          Unified Analytics Engine
-        </Badge>
+        <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          Analytics
+        </h2>
       </div>
 
       {/* Top 4 Metric Highlights */}
@@ -104,16 +94,13 @@ export function AnalyticsView({
             <div className="text-2xl font-bold font-mono text-foreground">
               {Math.round(totalFocusMinutes / 60)}h {totalFocusMinutes % 60}m
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Recorded in recent sessions
-            </p>
           </CardContent>
         </Card>
 
         <Card className="border-border bg-card rounded-xl shadow-xs">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
-              Active Courses Tracked
+              Active Courses
             </CardTitle>
             <GraduationCap className="h-4 w-4 text-primary" />
           </CardHeader>
@@ -121,9 +108,6 @@ export function AnalyticsView({
             <div className="text-2xl font-bold font-mono text-foreground">
               {attendanceData.length}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Semester curriculum courses
-            </p>
           </CardContent>
         </Card>
 
@@ -138,9 +122,6 @@ export function AnalyticsView({
             <div className="text-2xl font-bold font-mono text-foreground">
               {habitStats.length}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Consistency streak routines
-            </p>
           </CardContent>
         </Card>
 
@@ -156,9 +137,6 @@ export function AnalyticsView({
               {financeData.currency === 'INR' ? '₹' : '$'}
               {financeData.monthlySpend.toLocaleString()}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Expense Manager sync
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -170,10 +148,10 @@ export function AnalyticsView({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
               <GraduationCap className="h-4 w-4 text-primary" />
-              Course Attendance Rates (%)
+              Course Attendance (%)
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground">
-              Derived attendance percentages with 75% minimum academic threshold.
+              75% minimum target
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
@@ -211,11 +189,8 @@ export function AnalyticsView({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
               <Timer className="h-4 w-4 text-primary" />
-              Focus Study Velocity (Minutes/Day)
+              Focus Time (Min/Day)
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Timestamp-derived Pomodoro focus volume over recent study days.
-            </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             {focusTrend.length === 0 ? (
@@ -268,11 +243,8 @@ export function AnalyticsView({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
               <CheckSquare className="h-4 w-4 text-primary" />
-              Task Execution Breakdown
+              Task Breakdown
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Pending vs completed vs in-progress productivity items.
-            </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             {taskStatusData.every((t) => t.value === 0) ? (
@@ -321,11 +293,8 @@ export function AnalyticsView({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-foreground">
               <Activity className="h-4 w-4 text-primary" />
-              Habit Consistency Rates (7-Day Rolling)
+              Habit Consistency (7-Day)
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Weekly completion ratio per active habit.
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3.5 pt-0">
             {habitStats.length === 0 ? (
@@ -367,9 +336,6 @@ export function AnalyticsView({
             <div className="text-2xl font-bold font-mono text-foreground">
               {booksCount.reading}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Currently on shelf
-            </p>
           </CardContent>
         </Card>
 
@@ -384,9 +350,6 @@ export function AnalyticsView({
             <div className="text-2xl font-bold font-mono text-foreground">
               {booksCount.completed}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Read and completed
-            </p>
           </CardContent>
         </Card>
 
@@ -401,9 +364,6 @@ export function AnalyticsView({
             <div className="text-2xl font-bold font-mono text-foreground">
               {booksCount.totalPages.toLocaleString()}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Cumulative reading volume
-            </p>
           </CardContent>
         </Card>
       </div>

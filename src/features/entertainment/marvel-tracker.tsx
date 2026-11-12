@@ -521,7 +521,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               </h1>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Curated chronological and recommended viewing guide across the MCU, Spider-Verse, Defenders, and Multiverse.
+              MCU &amp; Multiverse chronological watchlist.
             </p>
 
             {/* Dual Progress Gauges */}
@@ -923,9 +923,6 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
         <Card className="border-border bg-card rounded-2xl shadow-xs p-10 text-center text-sm text-muted-foreground">
           <Film className="h-8 w-8 mx-auto text-primary/40 mb-2" />
           <p className="font-bold text-foreground">No Marvel titles match your filters.</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Try adjusting your search query, track preset, or priority filters.
-          </p>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -1178,7 +1175,7 @@ export function MarvelTracker({ initialCloudProgress = {} }: MarvelTrackerProps)
               Backup or Restore Progress
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Export your watch status as JSON to save a local backup or paste saved data to restore across browsers.
+              Export or paste backup JSON.
             </DialogDescription>
           </DialogHeader>
 

@@ -43,5 +43,5 @@ next-env.d.ts
 
 
 # legacy / external subprojects
-finance/
-Expense tracker/
+/finance/
+/Expense tracker/
